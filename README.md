@@ -1,5 +1,5 @@
 <p align="center">
-  <img width="18%" align="center" src="https://raw.githubusercontent.com/LiuzLab/AI_MARRVEL/docs/images/logo.v1.png" alt="logo">
+  <img width="50%" align="center" src="https://raw.githubusercontent.com/LiuzLab/AI_MARRVEL/main/docs/images/logo.v1.png" alt="logo">
 </p>
   <h1 align="center">
   AI-MARRVEL
