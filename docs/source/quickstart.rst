@@ -10,6 +10,7 @@ AIM-Lite
 Install the software. And download our example here. 
 
 .. code-block:: bash
+    
     docker run -v <Path to VCF File>:/input/vcf.gz \
             -v <Path to HPO file>:/input/hpo.txt \
             -v <Path to downloaded database>:/run/data_dependencies \
