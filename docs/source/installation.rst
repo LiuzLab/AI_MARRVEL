@@ -52,7 +52,10 @@ AIM requires multiple database sources to annotate variants, we have compiled al
 
 .. warning::
 
-   HGMD-related database is included but not provided in the public download link, for license reasons.
+   For license reason, required HGMD-related database is not provided in the public download link.
+   But AIM can still run as normal without HGMD information.
+
+   To prepare HGMD database, see here.
 
 
 
