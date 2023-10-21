@@ -4,15 +4,13 @@
 Installation
 *************
 
-AIM is constructed with R and Python in different environment.
-
-To free users from setting up all the environment, we provide the software as docker image.
+AIM is originally constructed with R and Python in different environment. 
+To free users from setting up all the environment, we provide the software as a Docker image.
 
 
 AIM-Lite
 =============
 AIM-Lite takes VCF and HPO as input to generate predictions. 
-
 It is the samllest function unit of AI-MARRVEL software.
 
 .. note::
@@ -20,6 +18,7 @@ It is the samllest function unit of AI-MARRVEL software.
    An more powerful batch-enabled AIM docker image is under development.
 
 **Pull AIM-Lite Docker from Docker Hub**
+
 .. code-block:: bash
     
     docker pull chaozhongliu/aim-lite:latest

@@ -14,11 +14,12 @@ and generates **prediction score** + **confidence score** as output.
 
 
 **Our Preprint**
-Enhancing Molecular Diagnostics of Mendelian Disorders with AI-MARRVEL: A Knowledge-Driven Artificial Intelligence Approach.
 
+Enhancing Molecular Diagnostics of Mendelian Disorders with AI-MARRVEL: A Knowledge-Driven Artificial Intelligence Approach.
 Click `here <https://dx.doi.org/10.2139/ssrn.4465963>`_ for details.
 
 .. toctree::
+   :hidden:
 
    installation
    quickstart
