@@ -86,7 +86,7 @@ html_theme = 'sphinx_book_theme'
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-html_logo = '../images/logo.v1.png'
+html_logo = '../images/logo_white.v1.png'
 html_theme_options = {
     'logo_only': True,
     'display_version': False,
