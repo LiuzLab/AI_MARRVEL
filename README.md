@@ -21,7 +21,11 @@
 
 It takes as input patient VCF and phenotype (formatted with HPO) to predict the causal variant(s).    
 In making prediction, it takes variant annotation from [MARRVEL](https://marrvel.org/) database and more, 
-and generates **prediction score** + **confidence score** as output.
+and generates **prediction score** + **confidence score** as output.  
+
+
+You can use AI-MARRVEL from our [website](https://ai.marrvel.org/) or follow the [documentation](https://ai-marrvel.readthedocs.io/en/latest/) to run locally.
+
 
 
 ## Quick Start
