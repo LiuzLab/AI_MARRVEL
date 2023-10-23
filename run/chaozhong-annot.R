@@ -10,7 +10,6 @@ refg=args[3]
 #dat <- dat[!is.na(dat$hpo_id),]
 dat <- read.csv(paste0('/run/data_dependencies/omim_annotate/',refg,'/HGMD_phen.tsv'),
                 sep='\t')
-dat <- dat[!is.na(dat$hpo_id),]
 
 library(dplyr)
 get_HPO_list <- function(df1){
@@ -24,6 +23,7 @@ get_HPO_list <- function(df1){
   return(df2)
 }
 
+
 # In public release, there might be empty HGMD phenotype file
 if (dim(dat)[1] == 0) {
   col_names <- c('acc_num', 'phen_id', 'gene_sym', 'HPO', 'HPO_list', 'Similarity_Score')
@@ -31,6 +31,7 @@ if (dim(dat)[1] == 0) {
   colnames(dat2)<- col_names
 
 } else {
+  dat <- dat[!is.na(dat$hpo_id),]
   dat2_ori <- get_HPO_list(dat)
   #dat2_ori <- dat2_ori[with(dat2_ori,order(hgvs)),]
   #dat2_ori$Gene <- unlist(lapply(dat2_ori$Gene, function(x) x[[1]]))
