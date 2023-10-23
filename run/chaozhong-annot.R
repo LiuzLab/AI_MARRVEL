@@ -23,6 +23,15 @@ get_HPO_list <- function(df1){
   return(df2)
 }
 
+# Load HPO_obo
+HPO_obo <- get_OBO(url("http://purl.obolibrary.org/obo/hp.obo"), #"https://raw.githubusercontent.com/obophenotype/human-phenotype-ontology/master/hp.obo"),
+                  propagate_relationships = c("is_a","part_of"), extract_tags = "minimal")
+
+# set simi_thresh
+simi_thresh <- 0
+# Set pwd:
+out_pwd <- "./"
+
 
 # In public release, there might be empty HGMD phenotype file
 if (dim(dat)[1] == 0) {
@@ -35,21 +44,11 @@ if (dim(dat)[1] == 0) {
   dat2_ori <- get_HPO_list(dat)
   #dat2_ori <- dat2_ori[with(dat2_ori,order(hgvs)),]
   #dat2_ori$Gene <- unlist(lapply(dat2_ori$Gene, function(x) x[[1]]))
-
-  # set simi_thresh
-  simi_thresh <- 0
-  # Set pwd:
-  out_pwd <- "./"
   dat2 <- dat2_ori
-
-  # Load HPO_obo
-  HPO_obo <- get_OBO(url("http://purl.obolibrary.org/obo/hp.obo"), #"https://raw.githubusercontent.com/obophenotype/human-phenotype-ontology/master/hp.obo"),
-                    propagate_relationships = c("is_a","part_of"), extract_tags = "minimal")
-
+  
   # Load patient HPO
   HPO.file <- file.path(id)
   HPO.orig <- read.table(HPO.file, sep = "\t", fill=T, header=F, stringsAsFactors=F)
-
   HPO <- HPO.orig$V1
 
   # remove terms without a HPO ID
