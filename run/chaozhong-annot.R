@@ -24,41 +24,45 @@ get_HPO_list <- function(df1){
   return(df2)
 }
 
-dat2_ori <- get_HPO_list(dat)
-#dat2_ori <- dat2_ori[with(dat2_ori,order(hgvs)),]
-#dat2_ori$Gene <- unlist(lapply(dat2_ori$Gene, function(x) x[[1]]))
+# In public release, there might be empty HGMD phenotype file
+if (dim(dat)[1] == 0) {
+  col_names <- c('acc_num', 'phen_id', 'gene_sym', 'HPO', 'HPO_list', 'Similarity_Score')
+  dat2 <- data.frame(matrix(nrow = 0, ncol = length(col_names)))
+  colnames(dat2)<- col_names
 
-# set simi_thresh
-simi_thresh <- 0
-# Set pwd:
-out_pwd <- "./"
-dat2 <- dat2_ori
+} else {
+  dat2_ori <- get_HPO_list(dat)
+  #dat2_ori <- dat2_ori[with(dat2_ori,order(hgvs)),]
+  #dat2_ori$Gene <- unlist(lapply(dat2_ori$Gene, function(x) x[[1]]))
 
-# Load HPO_obo
-HPO_obo <- get_OBO(url("http://purl.obolibrary.org/obo/hp.obo"), #"https://raw.githubusercontent.com/obophenotype/human-phenotype-ontology/master/hp.obo"),
-                   propagate_relationships = c("is_a","part_of"), extract_tags = "minimal")
+  # set simi_thresh
+  simi_thresh <- 0
+  # Set pwd:
+  out_pwd <- "./"
+  dat2 <- dat2_ori
 
-# Load patient HPO
-HPO.file <- file.path(id)
-HPO.orig <- read.table(HPO.file, sep = "\t", fill=T, header=F, stringsAsFactors=F)
+  # Load HPO_obo
+  HPO_obo <- get_OBO(url("http://purl.obolibrary.org/obo/hp.obo"), #"https://raw.githubusercontent.com/obophenotype/human-phenotype-ontology/master/hp.obo"),
+                    propagate_relationships = c("is_a","part_of"), extract_tags = "minimal")
 
-HPO <- HPO.orig$V1
+  # Load patient HPO
+  HPO.file <- file.path(id)
+  HPO.orig <- read.table(HPO.file, sep = "\t", fill=T, header=F, stringsAsFactors=F)
 
-# remove terms without a HPO ID
-HPO <- HPO[grepl("HP:", HPO)]
-HPO <- list(HPO)
+  HPO <- HPO.orig$V1
 
-sim_mat <- get_asym_sim_grid(HPO, dat2$HPO_list, ontology=HPO_obo)
-dat2$Similarity_Score <- as.vector(sim_mat)
-dat2$HPO_list <- unlist(lapply(dat2$HPO_list, function(x) paste0(unlist(x), collapse = "|")))
-dat2 <- dat2[order(dat2$Similarity_Score, decreasing = T),]
+  # remove terms without a HPO ID
+  HPO <- HPO[grepl("HP:", HPO)]
+  HPO <- list(HPO)
+
+  sim_mat <- get_asym_sim_grid(HPO, dat2$HPO_list, ontology=HPO_obo)
+  dat2$Similarity_Score <- as.vector(sim_mat)
+  dat2$HPO_list <- unlist(lapply(dat2$HPO_list, function(x) paste0(unlist(x), collapse = "|")))
+  dat2 <- dat2[order(dat2$Similarity_Score, decreasing = T),]
+}
 
 output_file_name2 <- paste0("/out/",code,"-cz")
 write.table(dat2, output_file_name2, sep = "\t", quote = F, row.names = F)
-
-
-
-
 
 
 
