@@ -1,7 +1,7 @@
 #!/bin/bash
 #$1 submission id
 #$2 ref genome
-#$1 memory limitation
+#$3 memory limitation
 
 
 #make output subdirectories
@@ -15,7 +15,7 @@ mkdir -m777 /out/final_matrix
 mkdir -m777 /out/final_matrix_expanded
 
 REF_DIR=$2
-CHUNK_RAM=$1
+CHUNK_RAM=$3
 
 if [ "$REF_DIR" = "hg19" ]
 then
