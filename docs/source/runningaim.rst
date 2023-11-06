@@ -25,5 +25,26 @@ Install the software and data dependencies. Download our example here.
 Arguments Explanation
 =======================
 
+.. list-table:: AIM arguments
+   :header-rows: 1
+   :widths: 40 60
+   
+   *  -  Argument
+      -  Explanation
+   *  -  Path to VCF File
+      -  Full path to the sample VCF. See Input Data Preparation for details 
+   *  -  Path to HPO file
+      -  Full path to HPO list, formatted as txt, each row is an HPO term.
+   *  -  Path to downloaded database
+      -  Full path to data dependencies downloaded
+   *  -  Path to output folder
+      -  Full path to output folder, must already exist
+   *  -  Sample ID
+      -  Can be any ID. It's used as output frefix 
+   *  -  Reference genome
+      -  Reference genome used to map reads and call variants. AIM support hg19 and hg38
+   *  -  Memory Limit
+      -  The maximum memory allocated to AIM. If the system has 48G RAM, 32 to 36 as recommended
+   
 
 

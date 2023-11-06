@@ -15,8 +15,8 @@
 # -- Project information -----------------------------------------------------
 
 project = 'AI-MARRVEL'
-copyright = '2023, Zhandong Liu, Dongxue Mao, Chaozhong Liu, Linhua Wang, Rami AI-Ouran, Cole Deisseroth, Sasidhar Pasupuleti, Seon Young Kim'
-author = 'Zhandong Liu, Dongxue Mao, Chaozhong Liu, Linhua Wang, Rami AI-Ouran, Cole Deisseroth, Sasidhar Pasupuleti, Seon Young Kim'
+copyright = "2023, Zhandong Liu's Lab at Baylor College of Medicine"
+author = 'Chaozhong Liu, Dongxue Mao'
 
 # The short X.Y version
 version = ''

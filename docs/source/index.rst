@@ -7,7 +7,8 @@ It takes as input the patient VCF file and the phenotype (formatted in HPO) to p
 In making the prediction, it takes variant annotation from `MARRVEL <https://marrvel.org/>`_ database and more, 
 and generates **prediction score** + **confidence score** as output.
 
-**Web Interface**
+Web Interface
+=====================
 
 You can use AI-MARRVEL from our `website <https://ai.marrvel.org/>`_ or follow the documentation to run locally.
 
@@ -19,7 +20,9 @@ You can use AI-MARRVEL from our `website <https://ai.marrvel.org/>`_ or follow t
 
 
 
-**Prerequisites**
+Prerequisites
+=====================
+
 * Unix-like operating system
 * Docker installed
 * At least 480G space to download the preprocessed database
@@ -27,16 +30,17 @@ You can use AI-MARRVEL from our `website <https://ai.marrvel.org/>`_ or follow t
 
 
 
-**Citation**
-
+Citation
+=====================
 **Enhancing Molecular Diagnostics of Mendelian Disorders with AI-MARRVEL: A Knowledge-Driven Artificial Intelligence Approach.**
 Click `here <https://dx.doi.org/10.2139/ssrn.4465963>`_ for details.
 
 
-**License**
+License
+=====================
 AI-MARRVEL is licensed under `GPLv3 <https://github.com/LiuzLab/AI_MARRVEL/blob/main/LICENSE>`_.
 
-Copyright © 2023 by Zhandong Liu's lab at Baylor College of Medicine.
+© Copyright 2023 by Zhandong Liu's lab at Baylor College of Medicine.
 
 .. toctree::
    :hidden:
