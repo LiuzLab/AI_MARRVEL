@@ -4,14 +4,12 @@
 Installation
 *************
 
-AIM is originally constructed with R and Python in different environment. 
-To free users from setting up all the environment, we provide the software as a Docker image.
+To streamline the user experience and eliminate the need for environment setup, AIM is delivered as a Docker image
 
 
 AIM-Lite
 =============
-AIM-Lite takes VCF and HPO as input to generate predictions. 
-It is the samllest function unit of AI-MARRVEL software.
+AIM-Lite processes VCF and HPO inputs to output predictions, representing the most compact functional component of the AI-MARRVEL suite.
 
 .. note::
 
@@ -24,7 +22,7 @@ It is the samllest function unit of AI-MARRVEL software.
     docker pull chaozhongliu/aim-lite:latest
 
 
-**Build Local AIM-Lite Docker**
+**Alternatively, Build Local AIM-Lite Docker**
 
 If you want to keep a stable local version of AIM, follow the instruction below.
 
@@ -48,14 +46,18 @@ If you want to keep a stable local version of AIM, follow the instruction below.
 
 Install Required Data Dependencies
 ===================================
-AIM requires multiple database sources to annotate variants, we have compiled all for users to download.
+AIM utilizes various databases for variant annotation, all of which have been compiled and made available for user download.
 
+We use Globus for data accessing `here <https://app.globus.org/file-manager?origin_id=e229eb48-2a35-4cff-a954-4d5c3ab77c02&origin_path=%2F>`_
 .. warning::
 
-   For license reason, required HGMD-related database is not provided in the public download link.
-   But AIM can still run as normal without HGMD information.
+   Due to licensing restrictions, the HGMD-related database is not included in the public download. 
+   However, AIM operates effectively without this data.
 
-   To prepare HGMD database, see here.
+   To prepare HGMD database, see below.
 
+
+Prepare HGMD-related data
+===================================
 
 

@@ -18,15 +18,30 @@ You can use AI-MARRVEL from our `website <https://ai.marrvel.org/>`_ or follow t
    AI-MARRVEL and web interface are under active development.
 
 
-**Our Preprint**
+
+**Prerequisites**
+* Unix-like operating system
+* Docker installed
+* At least 480G space to download the preprocessed database
+* 32G free memeory recommended, but it can be smaller by passing memory limitation argument
+
+
+
+**Citation**
 
 **Enhancing Molecular Diagnostics of Mendelian Disorders with AI-MARRVEL: A Knowledge-Driven Artificial Intelligence Approach.**
 Click `here <https://dx.doi.org/10.2139/ssrn.4465963>`_ for details.
+
+
+**License**
+AI-MARRVEL is licensed under `GPLv3 <https://github.com/LiuzLab/AI_MARRVEL/blob/main/LICENSE>`_.
+
+Copyright © 2023 by Zhandong Liu's lab at Baylor College of Medicine.
 
 .. toctree::
    :hidden:
 
    installation
-   quickstart
+   runningaim
    input
    output
