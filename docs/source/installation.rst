@@ -48,7 +48,7 @@ Install Required Data Dependencies
 ===================================
 AIM utilizes various databases for variant annotation, all of which have been compiled and made available for user download.
 
-We use Globus for data accessing `here <https://app.globus.org/file-manager?origin_id=e229eb48-2a35-4cff-a954-4d5c3ab77c02&origin_path=%2F>`_
+We use Globus for data accessing `here <https://app.globus.org/file-manager?origin_id=6810458e-b702-423f-9f0c-070c1691482d&origin_path=%2F>`_
 
 .. warning::
 
