@@ -31,6 +31,9 @@ You can use AI-MARRVEL from our [website](https://ai.marrvel.org/) or follow the
 ## Quick Start
 
 ### Install required data dependencies
+AIM utilizes various databases for variant annotation, all of which have been compiled and made available for user download.  
+  
+We use Globus for data accessing [here](https://app.globus.org/file-manager?origin_id=6810458e-b702-423f-9f0c-070c1691482d&origin_path=%2F)
 
 ### Get the software
 AIM is released as a Docker image for easy distribution. To get it:
@@ -47,6 +50,11 @@ docker run -v <Path to VCF File>:/input/vcf.gz \
        chaozhongliu/aim-lite /run/proc.sh [Sample ID] [Reference genome: hg19/hg38] [Memory Limit (G)]
 ```
 
-### Disclaimer
+## License
+AI-MARRVEL is licensed under GPL v3. You are welcomed to use it for research purpose.  
+For business purpose, please contact us for licensing.
+
+
+## Disclaimer
 - Some of the data and software included in the distribution may be subject to third-party constraints. Users of the data and software are solely responsible for establishing the nature of and complying with any such restrictions.
 - AI-MARRVEL provides this data and software in good faith, but make no warranty, express or implied, nor assume any legal liability or responsibility for any purpose for which they are used.

@@ -31,5 +31,5 @@ If you only have clinical notes in hand, please try our `AI-MARRVEL website <htt
 
 .. note::
 
-    We are packaging this `clinical notes to HPO terms` step into AIM pipeline.
+    We are packaging this ``clinical notes to HPO terms`` step into AIM pipeline.
 
