@@ -26,7 +26,7 @@ Here is an example file called ``hpos.txt``::
     HP:0001263
     HP:0001999
 
-If you only have clinical notes in hand, please try our `AI-MARRVEL website <https://marrvel.org/>`_ to convert it into HPO terms.
+If you only have clinical notes in hand, please try our `AI-MARRVEL website <https://ai.marrvel.org/>`_ to convert it into HPO terms.
 
 
 .. note::
