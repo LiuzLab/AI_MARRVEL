@@ -51,7 +51,7 @@ docker run -v <Path to VCF File>:/input/vcf.gz \
 ```
 
 ## License
-AI-MARRVEL is licensed under GPL v3. You are welcomed to use it for research purpose.  
+AI-MARRVEL is licensed under GPL-3.0. You are welcomed to use it for research purpose.  
 For business purpose, please contact us for licensing.
 
 

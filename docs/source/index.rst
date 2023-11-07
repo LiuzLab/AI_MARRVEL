@@ -38,7 +38,7 @@ Click `here <https://dx.doi.org/10.2139/ssrn.4465963>`_ for details.
 
 License
 =====================
-AI-MARRVEL is licensed under `GPLv3 <https://github.com/LiuzLab/AI_MARRVEL/blob/main/LICENSE>`_.
+AI-MARRVEL is licensed under `GPL-3.0 <https://github.com/LiuzLab/AI_MARRVEL/blob/main/LICENSE>`_.
 
 © Copyright 2023 by Zhandong Liu's lab at Baylor College of Medicine.
 
