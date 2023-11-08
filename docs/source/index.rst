@@ -1,5 +1,7 @@
+******************************************
 Welcome to AI-MARRVEL documentation!
-=====================================
+******************************************
+
 
 **AI-MARRVEL (AIM)** is an AI system for rare genetic disease diagnosis.  
 
