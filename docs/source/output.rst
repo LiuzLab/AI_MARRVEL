@@ -57,13 +57,190 @@ Variant Annotation / AIM Features
 AIM takes information from various database and perform feature engineering, to make the final prediction.
 Here, we provide both raw and engineered features as part of the output.
 
-In making the decision, AIM takes 6 modules of information into consideration.
+In making the decision, AIM takes various types of information into consideration.
 
-**Disease database matching**
+**Conservation**
 
-**Variant Conservation**
+``GERPpp_RS``
 
-**Inferred Inheritance pattern**
+``LRT_Omega``
 
-**Gene network diffusion**
+``LRT_score``
+
+``phyloP100way_vertebrate``
+
+**Constrain**
+
+``conservationScoreDGV``
+
+``conservationScoreGnomad``
+
+``conservationScoreOELof``
+
+``decipherVarFound``
+
+``dgvVarFound``
+
+``gnomadGeneOELof``
+
+``gnomadGeneOELofUpper``
+
+``gnomadGenePLI``
+
+``gnomadGeneZscore``
+
+``hom``
+
+**Disease Database**
+
+``c_ClinVar_*``
+
+``c_CLNREVSTAT``
+
+``c_HGMD_Exp_*``
+
+``c_isBLB``
+
+``c_isPLP``
+
+``c_RANKSCORE``
+
+``CLASS``
+
+``clinVarGeneFound``
+
+``clinvarNumB``
+
+``clinvarNumLB``
+
+``clinvarNumLP``
+
+``clinvarNumP``
+
+``clinVarVarFound``
+
+``curationScoreClinVar``
+
+``curationScoreHGMD``
+
+``curationScoreOMIM``
+
+``dominant``
+
+``hgmd_rs``
+
+``hgmdGeneFound``
+
+``hgmdVarFound``
+
+``isB/LB``
+
+``isP/LP``
+
+``nc_ClinVar_Exp``
+
+``nc_CLNREVSTAT``
+
+``nc_HGMD_Exp``
+
+``nc_isBLB``
+
+``nc_isPLP``
+
+``nc_RANKSCORE``
+
+``omimGeneFound``
+
+``omimVarFound``
+
+``recessive``
+
+
+**Variant Impact**
+
+``cons_*``
+
+``IMPACT``
+
+``IMPACT.from.Tier``
+
+
+**In Silico Prediction**
+
+``CADD_phred``
+
+``DANN_score``
+
+``fathmm_MKL_coding_score``
+
+``FATHMM_score``
+
+``M_CAP_score``
+
+``MutationAssessor_score``
+
+``Polyphen2_HDIV_score``
+
+``Polyphen2_HVAR_score``
+
+``REVEL_score``
+
+``SIFT_score``
+
+**Inferred Inheritance**
+
+``AD.matched``
+
+``AR.matched``
+
+``No.Var.H``
+
+``No.Var.HM``
+
+``No.Var.L``
+
+``No.Var.M``
+
+``TierAD``
+
+``TierAR``
+
+``TierAR.adj``
+
+``zyg``
+
+**Minor Allele Frequency**
+
+``ESP6500_AA_AF``
+
+``ESP6500_EA_AF``
+
+``gnomadAF``
+
+``gnomadAFg``
+
+
+**Phenotype Matching**
+
+``clinVarSymMatchFlag``
+
+``hgmdSymMatchFlag``
+
+``hgmdSymptomScore``
+
+``hgmdSymptomSimScore``
+
+``omimSymMatchFlag``
+
+``omimSymptomSimScore``
+
+``phrank``
+
+``diffuse_Phrank_STRING``
+
+**others**
+
+``simple_repeat``
+
+``spliceAImax``
 
