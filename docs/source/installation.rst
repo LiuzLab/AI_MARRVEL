@@ -61,4 +61,11 @@ We use Globus for data accessing `here <https://app.globus.org/file-manager?orig
 Prepare HGMD-related data
 ===================================
 
+**HGMD databse VCF**
 
+Copy your HGMD ``bgzip`` compressed VCF file and the index file (\*.tbi) into your database folder under ``vep/hg19(hg38)/``, and rename it as ``HGMD_Pro_2022.2_hg19(hg38).vcf.gz(.tbi)``.
+
+
+**HGMD Phenotype Information**
+
+Run `hgmd_phen.sql <https://github.com/LiuzLab/AI_MARRVEL/blob/main/utils/hgmd_phen.sql>`_ to get ``HGMD_phen.tsv``. Move the file to your database folder under ``omim_annotate/hg19(hg38)/``
