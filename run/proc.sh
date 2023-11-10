@@ -3,7 +3,6 @@
 #$2 ref genome
 #$3 memory limitation
 
-
 #make output subdirectories
 echo $(date +"%T") > /out/whole_log.txt
 mkdir -m777 /out/phrank
@@ -25,57 +24,58 @@ else
 fi
 
 
-echo "bcf annotate"
+echo "VCF pre-processing"
 #annotate with new chromosomes and preserve original coordinates in ID
 bcftools annotate --rename-chrs /run/data_dependencies/bcf_annotate/chrmap.txt -x ID /input/vcf.gz -Oz -o /out/$1-annot.txt
 bcftools annotate --set-id +'%CHROM\_%POS\_%REF\_%FIRST_ALT' /out/$1-annot.txt -Oz -o /out/$1-add-id.vcf.gz
 
 
-echo "quality filters"
+
+echo "VCF quality filtering"
 #run quality filters #removed 27th line
 bcftools filter /out/$1-add-id.vcf.gz -i'FILTER == "PASS"' -Oz -o /out/$1.filt.vcf.gz
 
 
-echo "remove mitochondrial"
+
+echo "Remove mitochondrial variants"
 gunzip /out/$1.filt.vcf.gz
 grep -vE "chrM" /out/$1.filt.vcf > /out/$1.filt.rmMT.vcf
 
 
-echo "remove unknown chromosomes"
+#echo "remove unknown chromosomes"
 ###############
 # To-Do
 ###############
 
 
 #Phrank annotation
-echo "phrank annotation"
+echo "Phrank scoring"
 zcat /input/vcf.gz | awk 'substr($0, 1, 1) != "#"' | cut -f1,2,4,5 | sed 's/\t/:/g' > /out/$1-var.txt
 cat /out/$1-var.txt | sed 's/chr//g' | sort -u > /out/$1-var-filt.txt
 
 
 #annotate with ENSG
-echo "ensg annotates"
-#/opt/conda/envs/marrvel-py/bin/python $4/phrank/src/location_to_gene.py /out/$1-var-filt.txt ${REF_DIR} | sed 's/:/\t/g' | sed 's/X\t/23\t/g' | sed 's/Y\t/24\t/g' | sed 's/MT\t/25\t/g' > /out/$1-ensmbl.txt
+#echo "ensg annotates"
 python2.7 /run/phrank/src/location_to_gene.py /out/$1-var-filt.txt ${REF_DIR} | sed 's/:/\t/g' | sed 's/X\t/23\t/g' | sed 's/Y\t/24\t/g' | sed 's/MT\t/25\t/g' > /out/$1-ensmbl.txt
 
 
-echo "gene-sym"
+#echo "gene-sym"
 cat /out/$1-ensmbl.txt | sort -k5,5 | join -1 5 -2 1 - /run/data_dependencies/phrank/hg19/ensembl_to_symbol.txt | sed 's/ /\t/g' | cut -f2- > /out/$1-genesym.txt
 cat /out/$1-genesym.txt | cut -f5 | sort -u | join -t$'\t' -1 1 -2 2 - /run/data_dependencies/phrank/hg19/gene_to_symbol_sorted.txt | cut -f2 | sort -u > /out/$1-gene.txt
 
 
 # #run phrank scoring
-echo "phrank scoring"
+#echo "phrank scoring"
 python3.8 /run/phrank/src/run_phrank.py /out/$1-gene.txt /input/hpo.txt ${REF_DIR} > /out/phrank/$1.txt
 
 
 # #annotate with OMIM and HPO path
-echo "annotate with OMIM and HPO path"
-Rscript /run/chaozhong-annot.R /input/hpo.txt $1 ${REF_DIR} > /dev/null
+echo "Calculating phenotype similarities"
+Rscript /run/phenoSim.R /input/hpo.txt $1 ${REF_DIR} > /dev/null
 
 
 #Filter proband vcf with blacklist
-echo "Filter proband vcf with blacklist"
+echo "Filtering VCF with blacklist"
 bgzip /out/$1.filt.rmMT.vcf
 
 tabix /out/$1.filt.rmMT.vcf.gz
@@ -137,6 +137,7 @@ else
         --individual all --output_file /out/$1-vep.txt --input_file /out/$1.filt.rmBL.vcf
 fi
 
+echo "Feature engineering"
 #annotate w/ marrvel flatfiles
 AIM_FREE_RAM=$(free -g | awk 'NR==2{printf $7}')
 
@@ -195,6 +196,7 @@ Rscript /run/VarTierDiseaseDBFalse.R $1 ${REF_DIR}
 
 python3.8 /run/generate_new_matrix_2.py $1 ${REF_DIR}
 
+echo "Making prediction"
 python3.8 /run/predict_new/run_final.py $1
 
 python3.8 /run/merge_rm.py $1
@@ -204,17 +206,33 @@ python3.8 /run/extraModel/main.py -id $1
 
 echo $(date +"%T") >> /out/whole_log.txt
 
+# delete intermediate files
+rm /out/$1-add-id.vcf.gz
+rm /out/$1-annot.txt
+rm /out/$1-cz
+rm /out/$1-dx
+rm /out/$1-ensmbl.txt
+rm /out/$1.filt.rmBL.vcf
+rm /out/$1.filt.rmMT.vcf.gz
+rm /out/$1.filt.rmMT.vcf.gz.tbi
+rm /out/$1.filt.vcf
+rm /out/$1-genesym.txt
+rm /out/$1-gene.txt
+rm /out/$1.matrix.txt
+rm /out/$1-var-filt.txt
+rm /out/$1-var.txt
+rm /out/$1-vep.txt
+rm /out/$1-vep.txt*
+rm /out/vep_split.txt
+rm -r /out/final_matrix
+rm -r /out/final_matrix_expanded
+rm -r /out/input
+rm -r /out/phrank
+rm -r /out/rami-test
+rm -r /out/scores
+rm -r /out/tier-test-false
 
-######################
-# Delete any output?
-######################
-
-
-
-
-
-
-
-
-
+mv /out/conf_4Model/*.csv /out/
+mv /out/conf_4Model/integrated/*.csv /out/
+rm -r /out/conf_4Model
 
