@@ -68,4 +68,6 @@ Copy your HGMD ``bgzip`` compressed VCF file and the index file (\*.tbi) into yo
 
 **HGMD Phenotype Information**
 
-Run `hgmd_phen.sql <https://github.com/LiuzLab/AI_MARRVEL/blob/main/utils/hgmd_phen.sql>`_ to get ``HGMD_phen.tsv``. Move the file to your database folder under ``omim_annotate/hg19(hg38)/``
+Get the ``hgmd_phenbase-*.dump.sql`` from HGMD.
+
+Run `HGMD_phenbase.sh <https://github.com/LiuzLab/AI_MARRVEL/blob/main/utils/HGMD_phenbase.sh>`_ to get ``HGMD_phen.tsv``. Move the file to your database folder under ``omim_annotate/hg19(hg38)/``
