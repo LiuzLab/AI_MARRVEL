@@ -62,24 +62,27 @@ In making the decision, AIM takes various types of information into consideratio
 **Conservation**
 
 ``GERPpp_RS``
-   GERP++_RS, a score indicating the level of evolutionary constraint at a specific genomic position, with positive values suggesting functional conservation and negative values neutrality.
+   GERP++ RS score, the larger the score, the more conserved the site. Scores range from -12.3 to 6.17
 
 ``LRT_Omega``
+   Estimated nonsynonymous-to-synonymous-rate ratio (Omega, reported by LRT)
 
 ``LRT_score``
+   The original LRT two-sided p-value (LRTori), ranges from 0 to 1.
 
 ``phyloP100way_vertebrate``
-   Conservation score from the phyloP method, with positive scores indicating conservation and negative scores indicating fast evolution.
+   phyloP (phylogenetic p-values) conservation score based on the multiple alignments of 100 vertebrate genomes (including human). The larger the score, the more conserved the site. Scores range from -20.0 to 10.003 in dbNSFP.
 
 **Constrain**
 
 ``hom``
+   Number of homozygotes variant in gnomAD 
 
 ``decipherVarFound``
-   0/1. Whether the variant is found in DECIPHER database. 
+   0/1. Whether the variant is found in the a deletion of the DECIPHER control database.
 
 ``dgvVarFound``
-   0/1. Whether the variant is found in DGV database.
+   0/1. Whether the variant is found in a deletion of the DGV database.
 
 ``conservationScoreDGV``
    1/3 (Low/High). If DGV subtype is Loss or Deletion, score will be 1. Otherwise 3.
@@ -107,19 +110,10 @@ In making the decision, AIM takes various types of information into consideratio
 
 **Disease Database**
 
-``c_ClinVar_*``
-
-``c_CLNREVSTAT``
-
-``c_HGMD_Exp_*``
-
-``c_isBLB``
-
-``c_isPLP``
-
-``c_RANKSCORE``
-
 ``CLASS``
+   CLASS from HGMD
+      DM: disease-causing mutation;
+      DM? Likely disease-causing, but with questionable pathogenicity
 
 ``clinVarGeneFound``
    0/1, whether or not variant gene is found in ClinVar.
@@ -167,21 +161,46 @@ In making the decision, AIM takes various types of information into consideratio
    1/2/3 (Low/Medium/High), curated with ``omimGeneFound`` and ``omimVarFound``.
 
 ``dominant``
+   0/1. Whether the variant gene is annotated as dominant in OMIM.
 
 ``recessive``
+   0/1. Whether the variant gene is annotated as recessive in OMIM
 
 ``hgmd_rs``
    HGMD rank score, interpreted as relative probabilities of pathogenicity.
 
+``c_ClinVar_*``
+   Expansions of variant annotation from ClinVar. One-hot encoded.
+
+``c_CLNREVSTAT``
+   The ClinVar Review status for the same protein change in ClinVar
+
+``c_HGMD_Exp_*``
+   Expansions of variant annotation from HGMD. One-hot encoded.
+
+``c_isBLB``
+   The original variant is annotated as Benign in ClinVar
+
+``c_isPLP``
+   The original variant is annotated as Pathogenic or likely pathogenic in ClinVar
+
+``c_RANKSCORE``
+   The HGMD RANKSCORE adapted from the original HGMD database
+
 ``nc_ClinVar_Exp``
+   Non-coding variant expansion (2bp upstream or downstream of the original variants position)
 
 ``nc_CLNREVSTAT``
+   non-coding variant expansion (2bp upstream or downstream of the original variants position)
 
 ``nc_HGMD_Exp``
+   non-coding variant expansion (2bp upstream or downstream of the original variants position)
 
 ``nc_isBLB``
+   The original variant is annotated as Benign in ClinVar
 
 ``nc_isPLP``
+   The original variant is annotated as Pathogenic or likely pathogenic in ClinVar
 
 ``nc_RANKSCORE``
 
@@ -236,25 +255,35 @@ In making the decision, AIM takes various types of information into consideratio
 
 **Inferred Inheritance**
 
-``AD.matched``
-
-``AR.matched``
-
 ``No.Var.H``
+   Gene level, Number of High IMPACT variants in the patient for candidate gene
 
 ``No.Var.HM``
+   Gene level, Number of High or Moderate IMPACT variants in the patient for candidate gene
 
 ``No.Var.L``
+   Gene level, Number of Low IMPACT variants in the patient for candidate gene
 
 ``No.Var.M``
+   Gene level, Number of Moderate IMPACT variants in the patient for candidate gene
 
 ``TierAD``
+   1~4, Dominant Inheritance Score. The lower the more pathogenic
 
 ``TierAR``
+   1~4, Recessive Inheritance Score. The lower the more pathogenic
 
 ``TierAR.adj``
+   1~4, Adjusted Recessive Inheritance Score. For a candidate gene, if a rare intronic variant observed together with a high IMPACT variant, adjusted
+
+``AD.matched``
+   0/1, ``TierAD <= 2`` and  ``dominant == 1``
+
+``AR.matched``
+   0/1, ``TierAR <= 2`` and ``recessive == 1``
 
 ``zyg``
+   Variant zygosity, 1: heterozygous, 2: homozygous.
 
 **Minor Allele Frequency**
 
@@ -288,8 +317,10 @@ In making the decision, AIM takes various types of information into consideratio
    0/1, whether ``omimSymptomSimScore >= 0.2``
 
 ``phrank``
+   Phrank measures phenotype sets similarity of the patient phenotype with phenotype linked to a candidate gene.
 
 ``diffuse_Phrank_STRING``
+   A phenotype score is derived through network diffusion, utilizing the String network and employing the Phrank score as the initial seed score.
 
 **others**
 
