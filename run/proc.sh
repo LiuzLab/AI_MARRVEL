@@ -23,6 +23,12 @@ else
     REF_GEN="GRCh38"
 fi
 
+#Check if hpo.txt is empty or has no valid HPO ID
+if [[ -z $(egrep 'HP:[0-9]{7}' /input/hpo.txt) ]] ; then
+    #Replace it with HP:0000001
+    echo "HP:0000001" > /input/hpo.txt
+fi
+
 
 echo "VCF pre-processing"
 #annotate with new chromosomes and preserve original coordinates in ID
