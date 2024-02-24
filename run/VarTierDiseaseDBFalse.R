@@ -22,9 +22,13 @@
 #' keep GeneID == "-" assinge Tier value
 #' input  output /out/explain/ "ID" + "_Tier"
 #' 
+#' updates on 2023.Sep30
+#' Fix error for AR.matched and AD.matched
+#' Add OnehitAR feature
+#' dedup result: choose the var with max impact, if tie, at the most pathogenic feature across among the same variants
+#' 
 
 # parameter settings ####
-args = commandArgs(trailingOnly=TRUE)
 
 # set adj.k value to adjust Tier
 adj.k <- 1.05
@@ -32,15 +36,19 @@ adj.k <- 1.05
 # set if diseases DB will be included
 IncludeClinVarHGMD <- FALSE
 
+# load database: OMIM inheritance ####
+# genemap2.Inh.F <- readRDS(file.path("/run/genemap2.Inh.F.rds"))
+#genemap2.Inh.F <- read.delim2(file.path("/run/data_dependencies/var_tier/hg19/genemap2.Inh.F.txt"))
+# genemap2.Inh.F <- read.delim2("/houston_10t/dongxue/MARRVEL_AI/resource/OMIM/out/genemap2.Inh.F.txt")
+args = commandArgs(trailingOnly=TRUE)
 refg <- args[2]
 # load database: OMIM inheritance ####
 # genemap2.Inh.F <- readRDS(file.path("/run/genemap2.Inh.F.rds"))
 genemap2.Inh.F <- read.delim2(file.path(paste0('/run/data_dependencies/var_tier/',refg,'/genemap2.Inh.F.txt')))
-# genemap2.Inh.F <- read.delim2("/houston_10t/dongxue/MARRVEL_AI/resource/OMIM/out/genemap2.Inh.F.txt")
-
-
 
 # set the input output file / directory ####
+
+
 
 # in.f.path <- "/out/input/"
 in.f.path <- "/out/rami-test/"
@@ -64,30 +72,35 @@ library("dplyr")
 anno.columns <- c('varId_dash','zyg','geneSymbol','geneEnsId','gnomadAF','gnomadAFg','omimSymptomSimScore','hgmdSymptomSimScore',
                   'IMPACT','Consequence','hgmdVarFound','clinvarSignDesc','spliceAImax')
 
-anno.orig <- read.table(file.path(in.f.path,in.f), stringsAsFactors = F, sep = ",", header = T)
+anno.orig <- fread(file.path(in.f.path,in.f), stringsAsFactors = F, sep = ",", header = T)
 # To test:
 # score.path <- "/houston_20t/chaozhong/MARRVEL_AI_2022/explain/906246_raw.csv"
 # score.path <- "/houston_20t/chaozhong/MARRVEL_AI_2022/opt_09302022/output/rami-test/906246_scores.csv"
-# anno.orig <- read.csv(score.path)
-anno <- anno.orig[,anno.columns]
+# score.path <- "/houston_30t/chaozhong/NDV_model/fake_VCF_test/out/rami-test/NDVG_causal_scores.csv"
+# anno.orig <- fread(score.path, stringsAsFactors = F, sep = ",", header = T)
+anno <- as.data.frame(anno.orig)
+anno <- anno[,anno.columns]
 
 # rename the col
 colnames(anno) <- c("Uploaded_variation","GT","SYMBOL","Gene","gnomadAF","gnomadAFg",
                       "omimSymptomSimScore", "hgmdSymptomSimScore","IMPACT",
                       "Consequence","hgmdVarFound","clinvarSignDesc","spliceAImax")
-  
-# for rows without gene ID -> Assign Tier now:
-anno_noGeneID <- anno[anno$Gene == "-",c("Uploaded_variation","Gene","IMPACT")]
-# convert IMPACT to numeric value
-anno_noGeneID$IMPACT.max <- ifelse(anno_noGeneID$IMPACT == "MODIFIER", 1, ifelse(anno_noGeneID$IMPACT == "LOW", 2, ifelse(anno_noGeneID$IMPACT == "MODERATE",3,4)) )
-anno_noGeneID$IMPACT <- NULL
-# "TierAD","TierAR","TierAR.adj"
-anno_noGeneID$TierAD <- 5 - anno_noGeneID$IMPACT.max
-anno_noGeneID[,c("TierAR","TierAR.adj")] <- ifelse(anno_noGeneID$IMPACT.max >= 3, 3,4)
-anno_noGeneID$No.Var.HM <- as.numeric(anno_noGeneID$IMPACT.max >= 3)
-anno_noGeneID$No.Var.H <- as.numeric(anno_noGeneID$IMPACT.max == 4)
-anno_noGeneID$No.Var.M <- as.numeric(anno_noGeneID$IMPACT.max == 3)
-anno_noGeneID$No.Var.L <- as.numeric(anno_noGeneID$IMPACT.max <=2)
+
+if ("-" %in% anno$Gene) {
+  # for rows without gene ID -> Assign Tier now:
+  anno_noGeneID <- anno[anno$Gene == "-",c("Uploaded_variation","Gene","IMPACT")]
+  # convert IMPACT to numeric value
+  anno_noGeneID$IMPACT.max <- ifelse(anno_noGeneID$IMPACT == "MODIFIER", 1, ifelse(anno_noGeneID$IMPACT == "LOW", 2, ifelse(anno_noGeneID$IMPACT == "MODERATE",3,4)) )
+  anno_noGeneID$IMPACT <- NULL
+  # "TierAD","TierAR","TierAR.adj"
+  anno_noGeneID$TierAD <- 5 - anno_noGeneID$IMPACT.max
+  anno_noGeneID[,c("TierAR","TierAR.adj")] <- ifelse(anno_noGeneID$IMPACT.max >= 3, 3,4)
+  anno_noGeneID$No.Var.HM <- as.numeric(anno_noGeneID$IMPACT.max >= 3)
+  anno_noGeneID$No.Var.H <- as.numeric(anno_noGeneID$IMPACT.max == 4)
+  anno_noGeneID$No.Var.M <- as.numeric(anno_noGeneID$IMPACT.max == 3)
+  anno_noGeneID$No.Var.L <- as.numeric(anno_noGeneID$IMPACT.max <=2)
+}
+
 
 
 # For rows with Gene ID ->  Tier analysis
@@ -158,7 +171,12 @@ Var.RunTier <- unique(anno$Uploaded_variation[idx])
 
 # Only Count No.Var.L：
 # Others:
-Var.NoTier <- unique(anno$Uploaded_variation[!idx])
+# check if there are variants without Tier
+ParseVar.NoTier <- F
+if(F %in% idx){
+  ParseVar.NoTier <- T
+  Var.NoTier <- unique(anno$Uploaded_variation[!idx])
+}
 
 anno.f1 <- anno[idx,]
 
@@ -302,12 +320,17 @@ if (IncludeClinVarHGMD){
 VEP.Tier.part1 <- VEP.Tier.part1[,c("Uploaded_variation","Gene","GT","IMPACT.max","TierAD","TierAR","TierAR.adj","No.Var.HM","No.Var.H","No.Var.M","No.Var.L")]
 
 # STEP 5: add the No.Var for Var.NoTier  ####
-VEP.Tier.part2 <- anno[anno$Uploaded_variation %in% Var.NoTier,c("Uploaded_variation","Gene","GT")]
-VEP.Tier.part2$IMPACT.max <- 1
-VEP.Tier.part2[,c("TierAD","TierAR","TierAR.adj")] <- 4
-VEP.Tier.part2[,c("No.Var.HM","No.Var.H","No.Var.M","No.Var.L")] <- NA
+if (ParseVar.NoTier){
+  VEP.Tier.part2 <- anno[anno$Uploaded_variation %in% Var.NoTier,c("Uploaded_variation","Gene","GT")]
+  VEP.Tier.part2$IMPACT.max <- 1
+  VEP.Tier.part2[,c("TierAD","TierAR","TierAR.adj")] <- 4
+  VEP.Tier.part2[,c("No.Var.HM","No.Var.H","No.Var.M","No.Var.L")] <- NA
+  
+  VEP.Tier <- rbind(VEP.Tier.part1, VEP.Tier.part2)
+} else {
+  VEP.Tier <- VEP.Tier.part1
+}
 
-VEP.Tier <- rbind(VEP.Tier.part1, VEP.Tier.part2)
 VEP.Tier.wGene <- data.frame(matrix(ncol = ncol(VEP.Tier), nrow = 0))
 for (g in unique(VEP.Tier$Gene)){
 
@@ -337,26 +360,59 @@ VEP.Tier.wGene$GT <- NULL
 
 
 # STEP 6: add the Tiers from anno_noGeneID
-VEP.Tier.final <- rbind(VEP.Tier.wGene, anno_noGeneID)
+if ("-" %in% anno$Gene) {
+  VEP.Tier.final <- rbind(VEP.Tier.wGene, anno_noGeneID)
+} else {
+  VEP.Tier.final <- VEP.Tier.wGene
+}
+
+
 colnames(VEP.Tier.final)[colnames(VEP.Tier.final) == "IMPACT.max"] <- "IMPACT.from.Tier"
 VEP.Tier.final$TierAR.adj[is.na(VEP.Tier.final$TierAR.adj)] <- VEP.Tier.final$TierAR[is.na(VEP.Tier.final$TierAR.adj)]
   
 
-# add inheritance information
+# STEP 7: add inheritance information
 colnames(genemap2.Inh.F)[1] <- "Gene"
 VEP.Tier.wInh <- merge(VEP.Tier.final, genemap2.Inh.F, by.x = "Gene", by.y = "Gene", all.x = T)
 VEP.Tier.wInh$dominant[is.na(VEP.Tier.wInh$dominant)] <- 0
 VEP.Tier.wInh$recessive[is.na(VEP.Tier.wInh$recessive)] <- 0
-VEP.Tier.wInh$AD.matched <- ifelse(VEP.Tier.wInh$TierAD <=2 & (VEP.Tier.wInh$TierAD == 1),1,0)
-VEP.Tier.wInh$AR.matched <- ifelse(VEP.Tier.wInh$TierAR <=2 & (VEP.Tier.wInh$TierAR == 1),1,0)
-
-write.table(VEP.Tier.wInh,file.path(out.f.path,out.f), sep = "\t", quote = F, col.names = T, row.names = F)
-
-# write.table(VEP.Tier.wInh,"/houston_20t/dongxue/MARRVEL_AI/V2/FeatureEng/TestOut/906246_Tier.tsv", sep = "\t", quote = F, col.names = T, row.names = F)
-
-### Plot for Tier adjustment ####
+VEP.Tier.wInh$AD.matched <- ifelse(VEP.Tier.wInh$TierAD <=2 & (VEP.Tier.wInh$dominant == 1),1,0)
+VEP.Tier.wInh$AR.matched <- ifelse(VEP.Tier.wInh$TierAR <=2 & (VEP.Tier.wInh$recessive == 1),1,0)
 
 
-# 5-(5-4)*exp(adj.k*rareIntronicVar.2adj.wPhenoSimi$simi)
+# STEP 8: add one hit in recessive feature # Dongxue 2023-09-20
+VEP.Tier.wInh$OneHitAR <- ifelse(VEP.Tier.wInh$No.Var.HM <=1 & (VEP.Tier.wInh$dominant == 0),1,0)
+
+
+# STEP 9: de-dup # Dongxue 2023-09-20
+# remove Gene column
+VEP.Tier.wInh$Gene <- NULL
+VEP.Tier.wInh <- unique(VEP.Tier.wInh)
+dup_var <- VEP.Tier.wInh$Uploaded_variation[duplicated(VEP.Tier.wInh$Uploaded_variation)]
+
+VEP.Tier.wInh_dedup <- data.frame()
+
+for (var in unique(dup_var)){
+  var_df <- VEP.Tier.wInh[VEP.Tier.wInh$Uploaded_variation == var,]
+  impact_ls <- var_df$IMPACT.from.Tier
+  max_impact_idx <- which(impact_ls == max(impact_ls))
+  
+  # keep the row with max impact
+  var_df_selected <- var_df[max_impact_idx,]
+  if(length(max_impact_idx) > 1){
+    # If Tie, keep the most pathogenic value per feature
+    var_df_selected <- var_df_selected %>%
+      mutate(across(.cols = contains("Tier"), .fns = ~min(., na.rm = TRUE)),
+             across(.cols = everything(), .fns = ~max(., na.rm = TRUE)))
+    
+  }
+  
+  VEP.Tier.wInh_dedup <- rbind(VEP.Tier.wInh_dedup, unique(var_df_selected))
+  
+}
+
+VEP.Tier.wInh_final <- rbind(VEP.Tier.wInh_dedup, VEP.Tier.wInh[!(VEP.Tier.wInh$Uploaded_variation %in% dup_var),])
+write.table(VEP.Tier.wInh_final,file.path(out.f.path,out.f), sep = "\t", quote = F, col.names = T, row.names = F)
+
 
 
