@@ -43,15 +43,10 @@ bcftools filter /out/$1-add-id.vcf.gz -i'FILTER == "PASS"' -Oz -o /out/$1.filt.v
 
 
 
-echo "Remove mitochondrial variants"
+echo "Remove mitochondrial and unknown chromosome variants"
 gunzip /out/$1.filt.vcf.gz
-grep -vE "chrM" /out/$1.filt.vcf > /out/$1.filt.rmMT.vcf
-
-
-#echo "remove unknown chromosomes"
-###############
-# To-Do
-###############
+#grep -vE "chrM" /out/$1.filt.vcf > /out/$1.filt.rmMT.vcf
+bcftools view -r 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,X,Y /out/$1.filt.vcf -o /out/$1.filt.rmMT.vcf
 
 
 #Phrank annotation
