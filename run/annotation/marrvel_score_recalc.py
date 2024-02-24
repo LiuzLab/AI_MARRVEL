@@ -205,11 +205,9 @@ def conservationCurate(vardf):
     gnomadAFgVal[gnomadAFgVal=='-'] = np.NaN
     gnomadAFgVal = gnomadAFgVal.astype(float)
 
-    high_bool = (gnomadAFVal<0.01) & (gnomadAFgVal<0.01)
-    low_bool = (~gnomadAFVal.isna()) & (~gnomadAFgVal.isna()) & (~high_bool)
-
-    vardf.loc[high_bool, 'conservationScoreGnomad'] = 'High'
+    low_bool = (gnomadAFVal>=0.01) | (gnomadAFgVal>=0.01)
     vardf.loc[low_bool, 'conservationScoreGnomad'] = 'Low'
+    vardf.loc[~low_bool, 'conservationScoreGnomad'] = 'High'
 
 
     # conservationScoreDGV
