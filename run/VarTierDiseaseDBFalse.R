@@ -22,11 +22,6 @@
 #' keep GeneID == "-" assinge Tier value
 #' input  output /out/explain/ "ID" + "_Tier"
 #' 
-#' updates on 2023.Sep30
-#' Fix error for AR.matched and AD.matched
-#' Add OnehitAR feature
-#' dedup result: choose the var with max impact, if tie, at the most pathogenic feature across among the same variants
-#' 
 
 # parameter settings ####
 
@@ -72,14 +67,13 @@ library("dplyr")
 anno.columns <- c('varId_dash','zyg','geneSymbol','geneEnsId','gnomadAF','gnomadAFg','omimSymptomSimScore','hgmdSymptomSimScore',
                   'IMPACT','Consequence','hgmdVarFound','clinvarSignDesc','spliceAImax')
 
-anno.orig <- fread(file.path(in.f.path,in.f), stringsAsFactors = F, sep = ",", header = T)
+anno.orig <- read.table(file.path(in.f.path,in.f), stringsAsFactors = F, sep = ",", header = T)
 # To test:
 # score.path <- "/houston_20t/chaozhong/MARRVEL_AI_2022/explain/906246_raw.csv"
 # score.path <- "/houston_20t/chaozhong/MARRVEL_AI_2022/opt_09302022/output/rami-test/906246_scores.csv"
 # score.path <- "/houston_30t/chaozhong/NDV_model/fake_VCF_test/out/rami-test/NDVG_causal_scores.csv"
-# anno.orig <- fread(score.path, stringsAsFactors = F, sep = ",", header = T)
-anno <- as.data.frame(anno.orig)
-anno <- anno[,anno.columns]
+# anno.orig <- read.csv(score.path)
+anno <- anno.orig[,anno.columns]
 
 # rename the col
 colnames(anno) <- c("Uploaded_variation","GT","SYMBOL","Gene","gnomadAF","gnomadAFg",
@@ -362,16 +356,14 @@ VEP.Tier.wGene$GT <- NULL
 # STEP 6: add the Tiers from anno_noGeneID
 if ("-" %in% anno$Gene) {
   VEP.Tier.final <- rbind(VEP.Tier.wGene, anno_noGeneID)
-} else {
-  VEP.Tier.final <- VEP.Tier.wGene
 }
-
+VEP.Tier.final <- VEP.Tier.wGene
 
 colnames(VEP.Tier.final)[colnames(VEP.Tier.final) == "IMPACT.max"] <- "IMPACT.from.Tier"
 VEP.Tier.final$TierAR.adj[is.na(VEP.Tier.final$TierAR.adj)] <- VEP.Tier.final$TierAR[is.na(VEP.Tier.final$TierAR.adj)]
   
 
-# STEP 7: add inheritance information
+# add inheritance information
 colnames(genemap2.Inh.F)[1] <- "Gene"
 VEP.Tier.wInh <- merge(VEP.Tier.final, genemap2.Inh.F, by.x = "Gene", by.y = "Gene", all.x = T)
 VEP.Tier.wInh$dominant[is.na(VEP.Tier.wInh$dominant)] <- 0
@@ -379,40 +371,11 @@ VEP.Tier.wInh$recessive[is.na(VEP.Tier.wInh$recessive)] <- 0
 VEP.Tier.wInh$AD.matched <- ifelse(VEP.Tier.wInh$TierAD <=2 & (VEP.Tier.wInh$dominant == 1),1,0)
 VEP.Tier.wInh$AR.matched <- ifelse(VEP.Tier.wInh$TierAR <=2 & (VEP.Tier.wInh$recessive == 1),1,0)
 
+write.table(VEP.Tier.wInh,file.path(out.f.path,out.f), sep = "\t", quote = F, col.names = T, row.names = F)
 
-# STEP 8: add one hit in recessive feature # Dongxue 2023-09-20
-VEP.Tier.wInh$OneHitAR <- ifelse(VEP.Tier.wInh$No.Var.HM <=1 & (VEP.Tier.wInh$dominant == 0),1,0)
-
-
-# STEP 9: de-dup # Dongxue 2023-09-20
-# remove Gene column
-VEP.Tier.wInh$Gene <- NULL
-VEP.Tier.wInh <- unique(VEP.Tier.wInh)
-dup_var <- VEP.Tier.wInh$Uploaded_variation[duplicated(VEP.Tier.wInh$Uploaded_variation)]
-
-VEP.Tier.wInh_dedup <- data.frame()
-
-for (var in unique(dup_var)){
-  var_df <- VEP.Tier.wInh[VEP.Tier.wInh$Uploaded_variation == var,]
-  impact_ls <- var_df$IMPACT.from.Tier
-  max_impact_idx <- which(impact_ls == max(impact_ls))
-  
-  # keep the row with max impact
-  var_df_selected <- var_df[max_impact_idx,]
-  if(length(max_impact_idx) > 1){
-    # If Tie, keep the most pathogenic value per feature
-    var_df_selected <- var_df_selected %>%
-      mutate(across(.cols = contains("Tier"), .fns = ~min(., na.rm = TRUE)),
-             across(.cols = everything(), .fns = ~max(., na.rm = TRUE)))
-    
-  }
-  
-  VEP.Tier.wInh_dedup <- rbind(VEP.Tier.wInh_dedup, unique(var_df_selected))
-  
-}
-
-VEP.Tier.wInh_final <- rbind(VEP.Tier.wInh_dedup, VEP.Tier.wInh[!(VEP.Tier.wInh$Uploaded_variation %in% dup_var),])
-write.table(VEP.Tier.wInh_final,file.path(out.f.path,out.f), sep = "\t", quote = F, col.names = T, row.names = F)
+# write.table(VEP.Tier.wInh,"/houston_20t/dongxue/MARRVEL_AI/V2/FeatureEng/TestOut/906246_Tier.tsv", sep = "\t", quote = F, col.names = T, row.names = F)
+# write.table(VEP.Tier.wInh,"/houston_30t/dongxue/AI/UDN_Sample_2023/ModifiedAIMCode/NDVG_causal_Tier.v2.tsv", sep = "\t", quote = F, col.names = T, row.names = F)
+### Plot for Tier adjustment ####
 
 
 
