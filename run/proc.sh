@@ -15,6 +15,7 @@ mkdir -m777 /out/final_matrix_expanded
 
 REF_DIR=$2
 CHUNK_RAM=$3
+KEEP_INTERMEDIATE=${4:-False}
 
 if [ "$REF_DIR" = "hg19" ]
 then
@@ -208,30 +209,32 @@ python3.8 /run/extraModel/main.py -id $1
 echo $(date +"%T") >> /out/whole_log.txt
 
 # delete intermediate files
-rm /out/$1-add-id.vcf.gz
-rm /out/$1-annot.txt
-rm /out/$1-cz
-rm /out/$1-dx
-rm /out/$1-ensmbl.txt
-rm /out/$1.filt.rmBL.vcf
-rm /out/$1.filt.rmMT.vcf.gz
-rm /out/$1.filt.rmMT.vcf.gz.tbi
-rm /out/$1.filt.vcf
-rm /out/$1-genesym.txt
-rm /out/$1-gene.txt
-rm /out/$1.matrix.txt
-rm /out/$1-var-filt.txt
-rm /out/$1-var.txt
-rm /out/$1-vep.txt
-rm /out/$1-vep.txt*
-rm /out/vep_split.txt
-rm -r /out/final_matrix
-rm -r /out/final_matrix_expanded
-rm -r /out/input
-rm -r /out/phrank
-rm -r /out/rami-test
-rm -r /out/scores
-rm -r /out/tier-test-false
+if [ "$KEEP_INTERMEDIATE" = "False" ]; then
+    rm /out/$1-add-id.vcf.gz
+    rm /out/$1-annot.txt
+    rm /out/$1-cz
+    rm /out/$1-dx
+    rm /out/$1-ensmbl.txt
+    rm /out/$1.filt.rmBL.vcf
+    rm /out/$1.filt.rmMT.vcf.gz
+    rm /out/$1.filt.rmMT.vcf.gz.tbi
+    rm /out/$1.filt.vcf
+    rm /out/$1-genesym.txt
+    rm /out/$1-gene.txt
+    rm /out/$1.matrix.txt
+    rm /out/$1-var-filt.txt
+    rm /out/$1-var.txt
+    rm /out/$1-vep.txt
+    rm /out/$1-vep.txt*
+    rm /out/vep_split.txt
+    rm -r /out/final_matrix
+    rm -r /out/final_matrix_expanded
+    rm -r /out/input
+    rm -r /out/phrank
+    rm -r /out/rami-test
+    rm -r /out/scores
+    rm -r /out/tier-test-false
+fi
 
 mv /out/conf_4Model/*.csv /out/
 mv /out/conf_4Model/integrated/*.csv /out/
