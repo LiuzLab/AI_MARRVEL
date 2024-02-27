@@ -1,3 +1,5 @@
 bcftools-1.9.tar.bz2
 run/bedtools
 .vscode/
+.DS_Store
+*/.DS_Store
