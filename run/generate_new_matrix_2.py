@@ -20,7 +20,11 @@ score=pd.read_csv('/out/rami-test/%s_scores.csv'%(sys.argv[1]))
 merged = add_c_nc(score, sys.argv[2])
 
 ### run diffusion module 5 ###
-mod5 = diffuseSample(sys.argv[1], merged, "/out/phrank/")
+if os.path.getsize(f"/out/phrank/{sys.argv[1]}.txt") == 0:
+    phrank_empty = True
+else:
+    phrank_empty = False
+    mod5 = diffuseSample(sys.argv[1], merged, "/out/phrank/")
 
 ### get original coordinates ###
 merged["varId"]=merged["varId"].apply(lambda x: x.split("_E")[0])
@@ -29,8 +33,11 @@ merged["varId"]=merged["varId"].apply(lambda x: x.split("_E")[0])
 tier_f=pd.read_csv("/out/tier-test-false/"+sys.argv[1]+"_Tier.v2.tsv", sep="\t")
 
 ### add phrank calculated elsewhere for final combination ###
-phr=pd.read_csv("/out/phrank/"+sys.argv[1]+".txt", sep="\t", names=["ENSG", "phrank"])
-merged=merged.merge(phr,left_on="geneEnsId", right_on="ENSG", how="left")
+if phrank_empty:
+    merged['phrank'] = 0
+else:
+    phr=pd.read_csv("/out/phrank/"+sys.argv[1]+".txt", sep="\t", names=["ENSG", "phrank"])
+    merged=merged.merge(phr,left_on="geneEnsId", right_on="ENSG", how="left")
 
 ### save intermediate file for merging ###
 merged.to_csv("/out/scores/"+sys.argv[1]+".txt.gz", compression="gzip", sep="\t")
@@ -39,9 +46,10 @@ merged.to_csv("/out/scores/"+sys.argv[1]+".txt.gz", compression="gzip", sep="\t"
 iff=fillna(merged,tier_f)
 
 ### add diffusion module data ###
-#old_score = pd.read_csv("/out/"+sys.argv[1]+".matrix.txt", sep="\t",index_col=0)
-iff.insert(loc=0, column='diffuse_Phrank_STRING', value=mod5['diffuse_Phrank_STRING'])
-#iff.insert(loc=0, column='diffuse_Phrank_STRING', value=old_score['diffuse_Phrank_STRING'])
+if phrank_empty:
+    iff.insert(loc=0, column='diffuse_Phrank_STRING', value=0)
+else:
+    iff.insert(loc=0, column='diffuse_Phrank_STRING', value=mod5['diffuse_Phrank_STRING'])
 
 ### remove chr 26 ###
 iff= iff.loc[~iff.index.str.startswith('26')]
