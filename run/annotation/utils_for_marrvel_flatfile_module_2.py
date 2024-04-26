@@ -136,9 +136,11 @@ def getConservationScore(varObj, diseaseInh):
 
     #gnomad
     conservationScoreGnomad='-'
-    if varObj.gnomadAF!='-' and varObj.gnomadAFg!='-':
-        gnomadAFVal=float(varObj.gnomadAF)
-        gnomadAFgVal=float(varObj.gnomadAFg)
+    gnomadAFVal = getValFromStr(varObj.gnomadAF, 'min')
+    gnomadAFgVal = getValFromStr(varObj.gnomadAFg, 'min')
+    if gnomadAFVal!='-' and gnomadAFgVal!='-':
+        #gnomadAFVal=float(varObj.gnomadAF)
+        #gnomadAFgVal=float(varObj.gnomadAFg)
         if gnomadAFVal<0.01 and gnomadAFgVal<0.01:
             conservationScoreGnomad='High'
         else:
@@ -165,3 +167,20 @@ def getConservationScore(varObj, diseaseInh):
     #return 
     retList=[conservationScoreGnomad, conservationScoreDGV, conservationScoreOELof]
     return retList
+
+def getValFromStr(valStr: str, select: str = 'min'):
+    """
+    Function to convert string to float,
+    and takes care of situation when multiple values exist
+    """
+    select_method = {'min':min, 'max':max}
+    vals = valStr.split(',')
+    if '-' in vals:
+        return '-'
+    else:
+        vals = [float(i) for i in vals]
+        return select_method[select](vals)
+
+
+    
+

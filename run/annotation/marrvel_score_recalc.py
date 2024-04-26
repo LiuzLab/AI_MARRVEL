@@ -198,10 +198,12 @@ def conservationCurate(vardf):
 
     # gnomad
     gnomadAFVal = vardf['gnomadAF'].copy()
+    gnomadAFVal = np.array([ getValFromStr(i, 'min') for i in gnomadAFVal ])
     gnomadAFVal[gnomadAFVal=='-'] = np.NaN
     gnomadAFVal = gnomadAFVal.astype(float)
 
     gnomadAFgVal = vardf['gnomadAFg'].copy()
+    gnomadAFgVal = np.array([ getValFromStr(i, 'min') for i in gnomadAFgVal ])
     gnomadAFgVal[gnomadAFgVal=='-'] = np.NaN
     gnomadAFgVal = gnomadAFgVal.astype(float)
 
@@ -226,6 +228,38 @@ def conservationCurate(vardf):
 
     return vardf
 
+def getValFromStr(valStr: str, select: str = 'min'):
+    """
+    Function to convert string to float,
+    and takes care of situation when multiple values exist
+
+    Some test example:
+    >> a = '-'
+    >> b = '-,0.012'
+    >> c = '0.0003'
+    >> d = '6.38284e-05'
+    >> e = '6.38284e-05,3.19142e-05'
+    >> f = '-,-'
+    >> getValFromStr(a)
+    '-'
+    >> getValFromStr(b)
+    '-'
+    >> getValFromStr(c)
+    0.0003
+    >> getValFromStr(d)
+    6.38284e-05
+    >> getValFromStr(e)
+    3.19142e-05
+    >> getValFromStr(f)
+    '-'
+    """
+    select_method = {'min':min, 'max':max}
+    vals = valStr.split(',')
+    if '-' in vals:
+        return '-'
+    else:
+        vals = [float(i) for i in vals]
+        return select_method[select](vals)
 
 
 
