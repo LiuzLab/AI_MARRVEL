@@ -498,7 +498,15 @@ def feature_engineering(score_file, tier_file):
 
 
     #hom
-    patient.loc[patient['hom'] == '-', 'hom'] = 0.0
+    patient.loc[patient['hom'] == '-','hom'] = np.NaN
+    for i in patient[~patient['hom'].isna()].index:
+        score_list = patient.loc[i, 'hom'].split(',')
+        score_list = [float(i) for i in score_list if i!='-' and i!='.']
+        if score_list == []:
+            patient.loc[i, 'hom'] = np.NaN
+        else:
+            patient.loc[i, 'hom'] = max(score_list)
+    patient['hom'] = patient['hom'].fillna(0)
     patient['hom'] = patient['hom'].astype('float64')
 
     patient['hgmd_rs'] = patient['hgmd_rs'].apply(lambda x: x.split(",")[0])
