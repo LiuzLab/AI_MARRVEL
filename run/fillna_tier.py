@@ -8,6 +8,14 @@ __email__ = "chaozhol@bcm.edu"
 ###Feature engineering and incorporation of tier module outputs. 
 ###fills NA w/ 0
 
+def getValFromStr(valStr: str, select: str = 'min'):
+    select_method = {'min':min, 'max':max}
+    vals = valStr.split(',')
+    if '-' in vals or '.' in vals:
+        return np.NaN
+    else:
+        vals = [float(i) for i in vals]
+        return select_method[select](vals)
 
 def feature_engineering(score_file, tier_file):
     variable_name = ['varId_dash', 'hgmdSymptomScore',
@@ -128,17 +136,30 @@ def feature_engineering(score_file, tier_file):
         patient.loc[pd.isna(patient['GERPpp_RS']), 'GERPpp_RS'] = patient['GERPpp_RS'].describe()['mean']
 
 
-    
-    patient.loc[patient['gnomadAFg'] == '-', 'gnomadAFg'] = patient.loc[patient['gnomadAFg'] == '-', 'gnomadAF'] #0.0 #
-    patient.loc[patient['gnomadAFg'] == '.', 'gnomadAFg'] = patient.loc[patient['gnomadAFg'] == '.', 'gnomadAF'] #
-    patient.loc[patient['gnomadAF'] == '-', 'gnomadAF'] = patient.loc[patient['gnomadAF'] == '-', 'gnomadAFg'] #0.0 #
-    patient.loc[patient['gnomadAF'] == '.', 'gnomadAF'] = patient.loc[patient['gnomadAF'] == '.', 'gnomadAFg']
-    patient.loc[patient['gnomadAFg'] == '-', 'gnomadAFg'] = 0.0
-    patient.loc[patient['gnomadAFg'] == '.', 'gnomadAFg'] = 0.0
-    patient.loc[patient['gnomadAF'] == '-', 'gnomadAF'] = 0.0
-    patient.loc[patient['gnomadAF'] == '.', 'gnomadAF'] = 0.0
-    patient['gnomadAFg'] = patient['gnomadAFg'].astype('float64')
-    patient['gnomadAF'] = patient['gnomadAF'].astype('float64')
+    gnomadAFVal = patient['gnomadAF'].copy()
+    gnomadAFVal = np.array([ getValFromStr(i, 'min') for i in gnomadAFVal ])
+    gnomadAFVal = gnomadAFVal.astype(float)
+    patient['gnomadAF'] = gnomadAFVal
+
+    gnomadAFgVal = patient['gnomadAFg'].copy()
+    gnomadAFgVal = np.array([ getValFromStr(i, 'min') for i in gnomadAFgVal ])
+    gnomadAFgVal = gnomadAFgVal.astype(float)
+    patient['gnomadAFg'] = gnomadAFgVal
+    patient.loc[patient['gnomadAFg'].isna(), 'gnomadAFg'] = patient.loc[patient['gnomadAFg'].isna(), 'gnomadAF']
+    patient.loc[patient['gnomadAF'].isna(), 'gnomadAF'] = patient.loc[patient['gnomadAF'].isna(), 'gnomadAFg']
+    patient['gnomadAF'] = patient['gnomadAF'].fillna(0.0)
+    patient['gnomadAFg'] = patient['gnomadAFg'].fillna(0.0)
+
+    #patient.loc[patient['gnomadAFg'] == '-', 'gnomadAFg'] = patient.loc[patient['gnomadAFg'] == '-', 'gnomadAF'] #0.0 #
+    #patient.loc[patient['gnomadAFg'] == '.', 'gnomadAFg'] = patient.loc[patient['gnomadAFg'] == '.', 'gnomadAF'] #
+    #patient.loc[patient['gnomadAF'] == '-', 'gnomadAF'] = patient.loc[patient['gnomadAF'] == '-', 'gnomadAFg'] #0.0 #
+    #patient.loc[patient['gnomadAF'] == '.', 'gnomadAF'] = patient.loc[patient['gnomadAF'] == '.', 'gnomadAFg']
+    #patient.loc[patient['gnomadAFg'] == '-', 'gnomadAFg'] = 0.0
+    #patient.loc[patient['gnomadAFg'] == '.', 'gnomadAFg'] = 0.0
+    #patient.loc[patient['gnomadAF'] == '-', 'gnomadAF'] = 0.0
+    #patient.loc[patient['gnomadAF'] == '.', 'gnomadAF'] = 0.0
+    #patient['gnomadAFg'] = patient['gnomadAFg'].astype('float64')
+    #patient['gnomadAF'] = patient['gnomadAF'].astype('float64')
     #patient.loc[patient['gnomadAFg'] == -100, 'gnomadAFg'] = patient['gnomadAFg'].describe()['max']
 
 
