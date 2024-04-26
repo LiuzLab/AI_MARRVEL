@@ -15,7 +15,7 @@ mkdir -m777 /out/final_matrix_expanded
 
 REF_DIR=$2
 CHUNK_RAM=$3
-KEEP_INTERMEDIATE=${4:-False}
+KEEP_INTERMEDIATE=${4:-True}
 
 if [ "$REF_DIR" = "hg19" ]
 then
@@ -31,9 +31,44 @@ if [[ -z $(egrep 'HP:[0-9]{7}' /input/hpo.txt) ]] ; then
 fi
 
 
+cp /input/vcf.gz /out/vcf.gz  ### New Step: Copying file to output directory
+
+
+# Initial path of the VCF file
+INPUT_VCF_PATH="/out/vcf.gz"  ### Changed: Adjust path to new output location
+
+#Check if the file exists
+if [ -e "$INPUT_VCF_PATH" ]; then
+    #Use file command to determine the file type
+    INPUT_VCF_TYPE=$(file -b "$INPUT_VCF_PATH")
+
+    # Determine if the file is gzip or bgzip format
+    if echo "$INPUT_VCF_TYPE" | grep -q 'gzip compressed data'; then
+        # Check if it's bgzip format for tabix compatibility
+        if echo "$INPUT_VCF_TYPE" | grep -q 'BGZF'; then
+            echo "The file is in BGZF format, ready for tabix."
+            tabix -p vcf "$INPUT_VCF_PATH"  ### Adjusted Step: Only index if BGZF
+        else
+            echo "GZIP format detected, converting to BGZF."
+            gunzip -c "$INPUT_VCF_PATH" | bgzip > "${INPUT_VCF_PATH%.gz}"
+            mv "${INPUT_VCF_PATH%.gz}" "$INPUT_VCF_PATH"  ### Ensuring the correct .gz extension
+            tabix -p vcf "$INPUT_VCF_PATH"  ### Index the newly bgzipped file
+        fi
+    elif echo "$INPUT_VCF_TYPE" | grep -q 'ASCII text'; then
+        echo "Plain VCF file detected, compressing and indexing."
+        bgzip -c "$INPUT_VCF_PATH" > "${INPUT_VCF_PATH}.gz"
+        mv "${INPUT_VCF_PATH}.gz" "$INPUT_VCF_PATH"  ### Replace uncompressed with compressed
+        tabix -p vcf "$INPUT_VCF_PATH"  ### Index the newly bgzipped file
+    fi
+else
+    echo "The file $INPUT_VCF_PATH does not exist."
+fi
+
+
+
 echo "VCF pre-processing"
 #annotate with new chromosomes and preserve original coordinates in ID
-bcftools annotate --rename-chrs /run/data_dependencies/bcf_annotate/chrmap.txt -x ID /input/vcf.gz -Oz -o /out/$1-annot.txt
+bcftools annotate --rename-chrs /run/data_dependencies/bcf_annotate/chrmap.txt -x ID /out/vcf.gz -Oz -o /out/$1-annot.txt
 bcftools annotate --set-id +'%CHROM\_%POS\_%REF\_%FIRST_ALT' /out/$1-annot.txt -Oz -o /out/$1-add-id.vcf.gz
 
 
@@ -51,7 +86,7 @@ bcftools view -r 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,X,Y /o
 
 #Phrank annotation
 echo "Phrank scoring"
-zcat /input/vcf.gz | awk 'substr($0, 1, 1) != "#"' | cut -f1,2,4,5 | sed 's/\t/:/g' > /out/$1-var.txt
+zcat /out/vcf.gz | awk 'substr($0, 1, 1) != "#"' | cut -f1,2,4,5 | sed 's/\t/:/g' > /out/$1-var.txt
 cat /out/$1-var.txt | sed 's/chr//g' | sort -u > /out/$1-var-filt.txt
 
 
