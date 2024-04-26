@@ -199,12 +199,12 @@ def conservationCurate(vardf):
     # gnomad
     gnomadAFVal = vardf['gnomadAF'].copy()
     gnomadAFVal = np.array([ getValFromStr(i, 'min') for i in gnomadAFVal ])
-    gnomadAFVal[gnomadAFVal=='-'] = np.NaN
+    #gnomadAFVal[gnomadAFVal=='-'] = np.NaN
     gnomadAFVal = gnomadAFVal.astype(float)
 
     gnomadAFgVal = vardf['gnomadAFg'].copy()
     gnomadAFgVal = np.array([ getValFromStr(i, 'min') for i in gnomadAFgVal ])
-    gnomadAFgVal[gnomadAFgVal=='-'] = np.NaN
+    #gnomadAFgVal[gnomadAFgVal=='-'] = np.NaN
     gnomadAFgVal = gnomadAFgVal.astype(float)
 
     low_bool = (gnomadAFVal>=0.01) | (gnomadAFgVal>=0.01)
@@ -256,7 +256,7 @@ def getValFromStr(valStr: str, select: str = 'min'):
     select_method = {'min':min, 'max':max}
     vals = valStr.split(',')
     if '-' in vals:
-        return '-'
+        return np.NaN
     else:
         vals = [float(i) for i in vals]
         return select_method[select](vals)
