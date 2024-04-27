@@ -136,8 +136,8 @@ def getConservationScore(varObj, diseaseInh):
 
     #gnomad
     conservationScoreGnomad='-'
-    gnomadAFVal = getValFromStr(varObj.gnomadAF, 'min')
-    gnomadAFgVal = getValFromStr(varObj.gnomadAFg, 'min')
+    gnomadAFVal = getValFromStr(str(varObj.gnomadAF), 'min')
+    gnomadAFgVal = getValFromStr(str(varObj.gnomadAFg), 'min')
     if gnomadAFVal!='-' and gnomadAFgVal!='-':
         #gnomadAFVal=float(varObj.gnomadAF)
         #gnomadAFgVal=float(varObj.gnomadAFg)

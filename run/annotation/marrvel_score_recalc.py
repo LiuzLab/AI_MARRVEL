@@ -198,12 +198,12 @@ def conservationCurate(vardf):
 
     # gnomad
     gnomadAFVal = vardf['gnomadAF'].copy()
-    gnomadAFVal = np.array([ getValFromStr(i, 'min') for i in gnomadAFVal ])
+    gnomadAFVal = np.array([ getValFromStr(str(i), 'min') for i in gnomadAFVal ])
     #gnomadAFVal[gnomadAFVal=='-'] = np.NaN
     gnomadAFVal = gnomadAFVal.astype(float)
 
     gnomadAFgVal = vardf['gnomadAFg'].copy()
-    gnomadAFgVal = np.array([ getValFromStr(i, 'min') for i in gnomadAFgVal ])
+    gnomadAFgVal = np.array([ getValFromStr(str(i), 'min') for i in gnomadAFgVal ])
     #gnomadAFgVal[gnomadAFgVal=='-'] = np.NaN
     gnomadAFgVal = gnomadAFgVal.astype(float)
 

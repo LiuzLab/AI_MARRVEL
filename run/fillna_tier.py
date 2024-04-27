@@ -137,12 +137,12 @@ def feature_engineering(score_file, tier_file):
 
 
     gnomadAFVal = patient['gnomadAF'].copy()
-    gnomadAFVal = np.array([ getValFromStr(i, 'min') for i in gnomadAFVal ])
+    gnomadAFVal = np.array([ getValFromStr(str(i), 'min') for i in gnomadAFVal ])
     gnomadAFVal = gnomadAFVal.astype(float)
     patient['gnomadAF'] = gnomadAFVal
 
     gnomadAFgVal = patient['gnomadAFg'].copy()
-    gnomadAFgVal = np.array([ getValFromStr(i, 'min') for i in gnomadAFgVal ])
+    gnomadAFgVal = np.array([ getValFromStr(str(i), 'min') for i in gnomadAFgVal ])
     gnomadAFgVal = gnomadAFgVal.astype(float)
     patient['gnomadAFg'] = gnomadAFgVal
     patient.loc[patient['gnomadAFg'].isna(), 'gnomadAFg'] = patient.loc[patient['gnomadAFg'].isna(), 'gnomadAF']
@@ -509,7 +509,7 @@ def feature_engineering(score_file, tier_file):
     patient['hom'] = patient['hom'].fillna(0)
     patient['hom'] = patient['hom'].astype('float64')
 
-    patient['hgmd_rs'] = patient['hgmd_rs'].apply(lambda x: x.split(",")[0])
+    patient['hgmd_rs'] = patient['hgmd_rs'].apply(lambda x: x.split(",")[0] if type(x) == str else str(x))
 
     patient.loc[patient['hgmd_rs'] == '-','hgmd_rs'] = 0
 
