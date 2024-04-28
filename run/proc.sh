@@ -72,11 +72,19 @@ bcftools annotate --rename-chrs /run/data_dependencies/bcf_annotate/chrmap.txt -
 bcftools annotate --set-id +'%CHROM\_%POS\_%REF\_%FIRST_ALT' /out/$1-annot.txt -Oz -o /out/$1-add-id.vcf.gz
 
 
-
 echo "VCF quality filtering"
 #run quality filters #removed 27th line
 bcftools filter /out/$1-add-id.vcf.gz -i'FILTER == "PASS"' -Oz -o /out/$1.filt.vcf.gz
 
+#check number of variants left
+variant_count=$(bcftools view -H /out/$1.filt.vcf.gz | wc -l)
+if [ "$variant_count" -gt 0 ]; then
+    #all good
+else
+    echo "The VCF file doesn't have FILTER annotation, or all variants filtered."
+    echo "Pipeline will proceed with unfiltered VCF file."
+    cp /out/$1-add-id.vcf.gz /out/$1.filt.vcf.gz
+fi
 
 echo "Remove mitochondrial and unknown chromosome variants"
 #gunzip /out/$1.filt.vcf.gz
