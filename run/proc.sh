@@ -79,7 +79,7 @@ bcftools filter /out/$1-add-id.vcf.gz -i'FILTER == "PASS"' -Oz -o /out/$1.filt.v
 #check number of variants left
 variant_count=$(bcftools view -H /out/$1.filt.vcf.gz | wc -l)
 if [ "$variant_count" -gt 0 ]; then
-    #all good
+    echo "Quality filtering completed successfully. Variants passing the filters: $variant_count"
 else
     echo "The VCF file doesn't have FILTER annotation, or all variants filtered."
     echo "Pipeline will proceed with unfiltered VCF file."
