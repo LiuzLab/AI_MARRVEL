@@ -23,9 +23,9 @@ get_HPO_list <- function(df1){
   return(df2)
 }
 
+
 # Load HPO_obo
-HPO_obo <- get_OBO(url("http://purl.obolibrary.org/obo/hp.obo"), #"https://raw.githubusercontent.com/obophenotype/human-phenotype-ontology/master/hp.obo"),
-                  propagate_relationships = c("is_a","part_of"), extract_tags = "minimal")
+HPO_obo <- get_OBO("/run/data_dependencies/omim_annotate/hp.obo",propagate_relationships = c('is_a','part_of'), extract_tags = "minimal")
 
 # set simi_thresh
 simi_thresh <- 0
