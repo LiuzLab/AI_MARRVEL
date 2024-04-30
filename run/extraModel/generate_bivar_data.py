@@ -77,11 +77,15 @@ def process_sample(data_folder, sample_id,
     for fn in tqdm(fns, total=len(fns)):
         df = pd.read_csv(fn, index_col=0)
         bivar_feature_mats.append(df)
-    bivar_feature_mats = pd.concat(bivar_feature_mats)
-    bivar_feature_mats.to_csv(f"{recessive_folder}/{sample_id}.csv")
-    print("Recessive features saved, now removing tmp files...")
+    if bivar_feature_mats:
+        bivar_feature_mats = pd.concat(bivar_feature_mats)
+        bivar_feature_mats.to_csv(f"{recessive_folder}/{sample_id}.csv")
+        print("Recessive features saved, now removing tmp files...")
+        print("Recessive features generation finished...")
+    else:
+        print("No recessive variant pair found. End and remove temp files")
+    
     shutil.rmtree(f'{tmp_folder}')
-    print("Recessive features generation finished...")
 
 def process_gene(param):
     

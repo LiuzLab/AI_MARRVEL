@@ -90,17 +90,23 @@ def AIM(data_folder, sample_id, n_thread):
                                         default_pred = default_pred,                                           
                                         labeling=False, n_thread = n_thread)
 
-    df = pd.read_csv(f"{out_folder}/recessive_matrix/{sample_id}.csv",  index_col=0)
-    for mn in ['recessive', 'nd_recessive']:
-        df_pred = df.copy()
-        if 'predict' in df_pred.columns:
-            df_pred = df_pred.drop(columns=['predict'])
-        predict = model_dict[mn]['model'].predict_proba(df_pred.loc[:, model_dict[mn]['features']])[:, 1]
-        df_pred.insert(loc=df_pred.shape[1]-1,column='predict',value=predict)
-        df_pred = assign_confidence_score(model_dict[mn]['ref'], df_pred)
-        df_pred = df_pred.sort_values('confidence', ascending=False)
-        df_pred = assign_ranking(df_pred)
-        df_pred.to_csv(f"{out_folder}/{sample_id}_{mn}_predictions.csv")
+    recessive_feature_file = f"{out_folder}/recessive_matrix/{sample_id}.csv"
+    if os.path.exists(recessive_feature_file):
+        # AIM found recessive variant pairs and generated the matrix
+        df = pd.read_csv(recessive_feature_file,  index_col=0)
+        for mn in ['recessive', 'nd_recessive']:
+            df_pred = df.copy()
+            if 'predict' in df_pred.columns:
+                df_pred = df_pred.drop(columns=['predict'])
+            predict = model_dict[mn]['model'].predict_proba(df_pred.loc[:, model_dict[mn]['features']])[:, 1]
+            df_pred.insert(loc=df_pred.shape[1]-1,column='predict',value=predict)
+            df_pred = assign_confidence_score(model_dict[mn]['ref'], df_pred)
+            df_pred = df_pred.sort_values('confidence', ascending=False)
+            df_pred = assign_ranking(df_pred)
+            df_pred.to_csv(f"{out_folder}/{sample_id}_{mn}_predictions.csv")
+    else:
+        # AIM found no recessive variant pair
+        pass
 
     print(f"Integrating all information for sample {sample_id}...")
     ######### Construction Paused here #########

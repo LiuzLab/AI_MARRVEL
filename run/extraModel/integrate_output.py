@@ -55,69 +55,84 @@ def integrate_output(prj_folder, data_folder, sample_id):
 
     ## recessive predictions for default model
     recessive_fn = f"{data_folder}/{sample_id}_recessive_predictions.csv"
-    recessive_pred = pd.read_csv(recessive_fn, index_col=0)
-    recessive_pred = process_recessive_matrix(recessive_pred)
+    if os.path.exists(recessive_fn):
+        recessive_pred = pd.read_csv(recessive_fn, index_col=0)
+        recessive_pred = process_recessive_matrix(recessive_pred)
 
-    recessive_pred_dict = dict(zip(recessive_pred.index.tolist(), recessive_pred.predict.tolist()))
-    recessive_conf_dict = dict(zip(recessive_pred.index.tolist(), recessive_pred['confidence'].tolist()))
-    recessive_rank_dict = dict(zip(recessive_pred.index.tolist(), recessive_pred.ranking.tolist()))
-    recessive_other_var = dict(zip(recessive_pred.index.tolist(), recessive_pred.var2.tolist()))
-    recessive_conf_lvl_dict = dict(zip(recessive_pred.index.tolist(), recessive_pred['confidence level'].tolist()))
+        recessive_pred_dict = dict(zip(recessive_pred.index.tolist(), recessive_pred.predict.tolist()))
+        recessive_conf_dict = dict(zip(recessive_pred.index.tolist(), recessive_pred['confidence'].tolist()))
+        recessive_rank_dict = dict(zip(recessive_pred.index.tolist(), recessive_pred.ranking.tolist()))
+        recessive_other_var = dict(zip(recessive_pred.index.tolist(), recessive_pred.var2.tolist()))
+        recessive_conf_lvl_dict = dict(zip(recessive_pred.index.tolist(), recessive_pred['confidence level'].tolist()))
 
-    rec_preds, rec_confs, rec_ranks, rec_var2s = [], [], [], []
-    rec_conf_lvls = []
-    for var in expanded_df.index.tolist():
-        if var in recessive_pred_dict:
-            rec_preds.append(recessive_pred_dict[var])
-            rec_confs.append(recessive_conf_dict[var])
-            rec_ranks.append(recessive_rank_dict[var])
-            rec_var2s.append(recessive_other_var[var])
-            rec_conf_lvls.append(recessive_conf_lvl_dict[var])
-        else:
-            rec_preds.append(-1)
-            rec_confs.append(-1)
-            rec_ranks.append(99999)
-            rec_var2s.append('NA')
-            rec_conf_lvls.append('Unsolved')
+        rec_preds, rec_confs, rec_ranks, rec_var2s = [], [], [], []
+        rec_conf_lvls = []
+        for var in expanded_df.index.tolist():
+            if var in recessive_pred_dict:
+                rec_preds.append(recessive_pred_dict[var])
+                rec_confs.append(recessive_conf_dict[var])
+                rec_ranks.append(recessive_rank_dict[var])
+                rec_var2s.append(recessive_other_var[var])
+                rec_conf_lvls.append(recessive_conf_lvl_dict[var])
+            else:
+                rec_preds.append(-1)
+                rec_confs.append(-1)
+                rec_ranks.append(99999)
+                rec_var2s.append('NA')
+                rec_conf_lvls.append('Unsolved')
 
-    expanded_df['predict (recessive)'] = rec_preds
-    expanded_df['confidence (recessive)'] = rec_confs
-    expanded_df['ranking (recessive)'] = rec_ranks
-    expanded_df['recessive var2'] = rec_var2s
-    expanded_df['confidence level (recessive)'] = rec_conf_lvls
+        expanded_df['predict (recessive)'] = rec_preds
+        expanded_df['confidence (recessive)'] = rec_confs
+        expanded_df['ranking (recessive)'] = rec_ranks
+        expanded_df['recessive var2'] = rec_var2s
+        expanded_df['confidence level (recessive)'] = rec_conf_lvls
+    else:
+        expanded_df['predict (recessive)'] = -1
+        expanded_df['confidence (recessive)'] = -1
+        expanded_df['ranking (recessive)'] = 99999
+        expanded_df['recessive var2'] = 'NA'
+        expanded_df['confidence level (recessive)'] = 'Unsolved'
 
     ## novel disease recessive 
     nd_recessive_fn = f"{data_folder}/{sample_id}_nd_recessive_predictions.csv"
-    nd_recessive_pred = pd.read_csv(nd_recessive_fn, index_col=0)
-    nd_recessive_pred = process_recessive_matrix(nd_recessive_pred)
+    if os.path.exists(nd_recessive_fn):
+        nd_recessive_pred = pd.read_csv(nd_recessive_fn, index_col=0)
+        nd_recessive_pred = process_recessive_matrix(nd_recessive_pred)
 
-    nd_recessive_pred_dict = dict(zip(nd_recessive_pred.index.tolist(), nd_recessive_pred.predict.tolist()))
-    nd_recessive_conf_dict = dict(zip(nd_recessive_pred.index.tolist(), nd_recessive_pred['confidence'].tolist()))
-    nd_recessive_rank_dict = dict(zip(nd_recessive_pred.index.tolist(), nd_recessive_pred.ranking.tolist()))
-    nd_recessive_conf_lvl_dict = dict(zip(nd_recessive_pred.index.tolist(), nd_recessive_pred['confidence level'].tolist()))
-    nd_recessive_other_var = dict(zip(nd_recessive_pred.index.tolist(), nd_recessive_pred.var2.tolist()))
+        nd_recessive_pred_dict = dict(zip(nd_recessive_pred.index.tolist(), nd_recessive_pred.predict.tolist()))
+        nd_recessive_conf_dict = dict(zip(nd_recessive_pred.index.tolist(), nd_recessive_pred['confidence'].tolist()))
+        nd_recessive_rank_dict = dict(zip(nd_recessive_pred.index.tolist(), nd_recessive_pred.ranking.tolist()))
+        nd_recessive_conf_lvl_dict = dict(zip(nd_recessive_pred.index.tolist(), nd_recessive_pred['confidence level'].tolist()))
+        nd_recessive_other_var = dict(zip(nd_recessive_pred.index.tolist(), nd_recessive_pred.var2.tolist()))
 
-    nd_rec_preds, nd_rec_confs, nd_rec_ranks, nd_rec_var2s = [], [], [], []
-    nd_rec_lvls = []
-    for var in expanded_df.index.tolist():
-        if var in nd_recessive_pred_dict:
-            nd_rec_preds.append(nd_recessive_pred_dict[var])
-            nd_rec_confs.append(nd_recessive_conf_dict[var])
-            nd_rec_ranks.append(nd_recessive_rank_dict[var])
-            nd_rec_var2s.append(nd_recessive_other_var[var])
-            nd_rec_lvls.append(nd_recessive_conf_lvl_dict[var])
-        else:
-            nd_rec_preds.append(-1)
-            nd_rec_confs.append(-1)
-            nd_rec_ranks.append(99999)
-            nd_rec_var2s.append('NA')
-            nd_rec_lvls.append('Unsolved')
+        nd_rec_preds, nd_rec_confs, nd_rec_ranks, nd_rec_var2s = [], [], [], []
+        nd_rec_lvls = []
+        for var in expanded_df.index.tolist():
+            if var in nd_recessive_pred_dict:
+                nd_rec_preds.append(nd_recessive_pred_dict[var])
+                nd_rec_confs.append(nd_recessive_conf_dict[var])
+                nd_rec_ranks.append(nd_recessive_rank_dict[var])
+                nd_rec_var2s.append(nd_recessive_other_var[var])
+                nd_rec_lvls.append(nd_recessive_conf_lvl_dict[var])
+            else:
+                nd_rec_preds.append(-1)
+                nd_rec_confs.append(-1)
+                nd_rec_ranks.append(99999)
+                nd_rec_var2s.append('NA')
+                nd_rec_lvls.append('Unsolved')
 
-    expanded_df['predict (nd recessive)'] = nd_rec_preds
-    expanded_df['confidence (nd recessive)'] = nd_rec_confs
-    expanded_df['confidence level (nd recessive)'] = nd_rec_lvls
-    expanded_df['ranking (nd recessive)'] = nd_rec_ranks
-    expanded_df['nd recessive var2'] = nd_rec_var2s 
+        expanded_df['predict (nd recessive)'] = nd_rec_preds
+        expanded_df['confidence (nd recessive)'] = nd_rec_confs
+        expanded_df['confidence level (nd recessive)'] = nd_rec_lvls
+        expanded_df['ranking (nd recessive)'] = nd_rec_ranks
+        expanded_df['nd recessive var2'] = nd_rec_var2s
+    else:
+        expanded_df['predict (nd recessive)'] = -1
+        expanded_df['confidence (nd recessive)'] = -1
+        expanded_df['confidence level (nd recessive)'] = 99999
+        expanded_df['ranking (nd recessive)'] = 'NA'
+        expanded_df['nd recessive var2'] = 'Unsolved'
+
     return expanded_df
 
 if __name__ == "__main__":
