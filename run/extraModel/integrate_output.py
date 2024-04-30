@@ -1,5 +1,6 @@
 import pandas as pd
 from glob import glob
+import os
 
 def process_recessive_matrix(df):
     df['varPair'] = df.index.copy()
