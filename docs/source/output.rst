@@ -5,7 +5,7 @@ AIM Output Details
 *********************
 
 
-Outout Files
+Output Files
 ========================
 Following the execution of AIM, you will receive five output files, which are saved to the designated output directory.
 
@@ -26,7 +26,7 @@ Following the execution of AIM, you will receive five output files, which are sa
    *  -  \*_integrated.csv
       -  Combining all 4 prediction results.
 
-Outout Explanation
+Output Explanation
 ======================
 Each of the output files mentioned above, contains:
 
