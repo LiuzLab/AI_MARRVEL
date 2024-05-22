@@ -6,8 +6,8 @@ process INDEX_VCF {
     path vcf
     
     output:
-    path "*.tbi"
-    path "*.gz"
+    path "input.vcf.gz"
+    path "input.vcf.gz.tbi"
 
     script:
     """
@@ -38,6 +38,25 @@ process INDEX_VCF {
     """
 }
 
+process VCF_PRE_PROCESS {
+    input:
+    path vcf
+    path tbi
+
+    output:
+    path "*-add-id.vcf.gz"
+
+    script:
+    """
+    # Annotate with new chromosomes and preserve original coordinates in ID
+    bcftools annotate --rename-chrs ${params.chrmap} -x ID $vcf -Oz -o ${params.run_id}-annot
+
+    # Annotate with new IDs based on CHROM, POS, REF, ALT
+    bcftools annotate --set-id +'%CHROM\\_%POS\\_%REF\\_%FIRST_ALT' ${params.run_id}-annot -Oz -o ${params.run_id}-add-id.vcf.gz
+    """
+}
+
 workflow {
     INDEX_VCF(params.input_vcf)
+    VCF_PRE_PROCESS(INDEX_VCF.out)
 }
