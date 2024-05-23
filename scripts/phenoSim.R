@@ -6,9 +6,10 @@ args = commandArgs(trailingOnly=TRUE)
 PATIENT_HPO=args[1]
 OMIM_HGMD=args[2]
 OMIM_OBO=args[3]
-OMIM_PHENO=args[4]
-OUTFILE_CZ_NAME=args[5]
-OUTFILE_DX_NAME=args[6]
+OMIM_GENEMAP2=args[4]
+OMIM_PHENO=args[5]
+OUTFILE_CZ_NAME=args[6]
+OUTFILE_DX_NAME=args[7]
 
 dat <- read.csv(OMIM_HGMD,sep='\t')
 
@@ -40,8 +41,6 @@ if (dim(dat)[1] == 0) {
 } else {
   dat <- dat[!is.na(dat$hpo_id),]
   dat2_ori <- get_HPO_list(dat)
-  #dat2_ori <- dat2_ori[with(dat2_ori,order(hgvs)),]
-  #dat2_ori$Gene <- unlist(lapply(dat2_ori$Gene, function(x) x[[1]]))
   dat2 <- dat2_ori
   
   # Load patient HPO
@@ -95,26 +94,18 @@ HPO <- HPO[grepl("HP:", HPO)]
 HPO <- list(HPO)
 
  
-# Generate HPO list
-#Unknown_Disease <- data.frame(Disease_Name = "Unknown",
-#                              HPO_ID = HPO,
-#                              OMIM_ID = 'NA')
-
-#Unknown_Disease_all <- get_HPO_list(Unknown_Disease)
-
-# compare disease similarity
-#sim_mat <- get_asym_sim_grid(Unknown_Disease_all$HPO_list, OMIM_HPO_all$HPO_list, ontology=HPO_obo)
 sim_mat <- get_asym_sim_grid(HPO, OMIM_HPO_all$HPO_list, ontology=HPO_obo)
 
 
-# OMIM_HPO_all$HPO_term <- HPO_obo$name[OMIM_HPO_all$HPO]
 OMIM_HPO_all$Similarity_Score <- as.vector(sim_mat)
+
 # convert HPO ID to HPO term
 OMIM_HPO_all$HPO_term <- unlist(lapply(OMIM_HPO_all$HPO_list, function(x) paste0(HPO_obo$name[unlist(x)], collapse = "|")))
 
 ## Add gene - disease relationship
 OMIM_HPO_all_wGene <- merge(unique(genemap2[,c("Pheno_ID","Approved_Gene_Symbol","Ensembl_Gene_ID","Entrez_Gene_ID")]),
                             OMIM_HPO_all[,c("OMIM_ID","Disease_Name","Similarity_Score","HPO_term")],  by.y = "OMIM_ID", by.x = "Pheno_ID")
+
 colnames(OMIM_HPO_all_wGene)[2] <- 'Gene_Symbol'
 OMIM_HPO_all_order <-OMIM_HPO_all_wGene[order(OMIM_HPO_all_wGene$Similarity_Score, decreasing = T),]
 # write.table(OMIM_HPO_all_order, paste0(unknown_disease_path,"HPOsimi_all_",output_file_name), sep = "\t", quote = F, row.names = F)
