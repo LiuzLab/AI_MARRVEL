@@ -151,7 +151,24 @@ process PHRANK_SCORING {
 }
 
 
-process 
+process HPO_SIM {
+    input:
+    path hpo
+    path omim_hgmd_phen
+    path omim_obo
+    path omim_genemap2
+    path omim_pheno
+
+    output:
+    path "*-cz"
+    path "*-dx"
+
+    script:
+    """
+    Rscript ${workflow.projectDir}/scripts/phenoSim.R $hpo $omim_hgmd_phen $omim_obo $omim_genemap2 $omim_pheno
+    """
+
+}
 
 workflow { 
     INDEX_VCF(params.input_vcf)
@@ -165,4 +182,9 @@ workflow {
                                 params.phrank_disease_annotation,
                                 params.phrank_gene_annotation,
                                 params.phrank_disease_gene)
+    HPO_SIM(params.hpo,
+            params.omim_hgmd_phen,
+            params.omim_obo,
+            params.omim_genemap2,
+            params.omim_pheno)
 }
