@@ -3,13 +3,14 @@ library(ontologyIndex)
 library(ontologySimilarity)
 args = commandArgs(trailingOnly=TRUE)
 
-id=args[1]
-code=args[2]
-refg=args[3]
-#dat <- read.csv('/run/data_dependencies/omim_annotate/HGMD_feature_20190510.csv')
-#dat <- dat[!is.na(dat$hpo_id),]
-dat <- read.csv(paste0('/run/data_dependencies/omim_annotate/',refg,'/HGMD_phen.tsv'),
-                sep='\t')
+PATIENT_HPO=args[1]
+OMIM_HGMD=args[2]
+OMIM_OBO=args[3]
+OMIM_PHENO=args[4]
+OUTFILE_CZ_NAME=args[5]
+OUTFILE_DX_NAME=args[6]
+
+dat <- read.csv(OMIM_HGMD,sep='\t')
 
 library(dplyr)
 get_HPO_list <- function(df1){
@@ -18,19 +19,16 @@ get_HPO_list <- function(df1){
     dplyr::summarise(HPO = paste0(hpo_id, collapse = " ")) %>%
     dplyr::ungroup() %>% as.data.frame()
   df2$HPO_list <- lapply(df2$HPO, function(i) unlist(strsplit(i, " ")))
-  #df2$Gene <- lapply(df2$Gene, function(i) unique(strsplit(i, ",")[[1]]))
-  #rownames(df2) <- ifelse(is.na(df2$OMIM_ID), df2$Disease_Name, df2$OMIM_ID)
+
   return(df2)
 }
 
 
 # Load HPO_obo
-HPO_obo <- get_OBO("/run/data_dependencies/omim_annotate/hp.obo",propagate_relationships = c('is_a','part_of'), extract_tags = "minimal")
+HPO_obo <- get_OBO(OMIM_OBO,propagate_relationships = c('is_a','part_of'), extract_tags = "minimal")
 
 # set simi_thresh
 simi_thresh <- 0
-# Set pwd:
-out_pwd <- "./"
 
 
 # In public release, there might be empty HGMD phenotype file
@@ -47,8 +45,7 @@ if (dim(dat)[1] == 0) {
   dat2 <- dat2_ori
   
   # Load patient HPO
-  HPO.file <- file.path(id)
-  HPO.orig <- read.table(HPO.file, sep = "\t", fill=T, header=F, stringsAsFactors=F)
+  HPO.orig <- read.table(PATIENT_HPO, sep = "\t", fill=T, header=F, stringsAsFactors=F)
   HPO <- HPO.orig$V1
 
   # remove terms without a HPO ID
@@ -61,17 +58,17 @@ if (dim(dat)[1] == 0) {
   dat2 <- dat2[order(dat2$Similarity_Score, decreasing = T),]
 }
 
-output_file_name2 <- paste0("/out/",code,"-cz")
-write.table(dat2, output_file_name2, sep = "\t", quote = F, row.names = F)
+
+write.table(dat2, OUTFILE_CZ_NAME, sep = "\t", quote = F, row.names = F)
 
 
 
 
 # Load OMIM gene-disease data
-genemap2 <-readRDS("/run/data_dependencies/omim_annotate/hg19/genemap2_v2022.rds")
+genemap2 <-readRDS()
 
 ## ---- Load OMIM Phenotype  ----
-HPO_orig <- read.table("/run/data_dependencies/omim_annotate/hg19/HPO_OMIM.tsv", sep="\t", header= T, stringsAsFactors = FALSE, comment.char = "", fill = TRUE, quote = "\"")
+HPO_orig <- read.table(OMIM_PHENO, sep="\t", header= T, stringsAsFactors = FALSE, comment.char = "", fill = TRUE, quote = "\"")
 OMIM_HPO <- HPO_orig[,c('OMIM_ID', 'DiseaseName', 'HPO_ID')]
 # rename colnames
 colnames(OMIM_HPO) = c("OMIM_ID", "Disease_Name", "HPO_ID")
@@ -91,9 +88,7 @@ get_HPO_list <- function(df1){
 # Prepare OMIM HPO list for ontology similarity comparision
 OMIM_HPO_all <- get_HPO_list(OMIM_HPO_cl[, c("OMIM_ID", "Disease_Name","HPO_ID")])
 
-HPO.file <- file.path(id)
-#HPO.file <- '/mnt/atlas_local/sasidhar/data/1127895/P-031-101_HPOTerms.txt'
-HPO.orig <- read.table(HPO.file, sep = "\t", fill=T, header=F, stringsAsFactors=F)
+HPO.orig <- read.table(PATIENT_HPO, sep = "\t", fill=T, header=F, stringsAsFactors=F)
 HPO <- HPO.orig$V1
 # remove terms without a HPO ID
 HPO <- HPO[grepl("HP:", HPO)]
@@ -126,8 +121,8 @@ OMIM_HPO_all_order <-OMIM_HPO_all_wGene[order(OMIM_HPO_all_wGene$Similarity_Scor
 
 # OMIM_HPO_all_filt <- head(OMIM_HPO_all_order, n = No_candidate)
 OMIM_HPO_all_filt <- OMIM_HPO_all_order[OMIM_HPO_all_order$Similarity_Score >= simi_thresh,]
-output_file_name2 <- paste0("/out/",code,"-dx")
-write.table(OMIM_HPO_all_filt, output_file_name2, sep = "\t", quote = F, row.names = F)
+
+write.table(OMIM_HPO_all_filt, OUTFILE_DX_NAME, sep = "\t", quote = F, row.names = F)
 
 
 

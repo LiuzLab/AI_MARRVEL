@@ -3,13 +3,11 @@ import os
 from collections import defaultdict
 from phrank import *
 
-DAGFILE = f"/run/data_dependencies/phrank/{sys.argv[3]}/child_to_parent.txt"
-DISEASEANNOTATIONS = f"/run/data_dependencies/phrank/{sys.argv[3]}/disease_to_pheno.txt"
-GENEANNOTATIONS = f"/run/data_dependencies/phrank/{sys.argv[3]}/gene_to_phenotype.txt"
-DISEASEGENE = f"/run/data_dependencies/phrank/{sys.argv[3]}/disease_to_gene.txt"
+DAGFILE = sys.argv[3]
+DISEASEANNOTATIONS = sys.argv[4]
+GENEANNOTATIONS = sys.argv[5]
+DISEASEGENE = sys.argv[6]
 
-#/houston_10t/cole/MARRVEL/udn/phrank/data/knowledgebase/gene_to_symbol.txt
-#/houston_10t/cole/MARRVEL/udn/phrank/data/knowledgebase/hpo_to_name.txt
 
 def load_list(listfile):
   returnList = []
@@ -30,5 +28,6 @@ def main(genelist, phenotypelist):
   ranking = p.rank_genes(genes, phenos)
   for item in ranking: print(str(item[1]) + "\t" + str(item[0]))
 
-if __name__ == "__main__": main(sys.argv[1], sys.argv[2])
+if __name__ == "__main__": 
+  main(sys.argv[1], sys.argv[2])
 
