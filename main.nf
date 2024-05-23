@@ -86,6 +86,7 @@ process REMOVE_MITO_AND_UNKOWN_CHR {
     """
 }
 
+
 process ANNOT_PHRANK {
     input:
     path vcf
@@ -99,6 +100,7 @@ process ANNOT_PHRANK {
     cat var.txt | sed 's/chr//g' | sort -u > ${params.run_id}-var-filt.txt
     """
 }
+
 
 process ANNOT_ENSMBLE {
     input:
@@ -116,6 +118,7 @@ process ANNOT_ENSMBLE {
     """
 }
 
+
 process TO_GENE_SYM {
     input:
     path ensmbl
@@ -132,6 +135,7 @@ process TO_GENE_SYM {
     """
 }
 
+
 process PHRANK_SCORING {
     input:
     path gene
@@ -145,6 +149,9 @@ process PHRANK_SCORING {
     python3.8 ${workflow.projectDir}/scripts/phrank/src/run_phrank.py $gene $hpo $ref_dir > ${params.run_id}.phrank.txt
     """
 }
+
+
+process 
 
 workflow { 
     INDEX_VCF(params.input_vcf)
