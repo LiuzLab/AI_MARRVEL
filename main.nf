@@ -53,7 +53,20 @@ process VCF_PRE_PROCESS {
     bcftools annotate --rename-chrs $chrmap -x ID $vcf -Oz -o ${params.run_id}-annot
 
     # Annotate with new IDs based on CHROM, POS, REF, ALT
-    bcftools annotate --set-id +'%CHROM\\_%POS\\_%REF\\_%FIRST_ALT' ${params.run_id}-annot -Oz -o ${params.run_id}.filt.vcf.gz
+    bcftools annotate --set-id +'%CHROM\\_%POS\\_%REF\\_%FIRST_ALT' ${params.run_id}-annot -Oz -o add-id.vcf.gz
+
+    #run quality filters 
+    bcftools filter add-id.vcf.gz -i'FILTER == "PASS"' -Oz -o ${params.run_id}.filt.vcf.gz
+
+    #check number of variants left
+    variant_count=\$(bcftools view -H ${params.run_id}.filt.vcf.gz | wc -l)
+    if [ "\${variant_count}" -gt 0 ]; then
+        echo "Quality filtering completed successfully. Variants passing the filters: \${variant_count}"
+    else
+        echo "The VCF file doesn't have FILTER annotation, or all variants filtered."
+        echo "Pipeline will proceed with unfiltered VCF file."
+        cp  add-id.vcf.gz ${params.run_id}.filt.vcf.gz
+    fi
     """
 }
 
@@ -101,9 +114,37 @@ process ANNOT_ENSMBLE {
      sed 's/:/\\t/g' | sed 's/X\\t/23\\t/g' | sed 's/Y\\t/24\\t/g' | \\
      sed 's/MT\\t/25\\t/g' > ${params.run_id}-ensmbl.txt
     """
-
 }
 
+process TO_GENE_SYM {
+    input:
+    path ensmbl
+    path ref_to_sym
+    path ref_sorted_sym
+
+    output:
+    path "*-gene.txt"
+
+    script:
+    """
+    cat $ensmbl | sort -k5,5 | join -1 5 -2 1 - $ref_to_sym  | sed 's/ /\\t/g' | cut -f2- > genesym.txt
+    cat genesym.txt | cut -f5 | sort -u | join -t\$'\\t' -1 1 -2 2 - $ref_sorted_sym | cut -f2 | sort -u > ${params.run_id}-gene.txt
+    """
+}
+
+process PHRANK_SCORING {
+    input:
+    path gene
+    path hpo
+    path ref_dir
+    output:
+    path "${params.run_id}.phrank.txt.txt" publishDir "${params.outdir}/phrank/", mode: 'copy'
+
+    script:
+    """
+    python3.8 ${workflow.projectDir}/scripts/phrank/src/run_phrank.py $gene $hpo $ref_dir > ${params.run_id}.phrank.txt
+    """
+}
 
 workflow { 
     INDEX_VCF(params.input_vcf)
@@ -111,4 +152,10 @@ workflow {
     REMOVE_MITO_AND_UNKOWN_CHR(VCF_PRE_PROCESS.out)
     ANNOT_PHRANK(VCF_PRE_PROCESS.out)
     ANNOT_ENSMBLE(params.ref_dir, ANNOT_PHRANK.out)
+    TO_GENE_SYM(ANNOT_ENSMBLE.out, params.ref_to_sym, params.ref_sorted_sym)
+    PHRANK_SCORING(TO_GENE_SYM, params.hpo, 
+                                params.phrank_dagfile,
+                                params.phrank_disease_annotation,
+                                params.phrank_gene_annotation,
+                                params.phrank_disease_gene)
 }
