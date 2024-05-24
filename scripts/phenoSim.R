@@ -64,7 +64,7 @@ write.table(dat2, OUTFILE_CZ_NAME, sep = "\t", quote = F, row.names = F)
 
 
 # Load OMIM gene-disease data
-genemap2 <-readRDS()
+genemap2 <-readRDS(OMIM_GENEMAP2)
 
 ## ---- Load OMIM Phenotype  ----
 HPO_orig <- read.table(OMIM_PHENO, sep="\t", header= T, stringsAsFactors = FALSE, comment.char = "", fill = TRUE, quote = "\"")

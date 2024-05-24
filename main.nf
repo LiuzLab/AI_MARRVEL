@@ -137,16 +137,23 @@ process TO_GENE_SYM {
 
 
 process PHRANK_SCORING {
+    publishDir "${params.outdir}/phrank/", mode: 'copy'
+
     input:
     path gene
     path hpo
-    path ref_dir
+    path dagfile
+    path disease_annotation
+    path gene_annotation
+    path disease_gene
+
     output:
-    path "${params.run_id}.phrank.txt.txt" publishDir "${params.outdir}/phrank/", mode: 'copy'
+    path "${params.run_id}.phrank.txt" 
 
     script:
     """
-    python3.8 ${workflow.projectDir}/scripts/phrank/src/run_phrank.py $gene $hpo $ref_dir > ${params.run_id}.phrank.txt
+    python3.8 ${workflow.projectDir}/scripts/phrank/src/run_phrank.py \\
+        $gene $hpo $dagfile $disease_annotation $gene_annotation $disease_gene > ${params.run_id}.phrank.txt
     """
 }
 
@@ -178,12 +185,13 @@ workflow {
     ANNOT_PHRANK(VCF_PRE_PROCESS.out)
     ANNOT_ENSMBLE(params.ref_dir, ANNOT_PHRANK.out)
     TO_GENE_SYM(ANNOT_ENSMBLE.out, params.ref_to_sym, params.ref_sorted_sym)
-    PHRANK_SCORING(TO_GENE_SYM, params.hpo, 
-                                params.phrank_dagfile,
-                                params.phrank_disease_annotation,
-                                params.phrank_gene_annotation,
-                                params.phrank_disease_gene)
-    HPO_SIM(params.hpo,
+    PHRANK_SCORING( TO_GENE_SYM.out, 
+                    params.input_hpo, 
+                    params.phrank_dagfile,
+                    params.phrank_disease_annotation,
+                    params.phrank_gene_annotation,
+                    params.phrank_disease_gene)
+    HPO_SIM(params.input_hpo,
             params.omim_hgmd_phen,
             params.omim_obo,
             params.omim_genemap2,
