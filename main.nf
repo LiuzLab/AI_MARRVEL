@@ -72,17 +72,22 @@ process VCF_PRE_PROCESS {
 
 
 process REMOVE_MITO_AND_UNKOWN_CHR {
+    publishDir "${params.outdir}/vcf/", mode: 'copy'
     input:
     path vcf
 
     output:
-    path "${params.run_id}.filt.rmMT.vcf"
+    path "${params.run_id}.filt.rmMT.vcf.gz"
+    path "${params.run_id}.filt.rmMT.vcf.gz.tbi"
 
 
     script:
     """
     tabix -p vcf $vcf
     bcftools view -r 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,X,Y $vcf -o ${params.run_id}.filt.rmMT.vcf
+
+    bgzip ${params.run_id}.filt.rmMT.vcf
+    tabix ${params.run_id}.filt.rmMT.vcf.gz
     """
 }
 
@@ -178,6 +183,41 @@ process HPO_SIM {
 
 }
 
+process  {
+    publishDir "${params.outdir}/vcf/", mode: 'copy'
+    
+    input:
+    path vcf
+    path tbi
+    path ref_gnomad_genome
+    path ref_gnomad_genome_idx
+    path ref_gnomad_exome
+    path ref_gnomad_exome_idx
+
+    output:
+    path "*.filt.rmBL.vcf"
+
+    script:
+    """
+    mkdir -m777 isec_tmp1
+    bcftools isec -p isec_tmp1 -w 1 -Oz \\
+    $vcf $ref_gnomad_genome
+    # tabix isec_tmp1/0000.vcf.gz
+
+    mkdir -m777 isec_tmp2
+    bcftools isec -p isec_tmp2 -w 1 -Oz \\
+    $vcf $ref_gnomad_exome
+    # tabix isec_tmp2/0000.vcf.gz
+
+    mkdir -m777 isec_tmp3
+    bcftools isec -p isec_tmp3 -Ov \\
+    isec_tmp1/0000.vcf.gz isec_tmp2/0000.vcf.gz
+
+    mv isec_tmp3/0002.vcf ${params.run_id}.filt.rmBL.vcf
+    """
+
+}
+
 workflow { 
     INDEX_VCF(params.input_vcf)
     VCF_PRE_PROCESS(INDEX_VCF.out, params.chrmap)
@@ -196,4 +236,12 @@ workflow {
             params.omim_obo,
             params.omim_genemap2,
             params.omim_pheno)
+    FILTER_PROBAND(
+        REMOVE_MITO_AND_UNKOWN_CHR.out[0],
+        REMOVE_MITO_AND_UNKOWN_CHR.out[1],
+        params.ref_gnomad_genome,
+        params.ref_gnomad_genome_idx,
+        params.ref_gnomad_exome,
+        params.ref_gnomad_exome_idx
+    )
 }
