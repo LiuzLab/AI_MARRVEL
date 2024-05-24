@@ -183,7 +183,7 @@ process HPO_SIM {
 
 }
 
-process  {
+process FILTER_PROBAND {
     publishDir "${params.outdir}/vcf/", mode: 'copy'
     
     input:
@@ -218,24 +218,75 @@ process  {
 
 }
 
+process VEP_ANNOTATE {
+    publishDir "${params.outdir}/vep/", mode: "copy"
+
+    input:
+    path vcf
+    path vep_dir_cache
+    path vep_dir_plugins
+    path vep_custom_gnomad
+    path vep_custom_clinvar
+    path vep_custom_hgmd
+    path vep_plugin_revel
+    path vep_plugin_spliceai_snv
+    path vep_plugin_spliceai_indel
+    path vep_plugin_cadd
+    path vep_plugin_dbnsfp
+    path vep_idx
+
+    output:
+    path "*-vep.txt"
+
+    script:
+    def ref_assembly = (params.ref_ver == 'hg38') ? 'GRCh38' : 'GRCh37'
+    """
+    /opt/vep/src/ensembl-vep/vep \\
+        --dir_cache ${vep_dir_cache} \\
+        --dir_plugins ${vep_dir_plugins} \\
+        --fork {params.num_vep_processors} \\ 
+        --everything --format vcf \\
+        --cache --offline --tab --force_overwrite \\
+        --species homo_sapiens --assembly ${ref_assembly} \\
+        --custom ${vep_custom_gnomad},gnomADg,vcf,exact,0,AF,AF_popmax,controls_nhomal \\
+        --custom ${vep_custom_clinvar},clinvar,vcf,exact,0,CLNREVSTAT,CLNSIG,CLNSIGCONF \\
+        --custom ${vep_custom_hgmd},hgmd,vcf,exact,0,CLASS,GENE,PHEN,RANKSCORE \\
+        --af_gnomad \\
+        --plugin REVEL,${vep_plugin_revel},ALL \\
+        --plugin SpliceAI,snv=${vep_plugin_spliceai_snv},indel=${vep_plugin_spliceai_indel},cutoff=0.5 \\
+        --plugin CADD,${vep_plugin_cadd},ALL \\
+        --plugin dbNSFP,${vep_plugin_dbnsfp},ALL \\
+        --individual all --output_file ${params.run_id}-vep.txt --input_file $vcf
+    """
+}
+
+
 workflow { 
     INDEX_VCF(params.input_vcf)
+
     VCF_PRE_PROCESS(INDEX_VCF.out, params.chrmap)
+
     REMOVE_MITO_AND_UNKOWN_CHR(VCF_PRE_PROCESS.out)
+
     ANNOT_PHRANK(VCF_PRE_PROCESS.out)
+
     ANNOT_ENSMBLE(params.ref_dir, ANNOT_PHRANK.out)
+
     TO_GENE_SYM(ANNOT_ENSMBLE.out, params.ref_to_sym, params.ref_sorted_sym)
+
     PHRANK_SCORING( TO_GENE_SYM.out, 
                     params.input_hpo, 
                     params.phrank_dagfile,
                     params.phrank_disease_annotation,
                     params.phrank_gene_annotation,
                     params.phrank_disease_gene)
+
     HPO_SIM(params.input_hpo,
             params.omim_hgmd_phen,
             params.omim_obo,
             params.omim_genemap2,
             params.omim_pheno)
+
     FILTER_PROBAND(
         REMOVE_MITO_AND_UNKOWN_CHR.out[0],
         REMOVE_MITO_AND_UNKOWN_CHR.out[1],
@@ -243,5 +294,20 @@ workflow {
         params.ref_gnomad_genome_idx,
         params.ref_gnomad_exome,
         params.ref_gnomad_exome_idx
+    )
+
+     VEP_ANNOTATE(
+        FILTER_PROBAND.out,
+        params.vep_dir_cache,
+        params.vep_dir_plugins,
+        params.vep_custom_gnomad,
+        params.vep_custom_clinvar,
+        params.vep_custom_hgmd,
+        params.vep_plugin_revel,
+        params.vep_plugin_spliceai_snv,
+        params.vep_plugin_spliceai_indel,
+        params.vep_plugin_cadd,
+        params.vep_plugin_dbnsfp,
+        file(params.vep_idx)
     )
 }
