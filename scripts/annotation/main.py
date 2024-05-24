@@ -81,7 +81,7 @@ def main():
     #need to write user options to a log file
 
     #read the gnomad gene metrics file
-    fileName='/run/data_dependencies/annotate/anno_hg19/gnomad.v2.1.1.lof_metrics.by_gene.txt'
+    fileName='annotate/anno_hg19/gnomad.v2.1.1.lof_metrics.by_gene.txt'
     #fileName='/database_test/gnomad.v2.1.1.lof_metrics.by_gene.txt'
     gnomadMetricsGeneDf=pd.read_csv(fileName, sep='\t')
     #print('gnomadMetricsGeneDf shape:', gnomadMetricsGeneDf.shape)
@@ -184,9 +184,9 @@ def main():
         # Q: Why we use the same for hg19 and hg38?
         # A: 
         if args.genomeRef == 'hg38':
-            fileName='/run/data_dependencies/annotate/anno_hg19/gene_clinvar.csv'
+            fileName='annotate/anno_hg19/gene_clinvar.csv'
         else:
-            fileName='/run/data_dependencies/annotate/anno_hg19/gene_clinvar.csv'
+            fileName='annotate/anno_hg19/gene_clinvar.csv'
         #fileName='/database_test/gene_clinvar.csv'
         #print('\nfileName:', fileName)
         clinvarGeneDf=pd.read_csv(fileName, sep=',')
@@ -195,38 +195,11 @@ def main():
         clinvarGeneDf.set_index(['symbol'], inplace = True,drop=False)
         #print('clinvarGenes dim:', clinvarGeneDf.shape)#41754 x 10,, entrezId,symbol,chr,hg19Start,hg19Stop,totalClinvarVars,P,LP,LB,B
         #print(clinvarGeneDf.head())
-        
-        ### CL: this part was substituted by VEP custom annotation from clinvar.vcf.gz
-        """
-        #read the clinvar variant file
-        fileName='/run/annotation/clinvar.csv'
-        print('\nfileName:', fileName)
-        clinvarAlleleDf=pd.read_csv(fileName, sep=',')
-        print('clinvarAllele dim:', clinvarAlleleDf.shape)# (507196, 5)  title chr start stop significance.description
-
-        #convert float to int
-        clinvarAlleleDf = clinvarAlleleDf.fillna(0)
-        clinvarAlleleDf['start'] = clinvarAlleleDf['start'].astype(int)
-        clinvarAlleleDf['stop'] = clinvarAlleleDf['stop'].astype(int)
-        #in chr column change X and Y to numbers
-        clinvarAlleleDf['chr']=clinvarAlleleDf['chr'].replace('X',23)
-        clinvarAlleleDf['chr']=clinvarAlleleDf['chr'].replace('Y',24)
-        clinvarAlleleDf['chr']=clinvarAlleleDf['chr'].replace('MT',25)
-        clinvarAlleleDf['chr']=clinvarAlleleDf['chr'].replace('GL.*','26',regex=True )
-        #make chr as int
-        clinvarAlleleDf['chr']=clinvarAlleleDf['chr'].astype(int)
-        #make index
-        clinvarAlleleDf['id1']=clinvarAlleleDf['chr'].astype(str)+ '_' +clinvarAlleleDf['start'].astype(str)+'_'+ clinvarAlleleDf['stop'].astype(str)
-        # setting first name as index column
-        clinvarAlleleDf.set_index("id1", inplace = True,drop=False)
-        #make sure start and stop are int
-        print('type chr:', type(clinvarAlleleDf['chr'][0]), 'start:', type(clinvarAlleleDf['start'][0]), 'stop:', type(clinvarAlleleDf['stop'][0]))
-        """
 
     #read OMIM
     if 'curate' in moduleList:
         #read the OMIM gene file
-        fileName='/run/data_dependencies/annotate/anno_hg19/gene_omim.json'
+        fileName='annotate/anno_hg19/gene_omim.json'
         #fileName='/database_test/gene_omim.json'
         #print('\nfileName:', fileName)
         with open(fileName) as f:
@@ -250,7 +223,7 @@ def main():
                 break
 
         #read the OMIM allele file
-        fileName='/run/data_dependencies/annotate/anno_hg19/omim_alleric_variants.json'
+        fileName='annotate/anno_hg19/omim_alleric_variants.json'
         #fileName='/database_test/omim_alleric_variants.json'
         #print('\nfileName:', fileName)
         with open(fileName) as f:
@@ -270,9 +243,9 @@ def main():
     if 'conserve' in moduleList:
         print('reading DGV flat file')
         if args.genomeRef == 'hg38':
-            fileName='/run/data_dependencies/annotate/anno_hg38/dgv.csv'
+            fileName='annotate/anno_hg38/dgv.csv'
         else:
-            fileName='/run/data_dependencies/annotate/anno_hg19/dgv.csv'
+            fileName='annotate/anno_hg19/dgv.csv'
         #fileName='/database_test/dgv.csv'
         dgvDf=pd.read_csv(fileName, sep=',')
         #print('dgvDf shape:', dgvDf.shape)
@@ -310,9 +283,9 @@ def main():
     if 'conserve' in moduleList:
         print('reading Decipher flat file')
         if args.genomeRef == 'hg38':
-            fileName='/run/data_dependencies/annotate/anno_hg38/decipher.csv'
+            fileName='annotate/anno_hg38/decipher.csv'
         else:
-            fileName='/run/data_dependencies/annotate/anno_hg19/decipher.csv'
+            fileName='annotate/anno_hg19/decipher.csv'
         #fileName='/database_test/decipher.csv'
         decipherDf=pd.read_csv(fileName, sep=',')
         #print('decipherDf shape:', decipherDf.shape)

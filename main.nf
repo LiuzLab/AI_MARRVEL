@@ -220,7 +220,7 @@ process FILTER_PROBAND {
 
 process VEP_ANNOTATE {
     cpus 10
-    // publishDir "${params.outdir}/vep/", mode: "copy"
+    publishDir "${params.outdir}/vep/", mode: "copy"
 
     input:
     path vcf
@@ -259,6 +259,51 @@ process VEP_ANNOTATE {
     """
 }
 
+process FEATURE_ENGINEERING {
+    input:
+    path vep
+    path omim_sim
+    path hgmd_sim
+    path ref_annot_dir
+    // not sure why projectDir is not working
+    path script_chunking
+    path script_annot
+
+    output:
+    path "*_scores_*.txt"
+
+    script:
+    """
+    #AIM_FREE_RAM=\$(free -g | awk 'NR==2{printf \$7}')
+
+    python3.8 $script_chunking $vep 256
+
+    while read -r INDEX LINEH LINEA LINEB
+    do
+        sed -n -e "\${LINEH}p" -e "\${LINEA},\${LINEB}p" $vep > vep-\${INDEX}.txt
+
+        python3.8 main.py \\
+            -outPrefix r1 \\
+            -patientID $vep \\
+            -patientHPOsimiOMIM $omim_sim \\
+            -patientHPOsimiHGMD $hgmd_sim \\
+            -varFile vep-\${INDEX}.txt \\
+            -inFileType vepAnnotTab \\
+            -patientFileType one \\
+            -genomeRef ${params.ref_ver} \\
+            -diseaseInh AD \\
+            -modules curate,conserve
+        
+        if [ \$INDEX -gt 1 ]; then
+            sed -n "2,\$p" scores.csv > scores_\$INDEX.csv
+            sed -n "2,\$p" r1_scores.txt > r1_scores_\$INDEX.txt
+        else
+            mv scores.csv scores_\$INDEX.csv
+            mv r1_scores.csv r1_scores\$INDEX.csv
+        fi
+    done < vep_split.txt
+    """
+}
 
 workflow { 
     INDEX_VCF(params.input_vcf)
@@ -308,5 +353,14 @@ workflow {
         params.vep_plugin_cadd,
         params.vep_plugin_dbnsfp,
         file(params.vep_idx)
+    )
+
+    FEATURE_ENGINEERING(
+        VEP_ANNOTATE.out,
+        HPO_SIM.out[0],
+        HPO_SIM.out[1],
+        params.ref_annot_dir,
+        params.script_chunking,
+        file(params.script_annot)
     )
 }
