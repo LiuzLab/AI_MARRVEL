@@ -219,7 +219,8 @@ process FILTER_PROBAND {
 }
 
 process VEP_ANNOTATE {
-    publishDir "${params.outdir}/vep/", mode: "copy"
+    cpus 10
+    // publishDir "${params.outdir}/vep/", mode: "copy"
 
     input:
     path vcf
@@ -244,10 +245,13 @@ process VEP_ANNOTATE {
     /opt/vep/src/ensembl-vep/vep \\
         --dir_cache ${vep_dir_cache} \\
         --dir_plugins ${vep_dir_plugins} \\
-        --fork {params.num_vep_processors} \\ 
-        --everything --format vcf \\
-        --cache --offline --tab --force_overwrite \\
-        --species homo_sapiens --assembly ${ref_assembly} \\
+        --fork ${task.cpus} \\ 
+        --everything \\
+        --format vcf \\
+        -database \\
+        --cache \\
+        --tab --force_overwrite \\
+        species homo_sapiens --assembly ${ref_assembly} \\
         --custom ${vep_custom_gnomad},gnomADg,vcf,exact,0,AF,AF_popmax,controls_nhomal \\
         --custom ${vep_custom_clinvar},clinvar,vcf,exact,0,CLNREVSTAT,CLNSIG,CLNSIGCONF \\
         --custom ${vep_custom_hgmd},hgmd,vcf,exact,0,CLASS,GENE,PHEN,RANKSCORE \\
@@ -256,7 +260,9 @@ process VEP_ANNOTATE {
         --plugin SpliceAI,snv=${vep_plugin_spliceai_snv},indel=${vep_plugin_spliceai_indel},cutoff=0.5 \\
         --plugin CADD,${vep_plugin_cadd},ALL \\
         --plugin dbNSFP,${vep_plugin_dbnsfp},ALL \\
-        --individual all --output_file ${params.run_id}-vep.txt --input_file $vcf
+        --individual all --output_file ${params.run_id}-vep.txt --input_file $vcf \\
+        --verbose \\
+        --show_cache_info
     """
 }
 
