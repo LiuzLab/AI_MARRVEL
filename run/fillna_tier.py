@@ -295,10 +295,9 @@ def feature_engineering(score_file, tier_file):
 
 
     #REVEL_score
-    #patient['Polyphen2_HDIV_score'] = patient['Polyphen2_HDIV_score'] #.str.split(',')
     patient.loc[patient['REVEL_score'] == '-', 'REVEL_score'] = np.NaN
     for i in patient[~patient['REVEL_score'].isna()].index:
-        score_list = patient.loc[i, 'REVEL_score'].split(',')
+        score_list = str(patient.loc[i, 'REVEL_score']).split(',')
         score_list = [float(i) for i in score_list if i!='-' and i!='.']
         if score_list == []:
             patient.loc[i, 'REVEL_score'] = np.NaN
@@ -346,10 +345,10 @@ def feature_engineering(score_file, tier_file):
     
 
     #Polyphen2_HDIV_score
-    patient['Polyphen2_HDIV_score'] = patient['Polyphen2_HDIV_score'] #.str.split(',')
+    patient['Polyphen2_HDIV_score'] = patient['Polyphen2_HDIV_score']
     patient.loc[patient['Polyphen2_HDIV_score'] == '-','Polyphen2_HDIV_score'] = np.NaN
     for i in patient[~patient['Polyphen2_HDIV_score'].isna()].index:
-        score_list = patient.loc[i, 'Polyphen2_HDIV_score'].split(',')
+        score_list = str(patient.loc[i, 'Polyphen2_HDIV_score']).split(',')
         score_list = [float(i) for i in score_list if i!='-' and i!='.']
         if score_list == []:
             patient.loc[i, 'Polyphen2_HDIV_score'] = np.NaN
@@ -369,10 +368,10 @@ def feature_engineering(score_file, tier_file):
 
     
     #Polyphen2_HVAR_score
-    patient['Polyphen2_HVAR_score'] = patient['Polyphen2_HVAR_score'] #.str.split(',')
+    patient['Polyphen2_HVAR_score'] = patient['Polyphen2_HVAR_score']
     patient.loc[patient['Polyphen2_HVAR_score'] == '-','Polyphen2_HVAR_score'] = np.NaN
     for i in patient[~patient['Polyphen2_HVAR_score'].isna()].index:
-        score_list = patient.loc[i, 'Polyphen2_HVAR_score'].split(',')
+        score_list = str(patient.loc[i, 'Polyphen2_HVAR_score']).split(',')
         score_list = [float(i) for i in score_list if i!='-' and i!='.']
         if score_list == []:
             patient.loc[i, 'Polyphen2_HVAR_score'] = np.NaN
@@ -392,10 +391,10 @@ def feature_engineering(score_file, tier_file):
 
 
     #SIFT_score
-    patient['SIFT_score'] = patient['SIFT_score'] #.str.split(',')
+    patient['SIFT_score'] = patient['SIFT_score']
     patient.loc[patient['SIFT_score'] == '-','SIFT_score'] = np.NaN
     for i in patient[~patient['SIFT_score'].isna()].index:
-        score_list = patient.loc[i, 'SIFT_score'].split(',')
+        score_list = str(patient.loc[i, 'SIFT_score']).split(',')
         score_list = [float(i) for i in score_list if i!='-' and i!='.']
         if score_list == []:
             patient.loc[i, 'SIFT_score'] = np.NaN
@@ -428,10 +427,10 @@ def feature_engineering(score_file, tier_file):
 
 
     #FATHMM_score
-    patient['FATHMM_score'] = patient['FATHMM_score'] #.str.split(',')
+    patient['FATHMM_score'] = patient['FATHMM_score']
     patient.loc[patient['FATHMM_score'] == '-','FATHMM_score'] = np.NaN
     for i in patient[~patient['FATHMM_score'].isna()].index:
-        score_list = patient.loc[i, 'FATHMM_score'].split(',')
+        score_list = str(patient.loc[i, 'FATHMM_score']).split(',')
         score_list = [float(i) for i in score_list if i!='-' and i!='.']
         if score_list == []:
             patient.loc[i, 'FATHMM_score'] = np.NaN
@@ -465,10 +464,10 @@ def feature_engineering(score_file, tier_file):
 
 
     #MutationAssessor_score
-    patient['MutationAssessor_score'] = patient['MutationAssessor_score'] #.str.split(',')
+    patient['MutationAssessor_score'] = patient['MutationAssessor_score']
     patient.loc[patient['MutationAssessor_score'] == '-','MutationAssessor_score'] = np.NaN
     for i in patient[~patient['MutationAssessor_score'].isna()].index:
-        score_list = patient.loc[i, 'MutationAssessor_score'].split(',')
+        score_list = str(patient.loc[i, 'MutationAssessor_score']).split(',')
         score_list = [float(i) for i in score_list if i!='-' and i!='.']
         if score_list == []:
             patient.loc[i, 'MutationAssessor_score'] = np.NaN
@@ -500,7 +499,7 @@ def feature_engineering(score_file, tier_file):
     #hom
     patient.loc[patient['hom'] == '-','hom'] = np.NaN
     for i in patient[~patient['hom'].isna()].index:
-        score_list = patient.loc[i, 'hom'].split(',')
+        score_list = str(patient.loc[i, 'hom']).split(',')
         score_list = [float(i) for i in score_list if i!='-' and i!='.']
         if score_list == []:
             patient.loc[i, 'hom'] = np.NaN
