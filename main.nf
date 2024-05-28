@@ -248,7 +248,7 @@ process VEP_ANNOTATE {
         --fork ${task.cpus} --everything --format vcf \\
         --cache --offline --tab --force_overwrite \\
         --species homo_sapiens --assembly ${ref_assembly} \\
-        --custom ${vep_custom_gnomad},gnomADg,vcf,exact,0,AF,AF_popmax,controls_nhomal \\
+        --custom ${vep_custom_gnomad},gnomADg,vcf,exact,0,AF,AF_popmax,controls_nhomalt \\
         --custom ${vep_custom_clinvar},clinvar,vcf,exact,0,CLNREVSTAT,CLNSIG,CLNSIGCONF \\
         --custom ${vep_custom_hgmd},hgmd,vcf,exact,0,CLASS,GENE,PHEN,RANKSCORE \\
         --af_gnomad --plugin REVEL,${vep_plugin_revel},ALL \\
@@ -260,6 +260,8 @@ process VEP_ANNOTATE {
 }
 
 process FEATURE_ENGINEERING {
+    cpus 10
+    memory '64 GB'
     input:
     path vep
     path omim_sim
