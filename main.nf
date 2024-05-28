@@ -272,7 +272,7 @@ process FEATURE_ENGINEERING {
     path script_annot
 
     output:
-    path "*_scores_*.txt"
+    path "*_scores.txt"
 
     script:
     """
@@ -296,14 +296,25 @@ process FEATURE_ENGINEERING {
             -diseaseInh AD \\
             -modules curate,conserve
         
-        if [ \$INDEX -gt 1 ]; then
-            sed -n "2,\$p" scores.csv > scores_\$INDEX.csv
-            sed -n "2,\$p" r1_scores.txt > r1_scores_\$INDEX.txt
+        if [ \${INDEX} -gt 1 ]; then
+            sed -n "2,\$p" scores.csv > scores_\${INDEX}.csv
+            sed -n "2,\$p" r1_scores.txt > r1_scores_\${INDEX}.txt
         else
-            mv scores.csv scores_\$INDEX.csv
-            mv r1_scores.csv r1_scores\$INDEX.csv
+            mv scores.csv scores_\${INDEX}.csv
+            mv r1_scores.csv r1_scores\${INDEX}.csv
         fi
     done < vep_split.txt
+
+
+    for INDEX in \$(cut -d\$'\t' -f1 vep_split.txt)
+    do
+        cat scores_\${INDEX}.csv
+    done > scores.csv
+
+    for INDEX in $(cut -d$'\t' -f1 vep_split.txt)
+    do
+        cat r1_scores_\${INDEX}.txt
+    done > r1_scores.txt
     """
 }
 
