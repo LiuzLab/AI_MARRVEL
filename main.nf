@@ -109,8 +109,8 @@ process ANNOT_PHRANK {
 
 process ANNOT_ENSMBLE {
     input:
-    path ref 
     path vcf
+    path ref 
 
     output:
     path "*-ensmbl.txt"
@@ -264,8 +264,8 @@ process FEATURE_ENGINEERING {
     memory '64 GB'
     input:
     path vep
-    path omim_sim
     path hgmd_sim
+    path omim_sim
     path ref_annot_dir
     // not sure why projectDir is not working
     path script_chunking
@@ -286,7 +286,6 @@ process FEATURE_ENGINEERING {
 
         python3.8 main.py \\
             -outPrefix r1 \\
-            -patientID $vep \\
             -patientHPOsimiOMIM $omim_sim \\
             -patientHPOsimiHGMD $hgmd_sim \\
             -varFile vep-\${INDEX}.txt \\
@@ -301,17 +300,17 @@ process FEATURE_ENGINEERING {
             sed -n "2,\$p" r1_scores.txt > r1_scores_\${INDEX}.txt
         else
             mv scores.csv scores_\${INDEX}.csv
-            mv r1_scores.csv r1_scores\${INDEX}.csv
+            mv r1_scores.txt r1_scores_\${INDEX}.txt
         fi
     done < vep_split.txt
 
 
-    for INDEX in \$(cut -d\$'\t' -f1 vep_split.txt)
+    for INDEX in \$(cut -d\$'\\t' -f1 vep_split.txt)
     do
         cat scores_\${INDEX}.csv
     done > scores.csv
 
-    for INDEX in $(cut -d$'\t' -f1 vep_split.txt)
+    for INDEX in \$(cut -d\$'\\t' -f1 vep_split.txt)
     do
         cat r1_scores_\${INDEX}.txt
     done > r1_scores.txt
@@ -327,7 +326,7 @@ workflow {
 
     ANNOT_PHRANK(VCF_PRE_PROCESS.out)
 
-    ANNOT_ENSMBLE(params.ref_dir, ANNOT_PHRANK.out)
+    ANNOT_ENSMBLE(ANNOT_PHRANK.out, params.ref_loc)
 
     TO_GENE_SYM(ANNOT_ENSMBLE.out, params.ref_to_sym, params.ref_sorted_sym)
 

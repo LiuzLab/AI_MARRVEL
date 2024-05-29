@@ -58,7 +58,6 @@ def main():
     parser.add_argument("-inFileType", "--inFileType",  help="Proivde type of input file:vcf, vepAnnotTab")
     parser.add_argument("-patientFile", "--patientFile",  help="Proivde HPO IDs")#currently not used
     parser.add_argument("-patientFileType", "--patientFileType",  help="Proivde type of file:one, two")#currently not used
-    parser.add_argument("-patientID", "--patientID",  help="Proivde patientID")
     parser.add_argument("-patientHPOsimiOMIM", "--patientHPOsimiOMIM",  help="Proivde patient HPO similarity file-OMIM")
     parser.add_argument("-patientHPOsimiHGMD", "--patientHPOsimiHGMD",  help="Proivde patient HPO similarity file-HGMD")
     parser.add_argument("-diseaseInh", "--diseaseInh",  help="Proivde disease Inheritance:AD, AR, XD, XR")
@@ -423,7 +422,7 @@ def main():
     df = pd.DataFrame([t.__dict__ for t in varObjList ])
     print('shape of output file:',df.shape)
     #write
-    fileName=args.outPrefix+'_'+args.patientID+'_scores.txt'
+    fileName=args.outPrefix+'_scores.txt'
     print('out file name:', fileName)
     df.to_csv(fileName, sep='\t', index=False)
 
@@ -431,7 +430,7 @@ def main():
     process_time = end_time - start_time
     print('pipeline time:', process_time)
     #log file for times
-    fileName=args.outPrefix+'_'+args.patientID+'_log.txt'
+    fileName=args.outPrefix+'_log.txt'
     f = open(fileName, "w")
     f.write("Process time:"+str(process_time)+ ' seconds and in mins:'+ str(process_time/60)+"\n")
     f.close()
@@ -449,7 +448,8 @@ def main():
     score = clinvarCurate(score)
     score = conservationCurate(score)
 
-    score.to_csv('/out/rami-test/%s_scores.csv'%(args.patientID), index=False)
+    # score.to_csv('/out/rami-test/%s_scores.csv'%(args.patientID), index=False)
+    score.to_csv('scores.csv', index=False)
 
 
     exit()
