@@ -1,3 +1,4 @@
+#!/usr/bin/env python3.8
 ## UPDATE
 #    Changes made by Chaozhong noted as #CL
 #        1. added clinvar feature and changed database to clinvar.vcf.gz in VEP annotation
@@ -15,14 +16,14 @@ import sys
 import requests
 import subprocess
 #local methods
-from utils_1 import  *
+from annotation.utils_1 import  *
 #from utils_for_marrvel_annotate_script import *
-from utils_for_symMatch import *
-from utils_for_marrvel_flatfile import *
+from annotation.utils_for_symMatch import *
+from annotation.utils_for_marrvel_flatfile import *
 #from utils_for_marrvel_flatfile_module_3 import *
 import multiprocessing
 from functools import partial
-from marrvel_score_recalc import *
+from annotation.marrvel_score_recalc import *
 
 
 #############################################################

@@ -53,14 +53,15 @@ def diffuseSample(ID, Anno_df, Phrank_folder):
     """
 
     ## Get the PPI network for diffusion
-    cor_path = "/run/data_dependencies/mod5_diffusion/combined_score.hdf5"
+    cor_path = "mod5_diffusion/combined_score.hdf5"
     cor_df = pd.read_hdf(cor_path, mode='r')
     cor_df = cor_df[(cor_df.T != 0).sum() > 1]
     cor_df = cor_df.loc[cor_df.index, cor_df.index]
     cor = cor_df.values
     cor_GeneID = pd.DataFrame({"ID":cor_df.columns.tolist()})
 
-    Phrank_path = Phrank_folder + ID.split('.')[0] + ".txt"
+    # Phrank_path = Phrank_folder + ID.split('.')[0] + ".txt"
+    Phrank_path = ID + ".phrank.txt"
     ## Validate Phrank file's existence
     if not exists(Phrank_path):
         print("File %s not exists, skipping..." %Phrank_path)

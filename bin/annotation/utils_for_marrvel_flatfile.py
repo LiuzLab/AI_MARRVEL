@@ -1,8 +1,8 @@
 ## UPDATE
 #     Changes made by Chaozhong noted as #CL
 
-from utils_1 import  *
-from utils_for_marrvel_flatfile_module_2 import *
+from annotation.utils_1 import  *
+from annotation.utils_for_marrvel_flatfile_module_2 import *
 import numpy as np
 import time
 import re

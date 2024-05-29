@@ -41,7 +41,7 @@ def feature_engineering(score_file, tier_file):
     
     #sample_name = score_file.split('/')[-1].split('_')[1]
     #patient = pd.read_csv(score_file,sep='\t')
-    feature_stat = pd.read_csv('/run/data_dependencies/annotate/feature_stats.csv', index_col=0)
+    feature_stat = pd.read_csv('annotate/feature_stats.csv', index_col=0)
 
     patient = score_file.copy()
 

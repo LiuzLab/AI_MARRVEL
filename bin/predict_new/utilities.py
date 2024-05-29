@@ -11,7 +11,7 @@ import json
 from matplotlib import pyplot as plt
 from sklearn.ensemble import RandomForestClassifier as RF
 import itertools
-from confidence import *
+from predict_new.confidence import *
 
 def get_training_data(fns, label_col):
     """Read in training data, drop features with specified mode in the meta['feature_mode'] json.

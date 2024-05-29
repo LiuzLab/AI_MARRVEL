@@ -259,7 +259,7 @@ process VEP_ANNOTATE {
     """
 }
 
-process FEATURE_ENGINEERING {
+process FEATURE_ENGINEERING_PART1 {
     cpus 10
     memory '64 GB'
     input:
@@ -268,23 +268,22 @@ process FEATURE_ENGINEERING {
     path omim_sim
     path ref_annot_dir
     // not sure why projectDir is not working
-    path script_chunking
-    path script_annot
 
     output:
-    path "*_scores.txt"
+    path "scores.csv"
+    path "r1_scores.txt"
 
     script:
     """
-    #AIM_FREE_RAM=\$(free -g | awk 'NR==2{printf \$7}')
+    AIM_FREE_RAM=\$(free -g | awk 'NR==2{printf \$7}')
 
-    python3.8 $script_chunking $vep 256
+    split_vep_chunks.py $vep \$AIM_FREE_RAM
 
     while read -r INDEX LINEH LINEA LINEB
     do
         sed -n -e "\${LINEH}p" -e "\${LINEA},\${LINEB}p" $vep > vep-\${INDEX}.txt
 
-        python3.8 main.py \\
+        feature.py \\
             -outPrefix r1 \\
             -patientHPOsimiOMIM $omim_sim \\
             -patientHPOsimiHGMD $hgmd_sim \\
@@ -316,6 +315,48 @@ process FEATURE_ENGINEERING {
     done > r1_scores.txt
     """
 }
+
+process FEATURE_ENGINEERING_PART2 {
+    input:
+    path scores
+    path r1_scores
+    path phrank
+    path ref_annot_dir
+    path ref_var_tier_dir
+    path ref_merge_expand_dir
+    path ref_mod5_diffusion_dir
+
+    output:
+    path "${params.run_id}.matrix.txt"
+    path "scores.txt.gz"
+
+    script:
+    """
+    VarTierDiseaseDBFalse.R ${params.ref_ver}
+    generate_new_matrix_2.py ${params.run_id} ${params.ref_ver}
+    """
+}
+
+process PREDICTION {
+    debug true
+
+    input:
+    path matrix
+    path scores
+    path ref_predict_new_dir
+    path ref_model_inputs_dir
+
+    script:
+    """
+    mkdir recessive_matrix
+    mkdir final_matrix_expanded
+    mkdir conf_4Model
+    run_final.py ${params.run_id}
+    merge_rm.py ${params.run_id}
+    extraModel_main.py -id ${params.run_id}
+    """
+}
+
 
 workflow { 
     INDEX_VCF(params.input_vcf)
@@ -367,12 +408,27 @@ workflow {
         file(params.vep_idx)
     )
 
-    FEATURE_ENGINEERING(
+    FEATURE_ENGINEERING_PART1 ( // will rename it once we have analyzed/review the part
         VEP_ANNOTATE.out,
         HPO_SIM.out[0],
         HPO_SIM.out[1],
-        params.ref_annot_dir,
-        params.script_chunking,
-        file(params.script_annot)
+        file(params.ref_annot_dir)
+    )
+
+    FEATURE_ENGINEERING_PART2 (
+        FEATURE_ENGINEERING_PART1.out[0],
+        FEATURE_ENGINEERING_PART1.out[1],
+        PHRANK_SCORING.out,
+        file(params.ref_annot_dir),
+        file(params.ref_var_tier_dir),
+        file(params.ref_merge_expand_dir),
+        file(params.ref_mod5_diffusion_dir)
+    )
+
+    PREDICTION( 
+        FEATURE_ENGINEERING_PART2.out[0],
+        FEATURE_ENGINEERING_PART2.out[1],
+        file(params.ref_predict_new_dir),
+        file(params.ref_model_inputs_dir)
     )
 }

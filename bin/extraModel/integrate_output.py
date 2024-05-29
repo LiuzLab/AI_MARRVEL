@@ -18,7 +18,7 @@ def process_recessive_matrix(df):
 
 def integrate_output(prj_folder, data_folder, sample_id):
     ## Group variants by Ens IDs
-    expanded_fn = f"/out/final_matrix_expanded/{sample_id}.expanded.csv.gz"
+    expanded_fn = f"final_matrix_expanded/{sample_id}.expanded.csv.gz"
     #expanded_df = []
    # for expanded_fn in expanded_fns:
     if 'csv' in expanded_fn:

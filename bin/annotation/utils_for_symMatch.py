@@ -1,7 +1,7 @@
 ## UPDATE
 #     Changes made by Chaozhong noted as #CL
 
-from utils_1 import  *
+from annotation.utils_1 import  *
 
 
 def omimSymMatch(varObj, omimHPOScoreDf, inFileType):

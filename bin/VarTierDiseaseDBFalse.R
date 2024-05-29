@@ -1,3 +1,4 @@
+#!/usr/bin/env Rscript
 # Run Tier
 
 # Updates history ####
@@ -33,29 +34,25 @@ IncludeClinVarHGMD <- FALSE
 
 # load database: OMIM inheritance ####
 # genemap2.Inh.F <- readRDS(file.path("/run/genemap2.Inh.F.rds"))
-#genemap2.Inh.F <- read.delim2(file.path("/run/data_dependencies/var_tier/hg19/genemap2.Inh.F.txt"))
+#genemap2.Inh.F <- read.delim2(file.path("var_tier/hg19/genemap2.Inh.F.txt"))
 # genemap2.Inh.F <- read.delim2("/houston_10t/dongxue/MARRVEL_AI/resource/OMIM/out/genemap2.Inh.F.txt")
 args = commandArgs(trailingOnly=TRUE)
-refg <- args[2]
+refg <- args[1]
 # load database: OMIM inheritance ####
 # genemap2.Inh.F <- readRDS(file.path("/run/genemap2.Inh.F.rds"))
-genemap2.Inh.F <- read.delim2(file.path(paste0('/run/data_dependencies/var_tier/',refg,'/genemap2.Inh.F.txt')))
+genemap2.Inh.F <- read.delim2(file.path(paste0('var_tier/',refg,'/genemap2.Inh.F.txt')))
 
 # set the input output file / directory ####
 
 
 
 # in.f.path <- "/out/input/"
-in.f.path <- "/out/rami-test/"
-out.f.path <- "/out/tier-test-false/"
 
 # When test the code without docker
 #in.f.path <- out.f.path <- "/out/"
 
-# in.f <- paste0(args[1],"_Tier")
-# in.f <- paste0(args[1],"_scores.csv")
-in.f <- paste0(args[1],"_scores.csv")
-out.f <- paste0(args[1],"_Tier.v2.tsv")
+in.f <- "scores.csv"
+out.f <-"Tier.v2.tsv"
 
 # load libraries ####
 library("data.table")
@@ -67,7 +64,7 @@ library("dplyr")
 anno.columns <- c('varId_dash','zyg','geneSymbol','geneEnsId','gnomadAF','gnomadAFg','omimSymptomSimScore','hgmdSymptomSimScore',
                   'IMPACT','Consequence','hgmdVarFound','clinvarSignDesc','spliceAImax')
 
-anno.orig <- read.table(file.path(in.f.path,in.f), stringsAsFactors = F, sep = ",", header = T)
+anno.orig <- read.table(in.f, stringsAsFactors = F, sep = ",", header = T)
 # To test:
 # score.path <- "/houston_20t/chaozhong/MARRVEL_AI_2022/explain/906246_raw.csv"
 # score.path <- "/houston_20t/chaozhong/MARRVEL_AI_2022/opt_09302022/output/rami-test/906246_scores.csv"
@@ -371,7 +368,7 @@ VEP.Tier.wInh$recessive[is.na(VEP.Tier.wInh$recessive)] <- 0
 VEP.Tier.wInh$AD.matched <- ifelse(VEP.Tier.wInh$TierAD <=2 & (VEP.Tier.wInh$dominant == 1),1,0)
 VEP.Tier.wInh$AR.matched <- ifelse(VEP.Tier.wInh$TierAR <=2 & (VEP.Tier.wInh$recessive == 1),1,0)
 
-write.table(VEP.Tier.wInh,file.path(out.f.path,out.f), sep = "\t", quote = F, col.names = T, row.names = F)
+write.table(VEP.Tier.wInh,out.f, sep = "\t", quote = F, col.names = T, row.names = F)
 
 # write.table(VEP.Tier.wInh,"/houston_20t/dongxue/MARRVEL_AI/V2/FeatureEng/TestOut/906246_Tier.tsv", sep = "\t", quote = F, col.names = T, row.names = F)
 # write.table(VEP.Tier.wInh,"/houston_30t/dongxue/AI/UDN_Sample_2023/ModifiedAIMCode/NDVG_causal_Tier.v2.tsv", sep = "\t", quote = F, col.names = T, row.names = F)

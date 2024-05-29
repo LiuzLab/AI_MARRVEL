@@ -1,15 +1,16 @@
+#!/usr/bin/env python3.8
 import argparse
 import os
 import pandas as pd
-from confidence import *
+from extraModel.confidence import *
 import joblib
 from time import time
-import generate_bivar_data
+from extraModel.generate_bivar_data import *
 from datetime import datetime
 from multiprocessing import Pool
 from tqdm import tqdm
 from scipy.stats import rankdata
-from integrate_output import *
+from extraModel.integrate_output import *
 
 parser = argparse.ArgumentParser()
 
@@ -26,7 +27,7 @@ args = parser.parse_args()
 sample_id = args.id
 n_cpu = args.n_cpu
 
-out_folder = '/out/conf_4Model'
+out_folder = 'conf_4Model'
 
 if not os.path.exists(out_folder):
     os.mkdir(out_folder)
@@ -38,9 +39,9 @@ model_names = ['default', 'recessive', 'nd', 'nd_recessive']
 model_dict  = {}
 
 for mn in model_names:
-    model = joblib.load(f"/run/data_dependencies/model_inputs/{mn}/final_model.job")
-    ref_panel = joblib.load(f"/run/data_dependencies/model_inputs/{mn}/reference_panel.job")
-    features = open(f"/run/data_dependencies/model_inputs/{mn}/features.csv", 'r').readline().split(",")
+    model = joblib.load(f"model_inputs/{mn}/final_model.job")
+    ref_panel = joblib.load(f"model_inputs/{mn}/reference_panel.job")
+    features = open(f"model_inputs/{mn}/features.csv", 'r').readline().split(",")
     model_dict[mn] = {'model': model, 'ref': ref_panel, 'features': features}
     #if not os.path.exists(f"./{out_folder}/{mn}"):
     #    os.mkdir(f"./{out_folder}/{mn}")
@@ -61,7 +62,7 @@ def assign_ranking(df):
     
 
 def AIM(data_folder, sample_id, n_thread):
-    feature_fn = f'/out/final_matrix/{sample_id}.csv'
+    feature_fn = f'{sample_id}.csv'
 
     if not os.path.exists(feature_fn):
         print(f"{feature_fn} does not exist.")
@@ -85,10 +86,10 @@ def AIM(data_folder, sample_id, n_thread):
     
     default_pred = pd.read_csv(f"{out_folder}/{sample_id}_default_predictions.csv", index_col=0)
 
-    generate_bivar_data.process_sample( data_folder = out_folder,
-                                        sample_id = sample_id,
-                                        default_pred = default_pred,                                           
-                                        labeling=False, n_thread = n_thread)
+    process_sample( data_folder = out_folder,
+                    sample_id = sample_id,
+                    default_pred = default_pred,                                           
+                    labeling=False, n_thread = n_thread)
 
     recessive_feature_file = f"{out_folder}/recessive_matrix/{sample_id}.csv"
     if os.path.exists(recessive_feature_file):

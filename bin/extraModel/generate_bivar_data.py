@@ -24,7 +24,7 @@ def process_sample(data_folder, sample_id,
         os.mkdir(tmp_folder)
 
     ## read feature matrix for single var
-    feature_fn = f"/out/final_matrix/{sample_id}.csv"
+    feature_fn = f"{sample_id}.csv"
     #feature_df = []
     #for feature_fn in feature_fns:
     if 'csv' in feature_fn:
@@ -36,7 +36,7 @@ def process_sample(data_folder, sample_id,
     feature_df = feature_df.loc[~feature_df.index.duplicated(keep='first')]   
 
     ## Group variants by Ens IDs
-    expanded_fn = f"/out/final_matrix_expanded/{sample_id}.expanded.csv.gz"
+    expanded_fn = f"final_matrix_expanded/{sample_id}.expanded.csv.gz"
     gene_dict = {}
     #for expanded_fn in expanded_fns:
     if 'csv' in expanded_fn:
