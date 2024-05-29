@@ -177,7 +177,7 @@ process HPO_SIM {
 
     script:
     """
-    Rscript ${workflow.projectDir}/scripts/phenoSim.R $hpo $omim_hgmd_phen $omim_obo $omim_genemap2 $omim_pheno \\
+    phenoSim.R $hpo $omim_hgmd_phen $omim_obo $omim_genemap2 $omim_pheno \\
         ${params.run_id}-cz ${params.run_id}-dx
     """
 
