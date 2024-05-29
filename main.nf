@@ -97,7 +97,7 @@ process ANNOT_PHRANK {
     path vcf
 
     output:
-    path "*-var-filt.txt"
+    path "${params.run_id}-var-filt.txt"
 
     script:
     """
@@ -113,7 +113,7 @@ process ANNOT_ENSMBLE {
     path ref 
 
     output:
-    path "*-ensmbl.txt"
+    path "${params.run_id}-ensmbl.txt"
 
     script:
     """
@@ -131,7 +131,7 @@ process TO_GENE_SYM {
     path ref_sorted_sym
 
     output:
-    path "*-gene.txt"
+    path "${params.run_id}-gene.txt"
 
     script:
     """
@@ -172,8 +172,8 @@ process HPO_SIM {
     path omim_pheno
 
     output:
-    path "*-cz"
-    path "*-dx"
+    path "${params.run_id}-cz"
+    path "${params.run_id}-dx"
 
     script:
     """
@@ -195,7 +195,7 @@ process FILTER_PROBAND {
     path ref_gnomad_exome_idx
 
     output:
-    path "*.filt.rmBL.vcf"
+    path "${params.run_id}.filt.rmBL.vcf"
 
     script:
     """
@@ -237,7 +237,7 @@ process VEP_ANNOTATE {
     path vep_idx
 
     output:
-    path "*-vep.txt"
+    path "${params.run_id}-vep.txt"
 
     script:
     def ref_assembly = (params.ref_ver == 'hg38') ? 'GRCh38' : 'GRCh37'
