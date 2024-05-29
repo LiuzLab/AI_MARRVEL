@@ -117,7 +117,7 @@ process ANNOT_ENSMBLE {
 
     script:
     """
-    python2.7 ${workflow.projectDir}/scripts/phrank/src/location_to_gene.py $vcf $ref | \\
+    location_to_gene.py $vcf $ref | \\
      sed 's/:/\\t/g' | sed 's/X\\t/23\\t/g' | sed 's/Y\\t/24\\t/g' | \\
      sed 's/MT\\t/25\\t/g' > ${params.run_id}-ensmbl.txt
     """
@@ -157,7 +157,7 @@ process PHRANK_SCORING {
 
     script:
     """
-    python3.8 ${workflow.projectDir}/scripts/phrank/src/run_phrank.py \\
+    run_phrank.py \\
         $gene $hpo $dagfile $disease_annotation $gene_annotation $disease_gene > ${params.run_id}.phrank.txt
     """
 }
