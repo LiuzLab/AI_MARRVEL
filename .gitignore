@@ -14,4 +14,6 @@ trace*
 **/__pycache__
 report-*html
 trace-*txt
+.nextflow/
+work/
 
