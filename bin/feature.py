@@ -370,6 +370,7 @@ def main():
         # print('head:', varDf.head)
         # print('column names:', varDf.columns)
         # update the GERp column names since cant use ++ in the varaible name
+        # TODO: change with `.rename`
         if "GERP++_RS" in varDf.columns:
             print("found GERP++RS")
             varDf["GERPpp_RS"] = varDf["GERP++_RS"]
