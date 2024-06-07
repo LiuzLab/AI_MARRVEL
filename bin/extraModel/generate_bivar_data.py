@@ -91,7 +91,7 @@ def process_sample(data_folder, sample_id, default_pred, labeling=False, n_threa
     else:
         print("No recessive variant pair found. End and remove temp files")
 
-    shutil.rmtree(f"{tmp_folder}")
+    # shutil.rmtree(f"{tmp_folder}")
 
 
 def process_gene(param):
@@ -116,8 +116,11 @@ def process_gene(param):
 
     if len(varIDs) > 6:
         defaultPred = param["default_pred"].copy()
-        defaultPred = defaultPred.loc[varIDs, :].sort_values("predict", ascending=False)
+
+        varIDs = sorted(varIDs)
+        defaultPred = defaultPred.loc[varIDs, :].sort_values(["predict", "IMPACT.from.Tier"], ascending=[False,False])
         varIDs = defaultPred.index.tolist()[:6]
+
 
     gene_feats = feature_df.loc[varIDs, feature_names].copy()
     gene_feats = gene_feats.values
