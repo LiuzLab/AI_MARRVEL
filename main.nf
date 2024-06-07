@@ -53,10 +53,10 @@ process VCF_PRE_PROCESS {
     bcftools annotate --rename-chrs $chrmap -x ID $vcf -Oz -o ${params.run_id}-annot
 
     # Annotate with new IDs based on CHROM, POS, REF, ALT
-    bcftools annotate --set-id +'%CHROM\\_%POS\\_%REF\\_%FIRST_ALT' ${params.run_id}-annot -Oz -o add-id.vcf.gz
+    bcftools annotate --set-id +'%CHROM\\_%POS\\_%REF\\_%FIRST_ALT' ${params.run_id}-annot -Oz -o ${params.run_id}-add-id.vcf.gz
 
     #run quality filters 
-    bcftools filter add-id.vcf.gz -i'FILTER == "PASS"' -Oz -o ${params.run_id}.filt.vcf.gz
+    bcftools filter  ${params.run_id}-add-id.vcf.gz -i'FILTER == "PASS"' -Oz -o ${params.run_id}.filt.vcf.gz
 
     #check number of variants left
     variant_count=\$(bcftools view -H ${params.run_id}.filt.vcf.gz | wc -l)
@@ -65,7 +65,7 @@ process VCF_PRE_PROCESS {
     else
         echo "The VCF file doesn't have FILTER annotation, or all variants filtered."
         echo "Pipeline will proceed with unfiltered VCF file."
-        cp  add-id.vcf.gz ${params.run_id}.filt.vcf.gz
+        cp ${params.run_id}-add-id.vcf.gz ${params.run_id}.filt.vcf.gz
     fi
     """
 }
@@ -101,8 +101,8 @@ process ANNOT_PHRANK {
 
     script:
     """
-    zcat $vcf | awk 'substr(\$0, 1, 1) != "#"' | cut -f1,2,4,5 | sed 's/\t/:/g' > var.txt
-    cat var.txt | sed 's/chr//g' | sort -u > ${params.run_id}-var-filt.txt
+    zcat $vcf | awk 'substr(\$0, 1, 1) != "#"' | cut -f1,2,4,5 | sed 's/\t/:/g' > ${params.run_id}-var.txt
+    cat ${params.run_id}-var.txt | sed 's/chr//g' | sort -u > ${params.run_id}-var-filt.txt
     """
 }
 
@@ -270,8 +270,8 @@ process FEATURE_ENGINEERING_PART1 {
     // not sure why projectDir is not working
 
     output:
-    path "scores.csv"
-    path "r1_scores.txt"
+    path "${params.run_id}_scores.csv"
+    path "r1_${params.run_id}_scores.txt"
 
     script:
     """
@@ -307,19 +307,19 @@ process FEATURE_ENGINEERING_PART1 {
     for INDEX in \$(cut -d\$'\\t' -f1 vep_split.txt)
     do
         cat scores_\${INDEX}.csv
-    done > scores.csv
+    done > ${params.run_id}_scores.csv
 
     for INDEX in \$(cut -d\$'\\t' -f1 vep_split.txt)
     do
         cat r1_scores_\${INDEX}.txt
-    done > r1_scores.txt
+    done > r1_${params.run_id}_scores.txt
     """
 }
 
 process FEATURE_ENGINEERING_PART2 {
     input:
-    path scores
-    path r1_scores
+    path scores, stageAs: "scores.csv"
+    path r1_scores, stageAs: "r1_scores.txt"
     path phrank
     path ref_annot_dir
     path ref_var_tier_dir
@@ -338,7 +338,7 @@ process FEATURE_ENGINEERING_PART2 {
 }
 
 process PREDICTION {
-    debug true
+    publishDir "${params.outdir}/prediction/", mode: "copy"
 
     input:
     path matrix
@@ -346,9 +346,12 @@ process PREDICTION {
     path ref_predict_new_dir
     path ref_model_inputs_dir
 
+    output:
+    path "conf_4Model/*.csv"
+    path "conf_4Model/integrated/*.csv"
+
     script:
     """
-    mkdir recessive_matrix
     mkdir final_matrix_expanded
     mkdir conf_4Model
     run_final.py ${params.run_id}
