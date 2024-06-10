@@ -114,11 +114,11 @@ def process_gene(param):
     if len(varIDs) == 0:
         return
 
+    varIDs = sorted(varIDs)
     if len(varIDs) > 6:
         defaultPred = param["default_pred"].copy()
 
-        varIDs = sorted(varIDs)
-        defaultPred = defaultPred.loc[varIDs, :].sort_values(["predict", "IMPACT.from.Tier"], ascending=[False,False])
+        defaultPred = defaultPred.loc[varIDs, :].sort_values(["predict", "IMPACT.from.Tier"], ascending=[False,False], kind="stable")
         varIDs = defaultPred.index.tolist()[:6]
 
 
