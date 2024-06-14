@@ -219,7 +219,6 @@ process FILTER_PROBAND {
 }
 
 process VEP_ANNOTATE {
-    cpus 10
     publishDir "${params.outdir}/vep/", mode: "copy"
 
     input:
@@ -260,8 +259,6 @@ process VEP_ANNOTATE {
 }
 
 process FEATURE_ENGINEERING_PART1 {
-    cpus 10
-    memory '64 GB'
     input:
     path vep
     path hgmd_sim
