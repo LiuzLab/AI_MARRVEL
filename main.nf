@@ -260,8 +260,6 @@ process VEP_ANNOTATE {
 }
 
 process FEATURE_ENGINEERING_PART1 {
-    cpus 10
-    memory '64 GB'
     input:
     path vep
     path hgmd_sim
