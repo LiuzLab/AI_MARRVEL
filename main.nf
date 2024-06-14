@@ -219,7 +219,6 @@ process FILTER_PROBAND {
 }
 
 process VEP_ANNOTATE {
-    cpus 10
     publishDir "${params.outdir}/vep/", mode: "copy"
 
     input:
