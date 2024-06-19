@@ -26,6 +26,9 @@ def add_c_nc(score, ref):
     bl = clin_nc.new_start.values
     bc = clin_nc.new_chr.values
 
+    bc[bc=='MT'] = -1 # Treat MT chromosome as NaN values to avoid string comparison
+    bc = bc.astype(int)
+
     i, j = np.where((a[:, None] >= bl) & (a[:, None] <= bh) & (ac[:, None] == bc))
 
     cln = pd.concat(

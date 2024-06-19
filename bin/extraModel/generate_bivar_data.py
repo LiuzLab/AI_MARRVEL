@@ -4,12 +4,11 @@ import numpy as np
 from glob import glob
 from tqdm import tqdm, trange
 import logging
-from multiprocessing import Pool
 from os.path import exists
 import shutil
 
 
-def process_sample(data_folder, sample_id, default_pred, labeling=False, n_thread=10):
+def process_sample(data_folder, sample_id, default_pred, labeling=False):
 
     # recessive_folder = f'{data_folder}/recessive_matrix'
     # if not os.path.exists(recessive_folder):
@@ -67,15 +66,12 @@ def process_sample(data_folder, sample_id, default_pred, labeling=False, n_threa
         for gene in gene_dict
     ]
     print(
-        f"Now starting to generate recessive feature matrix for {len(gene_dict)} genes, {feature_df.shape[0]} variants using {n_thread} threads."
+        f"Now starting to generate recessive feature matrix for {len(gene_dict)} genes, {feature_df.shape[0]} variants."
     )
-    p = Pool(processes=n_thread)
 
-    with tqdm(total=len(params)) as pbar:
-        for result in p.imap_unordered(process_gene, params):
-            pbar.update()
-    p.close()
-    p.join()
+    for param in tqdm(params):
+        process_gene(param)
+
     print("Recessive features for each gene finished, now putting together...")
 
     bivar_feature_mats = []
