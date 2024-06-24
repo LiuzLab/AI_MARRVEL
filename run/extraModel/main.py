@@ -73,7 +73,11 @@ def AIM(data_folder, sample_id, n_thread):
         df_pred = df.copy()
         if 'predict' in df_pred.columns:
             df_pred = df_pred.drop(columns=['predict'])
-        predict = model_dict[mn]['model'].predict_proba(df_pred.loc[:, model_dict[mn]['features']])[:, 1]
+
+        if df_pred.shape[0] > 0:
+            predict = model_dict[mn]['model'].predict_proba(df_pred.loc[:, model_dict[mn]['features']])[:, 1]
+        else:
+            predict = None
         df_pred.insert(loc=df_pred.shape[1]-1,column='predict',value=predict)
         df_pred = assign_confidence_score(model_dict[mn]['ref'], df_pred)
         df_pred = df_pred.sort_values('confidence', ascending=False)
