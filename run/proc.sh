@@ -13,26 +13,6 @@ mkdir -m777 /out/scores
 mkdir -m777 /out/final_matrix
 mkdir -m777 /out/final_matrix_expanded
 
-# Function to output JSON to a file
-output_json_to_file() {
-  local status=$1
-  local message=$2
-  echo "{\"status\": \"$status\", \"message\": \"$message\"}" > /out/output.json
-}
-
-exit_with_success() {
-    output_json_to_file "success"
-    exit
-}
-
-exit_with_error() {
-    local message=$1
-    output_json_to_file "error" "$message"
-    exit
-}
-
-trap "exit_with_error INTERNAL_SERVER_ERROR" ERR
-
 REF_DIR=$2
 CHUNK_RAM=$3
 KEEP_INTERMEDIATE=${4:-True}
@@ -158,16 +138,6 @@ mv /out/isec_tmp3/0002.vcf /out/$1.filt.rmBL.vcf
 rm -rf /out/isec_tmp1
 rm -rf /out/isec_tmp2
 rm -rf /out/isec_tmp3
-
-
-#check number of variants left
-variant_count=$(bcftools view -H /out/$1.filt.rmBL.vcf | wc -l)
-if [ "$variant_count" -gt 0 ]; then
-    echo "Blacklist filtering completed successfully. Variants passing the filters: $variant_count"
-else
-    echo "Cannot proceed because all variants were filtered by blacklist."
-    exit_with_error ALL_VARIANTS_WERE_FILTERED__WITH_BLACKLIST ERR
-fi
 
 #annotate with vep
 echo "VEP annotation"
@@ -307,5 +277,3 @@ fi
 mv /out/conf_4Model/*.csv /out/
 mv /out/conf_4Model/integrated/*.csv /out/
 rm -r /out/conf_4Model
-
-exit_with_success
