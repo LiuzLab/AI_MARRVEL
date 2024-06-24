@@ -160,6 +160,16 @@ class Variant():
         self.effectOnGeneScore='-'
         self.geneDiseaseAssocScore='-'
         self.modelOrganismScore='-'
+        #additional
+        self.hom='-'
+        self.hgmd_rs='-'
+        self.clin_dict='-'
+        self.clin_PLP='-'
+        self.clin_PLP_perc='-'
+        self.spliceAImax='-'
+        self.clin_code='-'
+        self.hgmd_id='-'
+        self.hgmd_CLASS='-'
 
 
 #function to get var objects from dataframe read from a VEP annoataed file
