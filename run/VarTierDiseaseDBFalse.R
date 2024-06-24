@@ -28,7 +28,6 @@
 # set adj.k value to adjust Tier
 adj.k <- 1.05
 
-# set if diseases DB will be included
 IncludeClinVarHGMD <- FALSE
 
 # load database: OMIM inheritance ####
@@ -106,7 +105,7 @@ anno <- unique(anno)
 
 
 # STEP 0. Adjust variant IMPACT for ClinVar, HGMD, SpliceAImax >= 0.8  ####
-
+# It never executed
 if (IncludeClinVarHGMD){
   anno$IMPACT <- ifelse(grepl("Pathogenic|Likely_pathogenic",anno$clinvarSignDesc) | anno$hgmdVarFound == 1 , "HIGH",anno$IMPACT)
 }
@@ -139,6 +138,7 @@ anno$TierAD[anno$Gene %in% GeneTier4] = anno$TierAR[anno$Gene %in% GeneTier4] <-
 # find the non-Coding Var to keep
 nonCodingVar2keep <- c()
 
+# It never executed 
 if(IncludeClinVarHGMD){
   nonCodingModifier.idx <- which(grepl("Conflicting_interpretations_of_pathogenicity", anno$clinvarSignDesc) & (anno$IMPACT %in% c("MODIFIER")))
   nonCodingModifier <- anno$Uploaded_variation[nonCodingModifier.idx]
@@ -199,7 +199,7 @@ for (var in Var.RunTier){
     }
   }
 }
-  
+
 # find all intronic Var with AF == 0, will adjust the Tier if in trans with a high impact variant. ####
 
 rareVar <- VEP.f1.maxIMAPCT$gnomadAF == "-" & VEP.f1.maxIMAPCT$gnomadAFg == "-"
@@ -287,7 +287,6 @@ if (IncludeClinVarHGMD){
   # check for non numeric values and convert to 0
   omim_NA_idx <- which(is.na(as.numeric(phenoSimi$omimSymptomSimScore)))
   hgmd_NA_idx <- which(is.na(as.numeric(phenoSimi$hgmdSymptomSimScore)))
-  # print(hgmd_NA_idx)
   phenoSimi$omimSymptomSimScore[omim_NA_idx] <- 0
   phenoSimi$hgmdSymptomSimScore[hgmd_NA_idx] <- 0
   
@@ -295,7 +294,7 @@ if (IncludeClinVarHGMD){
   phenoSimi$hgmdSymptomSimScore <- as.numeric(phenoSimi$hgmdSymptomSimScore)
   
   phenoSimi <- phenoSimi[phenoSimi$omimSymptomSimScore != 0 | phenoSimi$hgmdSymptomSimScore != 0,]
-  
+
   rareIntronicVar.2adj.wPhenoSimi <- merge(rareIntronicVar.2adj, phenoSimi, by.x = "Gene", by.y = "Gene")
   rareIntronicVar.2adj.wPhenoSimi$simi <- apply(rareIntronicVar.2adj.wPhenoSimi[, 3:4], 1, max)
   rareIntronicVar.2adj.wPhenoSimi$TierAR.adj <- 5-(5-4)*exp(adj.k*rareIntronicVar.2adj.wPhenoSimi$simi)
@@ -348,10 +347,27 @@ for (g in unique(VEP.Tier$Gene)){
   g.df$No.Var.L <- No.Var.L
   
   VEP.Tier.wGene <- rbind(VEP.Tier.wGene,g.df)
+
 }
 # remove the GT column
 VEP.Tier.wGene$GT <- NULL
 
+# code when empty data.frame has no valid column names
+if(nrow(VEP.Tier.wGene) == 0) {
+  VEP.Tier.wGene <- data.frame(
+    Uploaded_variation=character(),
+    Gene=character(),
+    GT=character(),
+    IMPACT.max=numeric(),
+    TierAD=numeric(),
+    TierAR=numeric(),
+    TierAR.adj=numeric(),
+    No.Var.HM=numeric(),
+    No.Var.H=numeric(),
+    No.Var.M=numeric(),
+    No.Var.L=numeric()
+  )
+}
 
 # STEP 6: add the Tiers from anno_noGeneID
 if ("-" %in% anno$Gene) {
@@ -365,6 +381,8 @@ VEP.Tier.final$TierAR.adj[is.na(VEP.Tier.final$TierAR.adj)] <- VEP.Tier.final$Ti
 
 # add inheritance information
 colnames(genemap2.Inh.F)[1] <- "Gene"
+
+#  VEP.Tier.final has the column anme  liek this? [1] X1  X2  X3  X4  X5  X6  X7  X8  X9  X10 X11
 VEP.Tier.wInh <- merge(VEP.Tier.final, genemap2.Inh.F, by.x = "Gene", by.y = "Gene", all.x = T)
 VEP.Tier.wInh$dominant[is.na(VEP.Tier.wInh$dominant)] <- 0
 VEP.Tier.wInh$recessive[is.na(VEP.Tier.wInh$recessive)] <- 0
