@@ -32,14 +32,6 @@ If you want to keep a stable local version of AIM, follow the instruction below.
     git clone https://github.com/LiuzLab/AI_MARRVEL.git
     cd AI_MARRVEL
 
-    # Download necessary software
-    #   bcftools
-    wget https://github.com/samtools/bcftools/releases/download/1.9/bcftools-1.9.tar.bz2
-    #   bedtools
-    wget https://github.com/arq5x/bedtools2/releases/download/v2.30.0/bedtools.static.binary
-    mv bedtools.static.binary run/bedtools
-    chmod a+x run/bedtools
-
     # Build docker image (takes some time)
     docker build -t aim-lite .
 
