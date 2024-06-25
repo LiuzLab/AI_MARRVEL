@@ -65,7 +65,9 @@ RUN R -e "install.packages('tidyverse',dependencies=TRUE, repos='http://cran.rst
 
 
 # Install bcftools
-COPY bcftools-1.9.tar.bz2 /opt/bcftools-1.9.tar.bz2
+RUN wget https://github.com/samtools/bcftools/releases/download/1.9/bcftools-1.9.tar.bz2
+RUN mv bcftools-1.9.tar.bz2 /opt/bcftools-1.9.tar.bz2
+
 RUN tar -xf /opt/bcftools-1.9.tar.bz2 -C /opt/ && \
   rm /opt/bcftools-1.9.tar.bz2 && \
   cd /opt/bcftools-1.9 && \
@@ -74,10 +76,14 @@ RUN tar -xf /opt/bcftools-1.9.tar.bz2 -C /opt/ && \
   make install && \
   rm -rf /opt/bcftools-1.9
 
-
 # Copy the pipeline into Docker image
 COPY run /run/
 RUN chmod +x /run/proc.sh
+
+# Install bedtools
+RUN wget https://github.com/arq5x/bedtools2/releases/download/v2.30.0/bedtools.static.binary
+RUN mv bedtools.static.binary /run/bedtools
+RUN chmod a+x /run/bedtools
 
 
 
