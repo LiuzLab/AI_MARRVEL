@@ -184,7 +184,7 @@ def process_gene(param):
 
     if len(bivar_feature_mats) > 0:
         bivar_feature_mats = pd.concat(bivar_feature_mats, axis=0)
-        bivar_feature_mats = bivar_feature_mats.drop_duplicates()
+        bivar_feature_mats = bivar_feature_mats[~bivar_feature_mats.index.duplicated()]
         bivar_feature_mats.to_csv(f"{out_folder}/{gene}.csv")
 
     return
