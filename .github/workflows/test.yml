@@ -1,0 +1,93 @@
+name: Create SQS Queue and Monitor Message
+
+on: [push, pull_request]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+
+      - name: Install jq
+        run: sudo apt-get install jq
+
+      - name: Generate Queue Name
+        id: step_qn
+        run: echo "queue_name=aim_pipeline_test_$(uuidgen)_res" >> $GITHUB_OUTPUT
+
+      - name: Create SQS Queue
+        id: step_queue
+        run: |
+          QUEUE_URL=$(aws sqs create-queue --queue-name ${{ steps.step_qn.outputs.queue_name }} --output text --query 'QueueUrl')
+          echo "queue_url=$QUEUE_URL" >> $GITHUB_OUTPUT
+
+      - name: Send Message to SQS
+        run: |
+          BRANCH_NAME="${{ github.head_ref || github.ref }}"
+          aws sqs send-message --queue-url "https://sqs.us-west-1.amazonaws.com/769006734761/aim_pipeline_test_req" \
+          --message-body "${{ steps.step_qn.outputs.queue_name }}" \
+          --message-attributes '{ 
+            "branchName": { "DataType": "String", "StringValue": "'"$BRANCH_NAME"'" },
+            "commitId": { "DataType": "String", "StringValue": "${{ github.sha }}" }
+          }'
+
+      - name: Wait for Queue Message and Check Result
+        run: |
+          while true; do
+            # Poll the queue for messages
+            RESPONSE=$(aws sqs receive-message --queue-url ${{ steps.step_queue.outputs.queue_url }} --attribute-names All --message-attribute-names All --wait-time-seconds 20 --max-number-of-messages 1)
+            MESSAGE_BODY=$(echo $RESPONSE | jq -r '.Messages[0].Body')
+
+            if [ -n "$MESSAGE_BODY" ]; then
+              echo "Message received: $MESSAGE_BODY"
+              RESULT=$(echo $MESSAGE_BODY | jq -r '.result')
+
+              # Process the message as needed
+              if [ "$RESULT" == "PASS" ]; then
+                echo "Operation was successful."
+                break
+              else
+                echo "Operation failed."
+                exit 1
+              fi
+
+              # Get the receipt handle to delete the message
+              RECEIPT_HANDLE=$(echo $RESPONSE | jq -r '.Messages[0].ReceiptHandle')
+
+              # Delete the message from the queue to prevent it from being read again
+              aws sqs delete-message --queue-url ${{ steps.step_queue.outputs.queue_url }} --receipt-handle "$RECEIPT_HANDLE"
+              echo "Message deleted from the queue."
+            else
+              echo "No message received, continuing to poll..."
+            fi
+          done
+
+      - name: Delete SQS Queue
+        if: always()
+        run: |
+          aws sqs delete-queue --queue-url ${{ steps.step_queue.outputs.queue_url }}
+          echo "Queue deleted: ${{ steps.step_queue.outputs.queue_url }}"
+
+
+      - name: Close Pull Request on Failure
+        if: ${{ failure() }} && github.event_name == 'pull_request'
+        run: |
+          curl \
+            -X PATCH \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            -d '{"state":"closed"}' \
+            "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}"
