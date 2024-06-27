@@ -24,7 +24,6 @@ from annotation.utils_for_symMatch import *
 from annotation.utils_for_marrvel_flatfile import *
 
 # from utils_for_marrvel_flatfile_module_3 import *
-import multiprocessing
 from functools import partial
 from annotation.marrvel_score_recalc import *
 
@@ -367,9 +366,6 @@ def main():
         inputReadTime = t2 - t1
         inputNumRows = len(varDf.index)
 
-        # print('head:', varDf.head)
-        # print('column names:', varDf.columns)
-        # update the GERp column names since cant use ++ in the varaible name
         # TODO: change with `.rename`
         if "GERP++_RS" in varDf.columns:
             print("found GERP++RS")
@@ -383,63 +379,74 @@ def main():
         if "M-CAP_score" in varDf.columns:
             varDf["M_CAP_score"] = varDf["M-CAP_score"]
 
-        print("start making variant objects")
-        numCores = 8
-        p1 = time.time()
-        # store rows into list for parallel function
-        inputList = []
-        for index, rows in varDf.iterrows():
-            inputList.append(rows)
-        p2 = time.time()
-        makeListTime = p2 - p1
-        print("makeListTime :", makeListTime)
-        print("type inputList:", type(inputList[0]), "len inputList:", len(inputList))
-        # group or chunks for parallel function
-        groupSize = min(
-            (len(inputList) // numCores) + (len(inputList) % numCores), 1000
-        )
-        print("groupSize:", groupSize)
-        groupList = list(getVarGroups(inputList, groupSize))
-        print("type groupList:", type(groupList), "len:", len(groupList))
+        if "conserve" in moduleList:
+            decipherSortedDf = decipherDf.set_index(['Chr', 'Start', 'Stop']).sort_index()
+            gnomadMetricsGeneSortedDf = gnomadMetricsGeneDf.groupby('gene').first().sort_index()
 
-        # call parallel function, pass it the main function "getAnnotateInfo_2" from utils_for_marrvel_flatfile.py and any needed files.
-        # this function will get the marrvel annoatations from marrvel flat files
-        parallelFlag = 1
-        if parallelFlag == 1:
-            pool = multiprocessing.Pool(processes=numCores)
-            # CL: hgmdDf changed to hgmdHPOScoreDf
-            func = partial(
-                getAnnotateInfo_2,
-                genomeRef=args.genomeRef,
-                clinvarGeneDf=clinvarGeneDf,
-                clinvarAlleleDf=clinvarAlleleDf,
-                omimGeneList=omimGeneList,
-                omimAlleleList=omimAlleleList,
-                hgmdDf=hgmdHPOScoreDf,
-                moduleList=moduleList,
-                dgvDf=dgvDf,
-                decipherDf=decipherDf,
-                gnomadMetricsGeneDf=gnomadMetricsGeneDf,
+        if "curate" in moduleList:
+            omimGeneDf = pd.DataFrame(omimGeneList)
+            omimGeneSortedDf = omimGeneDf.set_index('geneSymbol').sort_index()
+
+        def f(row):
+            return getAnnotateInfoRow_2(
+                row,
+                args.genomeRef,
+                clinvarGeneDf,
+                clinvarAlleleDf,
+                omimGeneSortedDf,
+                omimAlleleList,
+                hgmdHPOScoreDf,
+                moduleList,
+                decipherSortedDf,
+                gnomadMetricsGeneSortedDf,
             )
-            varDictList = pool.map(func, groupList)
-            pool.close()
-        else:
-            pass
+        annotateInfoDf = varDf.apply(f, axis=1, result_type='expand')
+        if "conserve" in moduleList:
+            dgvDfV = dgvDf[['Chr', 'Start', 'Stop']].values.astype('int32')
+            def f(varObj):
+                # print('\nGetting DGV')
+                dgvDictList = []
+                dgvTypeList = []
+                dgvSubtypeList = []
+                dgvVarFound = 0
+                dgvType = "-"
+                dgvSubtype = "-"
+            
+                chromVal = int(varObj.chrom)
+                posVal = int(varObj.pos)
+                startVal = int(varObj.start)
+                stopVal = int(varObj.stop)
+            
+                # CL 03-14-2023: changed column names to be compatible with hg38
+                # vals=dgvDf[ ( dgvDf['hg19Chr'] == chromVal ) & ( dgvDf['hg19Start']<=startVal ) & (dgvDf['hg19Stop']>=stopVal) ]
 
-        print("finsihed getAnnotateInfo_2")
-        # make a var obj list after paralle processing for each group, need a better more efficient way for doing this !!
-        t1 = time.time()
-        varObjList = getVarObjListFromDict(varDictList, len(varDf.index))
-        t2 = time.time()
-        makeVarObjListTime = t2 - t1
-        # print('len varObjList:', len(varObjList))
-        print("makeVarObjListTime 1:", makeVarObjListTime)
+                vals = dgvDf[(dgvDfV[:, 0] == chromVal) & (dgvDfV[:, 1] <= startVal) & (dgvDfV[:, 2] >= stopVal)]
+                numRows = len(vals.index)
+            
+                if numRows > 0:
+                    dgvVarFound = 1
+                    dgvType = vals.iloc[0]["type"]
+                    dgvSubtype = vals.iloc[0]["subType"]
+            
+                dgvTypeList.append(dgvType)
+                dgvSubtypeList.append(dgvSubtype)
+                return {
+                    "dgvDictList": dgvDictList,
+                    "dgvTypeList": dgvTypeList,
+                    "dgvSubtypeList": dgvSubtypeList,
+                    "dgvVarFound": dgvVarFound,
+                }
+                
+            
+            resDf = annotateInfoDf.apply(f, axis=1, result_type='expand')
+            annotateInfoDf[resDf.columns] = resDf
 
     # we now have the variant object list "varObjList" with annotations; loop thru it and get the scores
-    for varObj in varObjList:
-        # print('var:', varObj.varId_dash, 'var-gene:', varObj.geneSymbol, 'var-gene-pLI:', varObj.gnomadGenePLI)
-        # the curate score is under the utils_1.py file
-        if "curate" in moduleList:
+    if "curate" in moduleList:
+        df = []
+        for i, varObj in annotateInfoDf.iterrows():
+            # print('var:', varObj.varId_dash, 'var-gene:', varObj.geneSymbol, 'var-gene-pLI:', varObj.gnomadGenePLI)
+            # the curate score is under the utils_1.py file
             # print('finding symptom matching')
             omimSymMatch(varObj, omimHPOScoreDf, args.inFileType)
             hgmdSymMatch(varObj, hgmdHPOScoreDf)
@@ -448,29 +455,47 @@ def main():
             retList = getCurationScore(
                 varObj
             )  # retList=[omimScore, hgmdScore, clinVarScore, totalScore]
-            varObj.curationScoreOMIM = retList[0]
-            varObj.curationScoreHGMD = retList[1]
-            varObj.curationScoreClinVar = retList[2]
-            varObj.curationScoreTotal = retList[3]
-            # print('curation score total:', varObj.curationScoreTotal)
-        # conserve score is under
-        if "conserve" in moduleList:
+            df.append({
+                "curationScoreOMIM": retList[0],
+                "curationScoreHGMD": retList[1],
+                "curationScoreClinVar": retList[2],
+                "curationScoreTotal": retList[3],
+
+                # Due to direct update inside the functions, here we additionally copy the columns
+                "symptomScore": varObj.symptomScore,
+                "symptomName": varObj.symptomName,
+                "omimSymMatchFlag": varObj.omimSymMatchFlag,
+                "omimSymptomSimScore": varObj.omimSymptomSimScore,
+                "hgmdSymptomScore": varObj.hgmdSymptomScore,
+                "hgmdSymMatchFlag": varObj.hgmdSymMatchFlag,
+                "hgmdSymptomSimScore": varObj.hgmdSymptomSimScore,
+            })
+
+        df = pd.DataFrame(df)
+        annotateInfoDf[df.columns] = df
+
+    # conserve score is under
+    if "conserve" in moduleList:
+        df = []
+        for i, varObj in annotateInfoDf.iterrows():
             retList = getConservationScore(varObj, args.diseaseInh)
-            # retList=[conservationScoreGnomad, conservationScoreDGV, conservationScoreOELof]
-            varObj.conservationScoreGnomad = retList[0]
-            varObj.conservationScoreDGV = retList[1]
-            varObj.conservationScoreOELof = retList[2]
-            # print('conservation score GERP++:',varObj.conservationScoreGerpPP,'DGV:',varObj.conservationScoreDGV,)
-            # print('conserve score DGV:',varObj.conservationScoreDGV,'conserve score gnomad:', varObj.conservationScoreGnomad)
+
+            df.append({
+                "conservationScoreGnomad": retList[0],
+                "conservationScoreDGV": retList[1],
+                "conservationScoreOELof": retList[2],
+            })
+            
+        df = pd.DataFrame(df)
+        annotateInfoDf[df.columns] = df
 
     # write the objects info scores to a file
     print("writing results")
-    df = pd.DataFrame([t.__dict__ for t in varObjList])
-    print("shape of output file:", df.shape)
+    print("shape of output file:", annotateInfoDf.shape)
     # write
     fileName = args.outPrefix + "_scores.txt"
     print("out file name:", fileName)
-    df.to_csv(fileName, sep="\t", index=False)
+    annotateInfoDf.to_csv(fileName, sep="\t", index=False)
 
     end_time = time.time()
     process_time = end_time - start_time
@@ -489,12 +514,10 @@ def main():
     print("log file name:", fileName)
     print("input read time:", inputReadTime)
     print("input num rows:", inputNumRows)
-    print("makeListTime from pd:", makeListTime)
-    print("makeVarObjListTime 1:", makeVarObjListTime)
     print("m:", moduleList)
 
     print("Score re-calculation:")
-    score = load_raw_matrix(df)
+    score = load_raw_matrix(annotateInfoDf)
     score = omimCurate(score)
     score = hgmdCurate(score)
     score = clinvarCurate(score)
@@ -506,4 +529,5 @@ def main():
     exit()
 
 
-main()
+if __name__ == '__main__':
+    main()
