@@ -274,7 +274,7 @@ process FEATURE_ENGINEERING_PART1 {
     """
     AIM_FREE_RAM=\$(free -g | awk 'NR==2{printf \$7}')
 
-    split_vep_chunks.py $vep \$AIM_FREE_RAM
+    split_vep_chunks.py \$(readlink -f $vep) \$AIM_FREE_RAM
 
     while read -r INDEX LINEH LINEA LINEB
     do
