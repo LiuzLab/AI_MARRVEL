@@ -393,7 +393,7 @@ workflow {
         params.ref_gnomad_exome_idx
     )
 
-     VEP_ANNOTATE(
+    VEP_ANNOTATE(
         FILTER_PROBAND.out,
         params.vep_dir_cache,
         params.vep_dir_plugins,
