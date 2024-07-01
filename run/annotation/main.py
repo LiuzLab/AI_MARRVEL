@@ -388,9 +388,9 @@ def main():
         p2 = time.time()
         makeListTime = p2 - p1
         print('makeListTime :', makeListTime)
-        print('type inputList:', type(inputList[0]), 'len inputList:', len(inputList))
+        # print('type inputList:', type(inputList[0]), 'len inputList:', len(inputList))
         #group or chunks for parallel function
-        groupSize=min((len(inputList) // numCores) + (len(inputList) %numCores), 1000)
+        groupSize=min(max(1, (len(inputList) // numCores) + (len(inputList) %numCores)), 1000)
         print('groupSize:', groupSize)
         groupList=list( getVarGroups(inputList, groupSize) )
         print('type groupList:', type(groupList), 'len:', len(groupList))
@@ -447,8 +447,8 @@ def main():
 
     #write the objects info scores to a file
     print('writing results')
-    df = pd.DataFrame([t.__dict__ for t in varObjList ])
-    print('shape of output file:',df.shape)
+    df = pd.DataFrame([t.__dict__ for t in varObjList], columns=Variant().__dict__.keys())
+    print('shape of output file:', df.shape)
     #write
     fileName=args.outPrefix+'_'+args.patientID+'_scores.txt'
     print('out file name:', fileName)

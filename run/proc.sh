@@ -33,7 +33,6 @@ fi
 
 cp /input/vcf.gz /out/vcf.gz  ### New Step: Copying file to output directory
 
-
 # Initial path of the VCF file
 INPUT_VCF_PATH="/out/vcf.gz"  ### Changed: Adjust path to new output location
 
@@ -127,12 +126,10 @@ mkdir -m777 /out/isec_tmp1
 bcftools isec -p /out/isec_tmp1 -w 1 -Oz \
 /out/$1.filt.rmMT.vcf.gz /run/data_dependencies/filter_vep/${REF_DIR}/gnomad.${REF_DIR}.blacklist.genomes.vcf.gz
 
-tabix /out/isec_tmp1/0000.vcf.gz
 mkdir -m777 /out/isec_tmp2
 bcftools isec -p /out/isec_tmp2 -w 1 -Oz \
 /out/$1.filt.rmMT.vcf.gz /run/data_dependencies/filter_vep/${REF_DIR}/gnomad.${REF_DIR}.blacklist.exomes.vcf.gz
 
-tabix /out/isec_tmp2/0000.vcf.gz
 mkdir -m777 /out/isec_tmp3
 bcftools isec -p /out/isec_tmp3 -Ov \
 /out/isec_tmp1/0000.vcf.gz /out/isec_tmp2/0000.vcf.gz
@@ -141,7 +138,6 @@ mv /out/isec_tmp3/0002.vcf /out/$1.filt.rmBL.vcf
 rm -rf /out/isec_tmp1
 rm -rf /out/isec_tmp2
 rm -rf /out/isec_tmp3
-
 
 #annotate with vep
 echo "VEP annotation"
@@ -281,4 +277,3 @@ fi
 mv /out/conf_4Model/*.csv /out/
 mv /out/conf_4Model/integrated/*.csv /out/
 rm -r /out/conf_4Model
-

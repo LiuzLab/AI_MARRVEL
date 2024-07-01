@@ -27,7 +27,7 @@ def load_raw_matrix(score):
                     'hom','hgmd_rs','clin_dict','clin_PLP','clin_PLP_perc','spliceAImax','clin_code','hgmd_id',
                     'hgmd_CLASS','rsId', 'HGVSc', 'HGVSp', 'phenoList', 'phenoInhList']
     
-    return score.loc[:,raw_features].copy()
+    return score[raw_features].copy()
 
 
 

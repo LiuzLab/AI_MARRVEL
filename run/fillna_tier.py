@@ -585,8 +585,7 @@ def feature_engineering(score_file, tier_file):
     c_hgmd_exp = ['Del_to_Missense', 'Different_pChange', 'Same_pChange', 'Stop_Loss', 'Start_Loss']
 
     for exp in c_hgmd_exp:
-
-        patient['c_HGMD_Exp_%s'%exp] = patient['c_HGMD_Exp'].str.contains(exp).astype('int')
+        patient['c_HGMD_Exp_%s'%exp] = patient['c_HGMD_Exp'].astype(str).str.contains(exp).astype('int')
         variable_name.append('c_HGMD_Exp_%s'%exp)
 
     variable_name.remove('c_HGMD_Exp')
