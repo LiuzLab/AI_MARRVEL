@@ -103,16 +103,16 @@ def process_gene(param):
     seen_pairs = set() 
     
     allVars = feature_df.index.tolist()
-    varIDs = [v for v in varIDs if v in allVars]
+    varIDs = sorted([v for v in varIDs if v in allVars])
 
     if len(varIDs) == 0:
         return
 
     if len(varIDs) > 6:
-        defaultPred = param['default_pred'].copy()
-        defaultPred = defaultPred.loc[varIDs,:].sort_values("predict", ascending=False)
+        defaultPred = param["default_pred"].copy()
+        defaultPred = defaultPred.loc[varIDs, :].sort_values(["predict", "IMPACT.from.Tier"], ascending=[False,False], kind="stable")
         varIDs = defaultPred.index.tolist()[:6]
-
+    
     gene_feats = feature_df.loc[varIDs, feature_names].copy()
     gene_feats = gene_feats.values
     assert gene_feats.shape[0] == len(varIDs)
