@@ -268,7 +268,6 @@ process FEATURE_ENGINEERING_PART1 {
 
     output:
     path "${params.run_id}_scores.csv"
-    path "r1_${params.run_id}_scores.txt"
 
     script:
     """
@@ -281,7 +280,6 @@ process FEATURE_ENGINEERING_PART1 {
         sed -n -e "\${LINEH}p" -e "\${LINEA},\${LINEB}p" $vep > vep-\${INDEX}.txt
 
         feature.py \\
-            -outPrefix r1 \\
             -patientHPOsimiOMIM $omim_sim \\
             -patientHPOsimiHGMD $hgmd_sim \\
             -varFile vep-\${INDEX}.txt \\
@@ -293,10 +291,8 @@ process FEATURE_ENGINEERING_PART1 {
         
         if [ \${INDEX} -gt 1 ]; then
             sed -n "2,\$p" scores.csv > scores_\${INDEX}.csv
-            sed -n "2,\$p" r1_scores.txt > r1_scores_\${INDEX}.txt
         else
             mv scores.csv scores_\${INDEX}.csv
-            mv r1_scores.txt r1_scores_\${INDEX}.txt
         fi
     done < vep_split.txt
 
@@ -305,18 +301,12 @@ process FEATURE_ENGINEERING_PART1 {
     do
         cat scores_\${INDEX}.csv
     done > ${params.run_id}_scores.csv
-
-    for INDEX in \$(cut -d\$'\\t' -f1 vep_split.txt)
-    do
-        cat r1_scores_\${INDEX}.txt
-    done > r1_${params.run_id}_scores.txt
     """
 }
 
 process FEATURE_ENGINEERING_PART2 {
     input:
     path scores, stageAs: "scores.csv"
-    path r1_scores, stageAs: "r1_scores.txt"
     path phrank
     path ref_annot_dir
     path ref_var_tier_dir
@@ -417,7 +407,6 @@ workflow {
 
     FEATURE_ENGINEERING_PART2 (
         FEATURE_ENGINEERING_PART1.out[0],
-        FEATURE_ENGINEERING_PART1.out[1],
         PHRANK_SCORING.out,
         file(params.ref_annot_dir),
         file(params.ref_var_tier_dir),

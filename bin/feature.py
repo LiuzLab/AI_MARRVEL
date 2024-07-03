@@ -47,7 +47,7 @@ def checkUserArgs(inArgs):
 
 def main():
     # example of running the script:
-    # python3 main.py -outPrefix ./test/r1 \
+    # python3 main.py \
     # -patientID UDN630665 -patientHPOsimiOMIM  /houston_10t/dongxue/MARRVEL_AI/BG/HPO2Gene/out_May12021/UDN/HPOsimi_UDN630665_simi_0.tsv \
     # -patientHPOsimiHGMD  /six_tera/chaozhong/module_1/out/UDN/HPOsimi_UDNUDN630665_simi_0.tsv \
     # -varFile /houston_20t/rami/vep_PassVarQual_filt_UDN_Apr2521/540200-UDN630665-P_HGYTFBCXY-2-ID01-vep_gnomADg_gnomADe_splice_clin_hgmd_filt.txt \
@@ -87,15 +87,11 @@ def main():
     parser.add_argument(
         "-genomeRef", "--genomeRef", help="Proivde genome ref: hg19, hg38"
     )
-    parser.add_argument(
-        "-outPrefix", "--outPrefix", help="Proivde prefix for output files"
-    )
     args = parser.parse_args()
     # check the user args
     checkUserArgs(args)
     print("input file:", args.varFile)
     print("type of input file:", args.inFileType)
-    print("outPrefix:", args.outPrefix)
     print("modules:", args.modules)
     moduleList = args.modules.split(",")
     print("modules list:", moduleList)
@@ -489,19 +485,12 @@ def main():
         df = pd.DataFrame(df)
         annotateInfoDf[df.columns] = df
 
-    # write the objects info scores to a file
-    print("writing results")
-    print("shape of output file:", annotateInfoDf.shape)
-    # write
-    fileName = args.outPrefix + "_scores.txt"
-    print("out file name:", fileName)
-    annotateInfoDf.to_csv(fileName, sep="\t", index=False)
-
     end_time = time.time()
     process_time = end_time - start_time
+
     print("pipeline time:", process_time)
     # log file for times
-    fileName = args.outPrefix + "_log.txt"
+    fileName = "log.txt"
     f = open(fileName, "w")
     f.write(
         "Process time:"
@@ -523,7 +512,6 @@ def main():
     score = clinvarCurate(score)
     score = conservationCurate(score)
 
-    # score.to_csv('/out/rami-test/%s_scores.csv'%(args.patientID), index=False)
     score.to_csv("scores.csv", index=False)
 
     exit()

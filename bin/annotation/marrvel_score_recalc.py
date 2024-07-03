@@ -5,9 +5,6 @@ import numpy as np
 
 
 def load_raw_matrix(score):
-    # score_file = '/out/rami-test/r1_%s_scores.txt'%(ID) #'/out/rami-test/r1_%s_scores.txt'%(ID)
-    # score = pd.read_csv(score_file, sep='\t')
-
     raw_features = [
         "chrom",
         "pos",
