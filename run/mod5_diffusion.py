@@ -26,16 +26,14 @@ def diffusion(nn, y, alpha = 0.5, max_iter = 100):
     """
     alpha = 0.5
     max_iter = 100
-    y = y.to_numpy()
+    y = y.to_numpy().astype('float32')
     F = y
     ## initialize an empty array for the heat
     Fs = np.empty((nn.shape[0], 0), float)
-    ## restart
-    fY = (1-alpha) * y
     for i in range(0, max_iter):
         Fs = np.append(Fs, F, axis=1)
-        F = alpha * nn @ Fs[:,[i]] + fY
-    return(F)
+        F = nn @ (alpha * Fs[:, [i]]) + (1 - alpha) * y
+    return F
 
 def diffuseSample(ID, Anno_df, Phrank_folder):
     """Method that runs diffusion network for a specific sample.
@@ -95,7 +93,7 @@ def diffuseSample(ID, Anno_df, Phrank_folder):
     m12_wSimi_woCor = list(set(m12_wSimi) - (set(cor_GeneID["ID"])))
     m12_wSimi_woCor = simi[simi["Ensembl_Gene_ID"].isin(m12_wSimi_woCor)]
     ## normalized the cor matrix
-    net = abs(cor)
+    net = abs(cor).astype('float32')
     D = 1/np.sqrt(net.sum(axis = 1))
     D2 = np.diag(D)
     net_norm = D2 @ net @ D2
@@ -125,13 +123,14 @@ def diffuseSample(ID, Anno_df, Phrank_folder):
     diff_wGeneID_in_m12 = diff_wGeneID_in_m12.rename(columns = {"GeneID":"Ensembl_Gene_ID"})
     FinalHeat_wSimi = pd.concat([m12_wSimi_woCor,diff_wGeneID_in_m12],ignore_index=True, sort=True)
     FinalHeat_wSimi = FinalHeat_wSimi.sort_values(by = 'Final_Heat', ascending = False)
+    FinalHeat_wSimi_indexed = FinalHeat_wSimi.set_index('Ensembl_Gene_ID')
 
     ## Get the diffusion scores for genes in the annotation data, 0 if not existed
     score_ordered = []
     gene_ordered = m12_df.loc[:, "geneEnsId"].tolist()
     for gene in gene_ordered:
-        if gene in FinalHeat_wSimi.Ensembl_Gene_ID.tolist():
-            score_ordered.append(FinalHeat_wSimi.loc[FinalHeat_wSimi.Ensembl_Gene_ID == gene, 'Final_Heat'].to_numpy()[0])
+        if gene in FinalHeat_wSimi_indexed.index:
+            score_ordered.append(FinalHeat_wSimi_indexed.loc[gene, 'Final_Heat'])
         else:
             score_ordered.append(0)
 
