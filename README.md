@@ -48,12 +48,19 @@ docker pull chaozhongliu/aim-lite:latest
 
 ### Run with your sample
 ```
-docker run -v <Path to VCF File>:/input/vcf.gz \
-           -v <Path to HPO file>:/input/hpo.txt \
-           -v <Path to downloaded database>:/run/data_dependencies \
-           -v <Path to output folder>:/out \
-       chaozhongliu/aim-lite /run/proc.sh [Sample ID] [Reference genome: hg19/hg38] [Memory Limit (G)]
+nextflow run .  --ref_dir <PATH_TO_REFERENCE_DIRECTORY>
+                --input_vcf <PATH_TO_INPUT_VCF_FILE>
+                --input_hpo <PATH_TO_INPUT_HPO_FILE>
+                --outdir <PATH_TO_OUTPUT_DIRECTORY>
+                --run_id [Sample Id] # Optional, default: 1
+                --ref_ver [Reference genome: hg19/hg38] # Optional, default: hg19
 ```
+
+Alternatively, the pipeline can be executed with a parameter file (yaml)
+```
+nextflow run . -params-file params.yaml
+```
+NOTE: You need to create `params.yaml` by copying [params.yaml.example](params.yaml.example) file and follow the instruction.
 
 ## License
 AI-MARRVEL is licensed under GPL-3.0. You are welcomed to use it for research purpose.  
