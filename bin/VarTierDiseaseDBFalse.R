@@ -9,9 +9,8 @@ adj.k <- 1.05
 
 args <- commandArgs(trailingOnly = TRUE)
 refg <- args[1]
-refg<-"hg19"
 
-cat("load database: OMIM inheritance ####\n")
+cat("STEP0. load database: OMIM inheritance ####\n")
 omim_inheritance <- file.path(paste0("var_tier/", refg, "/genemap2.Inh.F.txt"))
 in.f <- "scores.csv"
 out.f <- "Tier.v2.tsv"
@@ -311,7 +310,7 @@ VEP.Tier.wGene <- VEP.Tier.wGene |>
 
 VEP.Tier.wGene <- as_tibble(VEP.Tier.wGene)
 
-print("STEP 6: add the Tiers from anno_noGeneID")
+cat("STEP 6: add the Tiers from anno_noGeneID\n")
 if ("-" %in% anno$Gene) {
   VEP.Tier.final <- rbind(VEP.Tier.wGene, anno_noGeneID)
 }
