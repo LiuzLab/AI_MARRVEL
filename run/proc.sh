@@ -67,8 +67,11 @@ fi
 
 
 echo "VCF pre-processing"
+#run exome filters
+bcftools filter --regions-file /run/data_dependencies/filter_exonic/$REF_DIR.bed /out/vcf.gz -Oz -o /out/$1.recode.vcf.gz
+
 #annotate with new chromosomes and preserve original coordinates in ID
-bcftools annotate --rename-chrs /run/data_dependencies/bcf_annotate/chrmap.txt -x ID /out/vcf.gz -Oz -o /out/$1-annot.txt
+bcftools annotate --rename-chrs /run/data_dependencies/bcf_annotate/chrmap.txt -x ID /out/$1.recode.vcf.gz -Oz -o /out/$1-annot.txt
 bcftools annotate --set-id +'%CHROM\_%POS\_%REF\_%FIRST_ALT' /out/$1-annot.txt -Oz -o /out/$1-add-id.vcf.gz
 
 
@@ -94,7 +97,7 @@ bcftools view -r 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,X,Y /o
 
 #Phrank annotation
 echo "Phrank scoring"
-zcat /out/vcf.gz | awk 'substr($0, 1, 1) != "#"' | cut -f1,2,4,5 | sed 's/\t/:/g' > /out/$1-var.txt
+zcat /out/$1.recode.vcf.gz | awk 'substr($0, 1, 1) != "#"' | cut -f1,2,4,5 | sed 's/\t/:/g' > /out/$1-var.txt
 cat /out/$1-var.txt | sed 's/chr//g' | sort -u > /out/$1-var-filt.txt
 
 
