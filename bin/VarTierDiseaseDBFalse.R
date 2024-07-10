@@ -1,54 +1,22 @@
 #!/usr/bin/env Rscript
-# Run Tier
 
-# Updates history ####
-# Update on 2021.Sep13
-#' Updates:
-#' 1. corrected chromosome number 23->X, 24-> Y
-#' 2. add interaction term of phenotype and Tier.
-#' 3. for non-coding var, if ClinVarClinSig == conflict ->  push the Tier higher (if IMPACT == MODIFIER/LOW and ClinVarClinSig == conflict, Tier = Tier + 1)
-#' 4. Keep all variant that in-trans (sudo) with a strong Var in the same gene, adjust the Tier to 3.5?
-# Updates on 2022.Apr5
-#' 1. remove the pre-processing of OMIM inheritance to VarTier_preprocessOMIM.R
-#' 2. Add the number of variants (H/M/L impact) per gene: "No.Var.HM","No.Var.H","No.Var.M","No.Var.L"
-#' 3. Add the option if IncludeClinVarHGMD
-#'
-#' Updates on 2022.Sep29
-#' ClinVar clinvarSignDesc is in dif format after optimizing the pipeline, update the code to be compatible for that
-#' gnomadAF, gnomadAFg is "-" not "NA", update the code for that
-#' add IncludeClinVarHGMD for line 101
-
-
-#' change genemap2.Inh into 2 features, AD, AR, save to tsv file
-#' keep GeneID == "-" assinge Tier value
-#' input  output /out/explain/ "ID" + "_Tier"
-#'
-
-# parameter settings ####
-
-
+library(tidyverse)
+library(data.table)
 # set adj.k value to adjust Tier
 adj.k <- 1.05
 
 # set if diseases DB will be included
-IncludeClinVarHGMD <- FALSE
 
 args <- commandArgs(trailingOnly = TRUE)
 refg <- args[1]
+refg<-"hg19"
 
-# load database: OMIM inheritance ####
-genemap2.Inh.F <- read.delim2(
-  file.path(paste0("var_tier/", refg, "/genemap2.Inh.F.txt"))
-  )
-
+cat("load database: OMIM inheritance ####\n")
+omim_inheritance <- file.path(paste0("var_tier/", refg, "/genemap2.Inh.F.txt"))
 in.f <- "scores.csv"
 out.f <- "Tier.v2.tsv"
 
-# load libraries ####
-library("data.table")
-library("dplyr")
-
-
+genemap2.Inh.F <- readr::read_tsv(omim_inheritance)
 
 # load the input ####
 anno.columns <- c(
@@ -67,10 +35,7 @@ anno.columns <- c(
   "spliceAImax"
 )
 
-anno.orig <- read.table(in.f,
-                        stringsAsFactors = F,
-                        sep = ",",
-                        header = T)
+anno.orig <- readr::read_csv(in.f) 
 anno <- anno.orig[, anno.columns]
 
 # rename the col
@@ -90,54 +55,38 @@ colnames(anno) <- c(
   "spliceAImax"
 )
 
-if ("-" %in% anno$Gene) {
-  # for rows without gene ID -> Assign Tier now:
-  anno_noGeneID <- anno[anno$Gene == "-", c("Uploaded_variation", "Gene", "IMPACT")]
-  anno_noGeneID$IMPACT.max <- ifelse(
-    anno_noGeneID$IMPACT == "MODIFIER",
-    1,
-    ifelse(
-      anno_noGeneID$IMPACT == "LOW",
-      2,
-      ifelse(anno_noGeneID$IMPACT == "MODERATE", 3, 4)
+anno_noGeneID <- anno |> 
+  mutate(
+    IMPACT.max = case_when(
+      IMPACT == "MODIFIER" ~ 1,
+      IMPACT == "LOW" ~ 2,
+      IMPACT == "MODERATE" ~ 3,
+      T ~ 4
     )
-  )
-  anno_noGeneID$IMPACT <- NULL
-  anno_noGeneID$TierAD <- 5 - anno_noGeneID$IMPACT.max
-  anno_noGeneID[, c("TierAR", "TierAR.adj")] <- ifelse(anno_noGeneID$IMPACT.max >= 3, 3, 4)
-  anno_noGeneID$No.Var.HM <- as.numeric(anno_noGeneID$IMPACT.max >= 3)
-  anno_noGeneID$No.Var.H <- as.numeric(anno_noGeneID$IMPACT.max == 4)
-  anno_noGeneID$No.Var.M <- as.numeric(anno_noGeneID$IMPACT.max == 3)
-  anno_noGeneID$No.Var.L <- as.numeric(anno_noGeneID$IMPACT.max <= 2)
-}
-
-
+  ) |> 
+  mutate(
+    IMPACT = NULL,
+    TierAD = 5 - IMPACT.max,
+    TierAR = ifelse(IMPACT.max >= 3, 3, 4),
+    TierAR.adj = ifelse(IMPACT.max >= 3, 3, 4),
+    No.Var.HM = as.numeric(IMPACT.max >= 3),
+    No.Var.H = as.numeric(IMPACT.max == 4),
+    No.Var.M = as.numeric(IMPACT.max == 3),
+    No.Var.L = as.numeric(IMPACT.max <= 2)
+  ) 
+  
 
 # For rows with Gene ID ->  Tier analysis
-anno <- anno[anno$Gene != "-", ]
-anno <- unique(anno)
-
-
-# Tier ####
-
-
-# STEP 0. Adjust variant IMPACT for ClinVar, HGMD, SpliceAImax >= 0.8  ####
-
-if (IncludeClinVarHGMD) {
-  anno$IMPACT <- ifelse(
-    grepl("Pathogenic|Likely_pathogenic", anno$clinvarSignDesc) |
-      anno$hgmdVarFound == 1,
-    "HIGH",
-    anno$IMPACT
-  )
-}
-
-# label Splice AI > 0.8 as HIGH
-anno$IMPACT <- ifelse(anno$spliceAImax >= 0.8, "HIGH", anno$IMPACT)
-# convert IMPACT to numeric value
-anno$IMPACT.no <- ifelse(anno$IMPACT == "MODIFIER",
-                         1,
-                         ifelse(anno$IMPACT == "LOW", 2, ifelse(anno$IMPACT == "MODERATE", 3, 4)))
+anno <- anno |> filter(Gene != "-") |> distinct() |> 
+  mutate(
+    IMPACT = ifelse(spliceAImax >= 0.8, "HIGH", IMPACT),
+    IMPACT.no = case_when(
+      IMPACT == "MODIFIER" ~ 1,
+      IMPACT == "LOW" ~ 2,
+      IMPACT == "MODERATE" ~ 3, 
+      T ~ 4)
+    ) 
+  
 
 
 # Implement the rule based Tier classification ####
@@ -145,16 +94,22 @@ anno$IMPACT.no <- ifelse(anno$IMPACT == "MODIFIER",
 # take IMPACT HIGH, MODERATE, LOW, or MODIFIER as H,M,L,L
 # Tier at Gene level
 
-# STEP 1. classify T4: genes with only L variants, nonCodingVar2keep ####
+cat("STEP 1. classify T4: genes with only L variants, nonCodingVar2keep\n")
 
 # STEP 1.1 Keep Genes with IMPACT H or M variants
 Gene.all <- unique(anno$Gene)
 Gene.IMPACT <- unique(anno[, c("Gene", "IMPACT")])
-Gene.IMPACT.HM <- Gene.IMPACT[Gene.IMPACT$IMPACT %in% c("HIGH", "MODERATE"), ]
+
+Gene.IMPACT <- anno |> select(Gene, IMPACT) |> distinct()
+Gene.IMPACT.HM <- Gene.IMPACT |> filter(IMPACT %in% c("HIGH", "MODERATE"))
 
 # GeneTier4 will be removed for remaining Tier analysis
 GeneTier4 <- Gene.all[!(Gene.all %in% Gene.IMPACT.HM$Gene)]
-anno$TierAD[anno$Gene %in% GeneTier4] <- anno$TierAR[anno$Gene %in% GeneTier4] <- 4
+
+anno <- anno |> 
+  mutate(TierAD = ifelse(Gene %in% GeneTier4, 4, NA)) |> 
+  mutate(TierAR = ifelse(Gene %in% GeneTier4, 4, NA)) 
+
 
 # STEP 1.2 Keep Var with max IMPACT == MODIFIER/LOW and ClinVarClinSig == conflict
 # note: many variants with “Conflicting” are non-coding and coding for different transcripts, only keep the var with max impact as MODIFIER
@@ -162,34 +117,11 @@ anno$TierAD[anno$Gene %in% GeneTier4] <- anno$TierAR[anno$Gene %in% GeneTier4] <
 # find the non-Coding Var to keep
 nonCodingVar2keep <- c()
 
-if (IncludeClinVarHGMD) {
-  nonCodingModifier.idx <- which(
-    grepl(
-      "Conflicting_interpretations_of_pathogenicity",
-      anno$clinvarSignDesc
-    ) & (anno$IMPACT %in% c("MODIFIER"))
-  )
-  nonCodingModifier <- anno$Uploaded_variation[nonCodingModifier.idx]
-  nonCodingModifier.df <- anno[anno$Uploaded_variation %in% nonCodingModifier, ]
-  
-  for (var in unique(nonCodingModifier.df$Uploaded_variation)) {
-    var.df <- nonCodingModifier.df[nonCodingModifier.df$Uploaded_variation == var, ]
-    var.impact <- unique(var.df$IMPACT)
-    if (length(var.impact) == 1) {
-      if (var.impact == "MODIFIER") {
-        nonCodingVar2keep <- c(nonCodingVar2keep, var)
-      }
-    }
-  }
-}
-
-
 # split var to two groups:  ####
 
 # Run Full Tier analysis:
 # non - GeneTier4 and nonCodingVar2keep
-idx <- is.na(anno$TierAD) |
-  (anno$Uploaded_variation %in% nonCodingVar2keep)
+idx <- is.na(anno$TierAD) 
 Var.RunTier <- unique(anno$Uploaded_variation[idx])
 
 # Only Count No.Var.L：
@@ -203,31 +135,17 @@ if (F %in% idx) {
 
 anno.f1 <- anno[idx, ]
 
-# set nonCodingVar2keep IMPACT as 3
-anno.f1$IMPACT.no[anno.f1$Uploaded_variation %in% nonCodingVar2keep] <- 3
-
-
-# STEP 2: Get the most severe IMPACT for each variant ####
-
+cat("STEP 2: Get the most severe IMPACT for each variant ####\n")
 VEP.f1 <- anno.f1
 
-# for Gene-Var pair with multiple IMPACT, take the MAX
-VEP.f1.maxIMAPCT <- data.frame(matrix(ncol = ncol(VEP.f1) + 1, nrow = 0))
-colnames(VEP.f1.maxIMAPCT) <- c(colnames(VEP.f1), "IMPACT.max")
-for (var in Var.RunTier) {
-  var.df <- VEP.f1[VEP.f1$Uploaded_variation == var, ]
-  # check no. of gene for this variant
-  if (length(unique(var.df$Gene)) == 1) {
-    var.df$IMPACT.max <- max(var.df$IMPACT.no)
-    VEP.f1.maxIMAPCT <- rbind(VEP.f1.maxIMAPCT, var.df)
-  } else {
-    for (gene in unique(var.df$Gene)) {
-      var.g.df <- var.df[var.df$Gene == gene, ]
-      var.g.df$IMPACT.max <- max(var.g.df$IMPACT.no)
-      VEP.f1.maxIMAPCT <- rbind(VEP.f1.maxIMAPCT, var.g.df)
-    }
-  }
-}
+# it won't be the same order but will work
+VEP.f1.maxIMAPCT <- VEP.f1 |> 
+  filter(is.na(TierAD)) |> 
+  group_by(Uploaded_variation, Gene) |> 
+  mutate(
+    IMPACT.max = max(IMPACT.no)
+  ) |> 
+  ungroup()
 
 # find all intronic Var with AF == 0, will adjust the Tier if in trans with a high impact variant. ####
 
@@ -240,7 +158,7 @@ rareIntronicVar <- VEP.f1.maxIMAPCT[rareVar &
 rareIntronicVar <- unique(rareIntronicVar)
 
 # for each Variant keep the most severe IMPACT only
-VEP.f2 <- unique(
+VEP.f2 <- distinct(
   VEP.f1.maxIMAPCT[, c("Uploaded_variation",
   "SYMBOL",
   "Gene",
@@ -249,10 +167,9 @@ VEP.f2 <- unique(
   "omimSymptomSimScore",
   "hgmdSymptomSimScore")])
 
-# STEP 3: assign Tiers ####
+cat("STEP 3: assign Tiers\n")
 
 # VEP.f2$GT <- ifelse(VEP.f2$GT=="HET", "0/1","1/1")
-
 # though Tier classification is Gene based, Tier should be assigned to each Variant
 
 VEP.Tier.part1 <- data.frame(matrix(ncol = ncol(VEP.f2) + 6, nrow = 0))
@@ -266,102 +183,73 @@ colnames(VEP.Tier.part1) <- c(
   "No.Var.L"
 )
 
-for (g in unique(VEP.f2$Gene)) {
-  g.df <- VEP.f2[VEP.f2$Gene == g, ]
-  
-  # X linked, seudo autosomal region -> treat as autosomal
-  # if (sum(grepl("X",g.df$Uploaded_variation)) >0) {
-  #   g.df$TierAD = g.df$TierAR = ifelse(g.df$IMPACT.max <3, 4, 5-g.df$IMPACT.max)
-  # }
-  
-  # AD regardless of the GT
-  g.df$TierAD <- ifelse(g.df$IMPACT.max < 3, 4, 5 - g.df$IMPACT.max)
-  
-  # AR
-  g.df2 <- g.df
-  
-  # duplicate rows with HOM var
-  if ("HOM" %in% g.df$GT) {
-    g.df2 <- rbind(g.df, g.df[g.df$GT == "1/1", ])
-  }
-  IMPACT.max <- g.df2$IMPACT.max
-  if (sum(IMPACT.max == 4) >= 2) {
-    # >=2 strong alleles
-    g.df$TierAR <- 5 - g.df$IMPACT.max
-    # update 202221005: H+H: M-> change Tie from 2 to 1.5
-    g.df$TierAR[g.df$IMPACT.max == 3] <- 1.5
-  } else if (sum(IMPACT.max == 4) == 1 &
-             sum(IMPACT.max == 3) >= 1) {
-    # H + M
-    g.df$TierAR[g.df$IMPACT.max >= 3] <- 1.5 # (need more thought, 2 or 1.5 ???)
-    g.df$TierAR[g.df$IMPACT.max < 3] <- 5 - g.df$IMPACT.max[g.df$IMPACT.max < 3]
-  } else if (sum(IMPACT.max == 4) == 1) {
-    # H only
-    g.df$TierAR[g.df$IMPACT.max == 4] <- 3 # (need more thought, 2 or 3 ???)
-    g.df$TierAR[g.df$IMPACT.max <= 3] <- 5 - g.df$IMPACT.max[g.df$IMPACT.max <= 3]
-  } else if (sum(IMPACT.max == 3) >= 2) {
-    # M + M
-    g.df$TierAR[g.df$IMPACT.max == 3] <- 2 # (need more thought, 2 or 3 ???)
-    g.df$TierAR[g.df$IMPACT.max < 3] <- 5 - g.df$IMPACT.max[g.df$IMPACT.max < 3]
-  } else if (sum(IMPACT.max == 3) == 1) {
-    # M only
-    g.df$TierAR[g.df$IMPACT.max == 3] <- 3 # (need more thought, 2 or 3 ???)
-    g.df$TierAR[g.df$IMPACT.max < 3] <- 5 - g.df$IMPACT.max[g.df$IMPACT.max < 3]
-  }
-  
-  # count the number of high IMPACT var per gene.
-  No.Var.HM <- sum(IMPACT.max >= 3)
-  No.Var.H <- sum(IMPACT.max == 4)
-  No.Var.M <- sum(IMPACT.max == 3)
-  No.Var.L <- sum(IMPACT.max == 2)
-  g.df$No.Var.HM <- No.Var.HM
-  g.df$No.Var.H <- No.Var.H
-  g.df$No.Var.M <- No.Var.M
-  g.df$No.Var.L <- No.Var.L
-  
-  VEP.Tier.part1 <- rbind(VEP.Tier.part1, g.df)
-}
+VEP.Tier.part1 <- data.frame(matrix(ncol = ncol(VEP.f2) + 6, nrow = 0))
+colnames(VEP.Tier.part1) <- c(
+  colnames(VEP.f2),
+  "TierAR",
+  "TierAD",
+  "No.Var.HM",
+  "No.Var.H",
+  "No.Var.M",
+  "No.Var.L"
+)
 
-# STEP 4: Find all genes with No.Var.H == 1, adjust the Tier for rareIntronicVar ####
+cat("STEP 4: Find all genes with No.Var.H == 1, adjust the Tier for rareIntronicVar\n")
 
-if (IncludeClinVarHGMD) {
-  gene.w1HighVar <- VEP.Tier.part1$Gene[VEP.Tier.part1$No.Var.H == 1]
-  rareIntronicVar.2adj <- rareIntronicVar[rareIntronicVar$Gene %in% gene.w1HighVar, ]
-  
-  # adjust the Tier for rareIntronicVar based on similarity
-  phenoSimi <- unique(VEP.f1.maxIMAPCT[, c("Gene", "omimSymptomSimScore", "hgmdSymptomSimScore")])
-  
-  # check for non numeric values and convert to 0
-  omim_NA_idx <- which(is.na(as.numeric(phenoSimi$omimSymptomSimScore)))
-  hgmd_NA_idx <- which(is.na(as.numeric(phenoSimi$hgmdSymptomSimScore)))
-  # print(hgmd_NA_idx)
-  phenoSimi$omimSymptomSimScore[omim_NA_idx] <- 0
-  phenoSimi$hgmdSymptomSimScore[hgmd_NA_idx] <- 0
-  
-  phenoSimi$omimSymptomSimScore <- as.numeric(phenoSimi$omimSymptomSimScore)
-  phenoSimi$hgmdSymptomSimScore <- as.numeric(phenoSimi$hgmdSymptomSimScore)
-  
-  phenoSimi <- phenoSimi[phenoSimi$omimSymptomSimScore != 0 |
-                           phenoSimi$hgmdSymptomSimScore != 0, ]
-  
-  rareIntronicVar.2adj.wPhenoSimi <- merge(rareIntronicVar.2adj,
-                                           phenoSimi,
-                                           by.x = "Gene",
-                                           by.y = "Gene")
-  rareIntronicVar.2adj.wPhenoSimi$simi <- apply(rareIntronicVar.2adj.wPhenoSimi[, 3:4], 1, max)
-  rareIntronicVar.2adj.wPhenoSimi$TierAR.adj <- 5 - (5 - 4) * exp(adj.k * rareIntronicVar.2adj.wPhenoSimi$simi)
-  
-  rareIntronicVar.df <- rareIntronicVar.2adj.wPhenoSimi[, c("Uploaded_variation", "Gene", "TierAR.adj")]
-  VEP.Tier.part1 <- merge(
-    VEP.Tier.part1,
-    rareIntronicVar.df,
-    by.x <- c("Uploaded_variation", "Gene"),
-    by.y = c("Uploaded_variation", "Gene"),
-    all.x = T
-  )
-} else {
-  VEP.Tier.part1$TierAR.adj <- VEP.Tier.part1$TierAR
-}
+VEP.Tier.part1 <- VEP.f2 |> 
+  group_by(Gene) |>
+  group_modify(~{
+    g.df <- .x
+    
+    # AD regardless of the GT
+    g.df <- g.df |> mutate(TierAD = if_else(IMPACT.max < 3, 4, 5 - IMPACT.max))
+    
+    # AR
+    g.df2 <- g.df
+    
+    # duplicate rows with HOM var
+    if ("HOM" %in% g.df$GT) {
+      g.df2 <- bind_rows(g.df2, filter(g.df, GT == "1/1"))
+    }
+    
+    IMPACT.max <- g.df2$IMPACT.max
+    # Calculate TierAR
+    if (sum(IMPACT.max == 4) >= 2) {
+      g.df$TierAR <- 5 - g.df$IMPACT.max
+      g.df$TierAR[g.df$IMPACT.max == 3] <- 1.5
+    } else if (sum(IMPACT.max == 4) == 1 & sum(IMPACT.max == 3) >= 1) {
+      g.df$TierAR[g.df$IMPACT.max >= 3] <- 1.5
+      g.df$TierAR[g.df$IMPACT.max < 3] <- 5 - g.df$IMPACT.max[g.df$IMPACT.max < 3]
+    } else if (sum(IMPACT.max == 4) == 1) {
+      g.df$TierAR[g.df$IMPACT.max == 4] <- 3
+      g.df$TierAR[g.df$IMPACT.max <= 3] <- 5 - g.df$IMPACT.max[g.df$IMPACT.max <= 3]
+    } else if (sum(IMPACT.max == 3) >= 2) {
+      g.df$TierAR[g.df$IMPACT.max == 3] <- 2
+      g.df$TierAR[g.df$IMPACT.max < 3] <- 5 - g.df$IMPACT.max[g.df$IMPACT.max < 3]
+    } else if (sum(IMPACT.max == 3) == 1) {
+      g.df$TierAR[g.df$IMPACT.max == 3] <- 3
+      g.df$TierAR[g.df$IMPACT.max < 3] <- 5 - g.df$IMPACT.max[g.df$IMPACT.max < 3]
+    } else {
+      g.df$TierAR <- 5 - g.df$IMPACT.max
+    }
+    # Calculate the count columns
+    g.df$No.Var.HM <- sum(IMPACT.max >= 3)
+    g.df$No.Var.H <- sum(IMPACT.max == 4)
+    g.df$No.Var.M <- sum(IMPACT.max == 3)
+    g.df$No.Var.L <- sum(IMPACT.max == 2)
+    
+    g.df
+
+  }) |>
+  ungroup()
+
+# If TierAR.adj is needed and not calculated earlier, you can add it here
+# For example, if it's the same as TierAR:
+ VEP.Tier.part1 <- VEP.Tier.part1 |>
+  mutate(TierAR.adj = TierAR)
+
+VEP.Tier.part1$TierAR.adj <- VEP.Tier.part1$TierAR
+
 
 # add the TierAR.adj to the VEP.Tier df
 
@@ -379,7 +267,7 @@ VEP.Tier.part1 <- VEP.Tier.part1[, c(
   "No.Var.L"
 )]
 
-# STEP 5: add the No.Var for Var.NoTier  ####
+cat("STEP 5: add the No.Var for Var.NoTier\n")
 if (ParseVar.NoTier) {
   VEP.Tier.part2 <- anno[anno$Uploaded_variation %in% Var.NoTier, c("Uploaded_variation", "Gene", "GT")]
   VEP.Tier.part2$IMPACT.max <- 1
@@ -391,34 +279,39 @@ if (ParseVar.NoTier) {
   VEP.Tier <- VEP.Tier.part1
 }
 
-VEP.Tier.wGene <- data.frame(matrix(ncol = ncol(VEP.Tier), nrow = 0))
-for (g in unique(VEP.Tier$Gene)) {
-  g.df <- VEP.Tier[VEP.Tier$Gene == g, ]
-  # AR
-  g.df2 <- g.df
-  
-  # duplicate rows with HOM var
-  if ("HOM" %in% g.df$GT) {
-    g.df2 <- rbind(g.df, g.df[g.df$GT == "1/1", ])
-  }
-  IMPACT.max <- g.df2$IMPACT.max
-  
-  No.Var.HM <- sum(IMPACT.max >= 3)
-  No.Var.H <- sum(IMPACT.max == 4)
-  No.Var.M <- sum(IMPACT.max == 3)
-  No.Var.L <- sum(IMPACT.max == 2)
-  g.df$No.Var.HM <- No.Var.HM
-  g.df$No.Var.H <- No.Var.H
-  g.df$No.Var.M <- No.Var.M
-  g.df$No.Var.L <- No.Var.L
-  
-  VEP.Tier.wGene <- rbind(VEP.Tier.wGene, g.df)
-}
-# remove the GT column
-VEP.Tier.wGene$GT <- NULL
 
+VEP.Tier.wGene <- VEP.Tier |>
+  group_by(Gene) |>
+  group_modify(~{
+    g.df <- .x
+    
+    # Duplicate rows with HOM var
+    g.df2 <- if ("HOM" %in% g.df$GT) {
+      bind_rows(g.df, filter(g.df, GT == "1/1"))
+    } else {
+      g.df
+    }
+    
+    IMPACT.max <- g.df2$IMPACT.max
+    
+    g.df |>
+      mutate(
+        No.Var.HM = sum(IMPACT.max >= 3),
+        No.Var.H = sum(IMPACT.max == 4),
+        No.Var.M = sum(IMPACT.max == 3),
+        No.Var.L = sum(IMPACT.max == 2)
+      )
+  }) |>
+  ungroup() |>
+  select(-GT)  # Remove the GT column
 
-# STEP 6: add the Tiers from anno_noGeneID
+# If you need to ensure the same column order as the original VEP.Tier
+VEP.Tier.wGene <- VEP.Tier.wGene |>
+  select(names(VEP.Tier)[names(VEP.Tier) != "GT"])
+
+VEP.Tier.wGene <- as_tibble(VEP.Tier.wGene)
+
+print("STEP 6: add the Tiers from anno_noGeneID")
 if ("-" %in% anno$Gene) {
   VEP.Tier.final <- rbind(VEP.Tier.wGene, anno_noGeneID)
 }
@@ -426,7 +319,6 @@ VEP.Tier.final <- VEP.Tier.wGene
 
 colnames(VEP.Tier.final)[colnames(VEP.Tier.final) == "IMPACT.max"] <- "IMPACT.from.Tier"
 VEP.Tier.final$TierAR.adj[is.na(VEP.Tier.final$TierAR.adj)] <- VEP.Tier.final$TierAR[is.na(VEP.Tier.final$TierAR.adj)]
-
 
 # add inheritance information
 colnames(genemap2.Inh.F)[1] <- "Gene"
@@ -452,7 +344,3 @@ write.table(
   col.names = T,
   row.names = F
 )
-
-# write.table(VEP.Tier.wInh,"/houston_20t/dongxue/MARRVEL_AI/V2/FeatureEng/TestOut/906246_Tier.tsv", sep = "\t", quote = F, col.names = T, row.names = F)
-# write.table(VEP.Tier.wInh,"/houston_30t/dongxue/AI/UDN_Sample_2023/ModifiedAIMCode/NDVG_causal_Tier.v2.tsv", sep = "\t", quote = F, col.names = T, row.names = F)
-### Plot for Tier adjustment ####
