@@ -1,19 +1,20 @@
-.gitignore
+# General
+**/__pycache__
 bcftools-1.9.tar.bz2
 run/bedtools
 .vscode/
 .DS_Store
 */.DS_Store
-.nextflow*
-.nextflow/
-work/
 test_data/
 test_ref/
 test_output/
-trace*
-**/__pycache__
-report-*html
-trace-*txt
+
+# Nextflow Related
+.nextflow*
 .nextflow/
 work/
-
+out/
+trace*
+trace-*txt
+report-*html
+params.yaml

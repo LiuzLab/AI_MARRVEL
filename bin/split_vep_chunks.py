@@ -25,12 +25,9 @@ nlines = (
     - 1
 )
 
-command = f"du {VEP_FILE}"
-filesize = int(
-    subprocess.check_output(command, shell=True, text=True).strip().split("\t")[0]
-)
+filesize = os.path.getsize(VEP_FILE)
 
-num_chunk = math.ceil((filesize / 1024) / (RAMlimit * 1024 / 23))
+num_chunk = math.ceil((filesize / 1024 / 1024) / (RAMlimit * 1024 / 23))
 
 chunk_lines = math.ceil(nlines / num_chunk)
 
