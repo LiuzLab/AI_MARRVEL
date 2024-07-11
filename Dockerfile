@@ -61,10 +61,9 @@ RUN apt install -y r-base r-base-core
 
 # Install R libs
 RUN R -e "install.packages('data.table',dependencies=TRUE, repos='http://cran.rstudio.com/')"
-RUN R -e "install.packages('dplyr',dependencies=TRUE, repos='http://cran.rstudio.com/')"
+RUN R -e "install.packages('tidyverse',dependencies=TRUE, repos='http://cran.rstudio.com/')"
 RUN R -e "install.packages('ontologyIndex',dependencies=TRUE, repos='http://cran.rstudio.com/')"
 RUN R -e "install.packages('ontologySimilarity',dependencies=TRUE, repos='http://cran.rstudio.com/')"
-RUN R -e "install.packages('tidyverse',dependencies=TRUE, repos='http://cran.rstudio.com/')"
 
 
 
