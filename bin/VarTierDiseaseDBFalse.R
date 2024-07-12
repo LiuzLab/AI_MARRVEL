@@ -1,6 +1,9 @@
 #!/usr/bin/env Rscript
 
-library(tidyverse)
+library(tidyr)
+library(readr)
+library(tibble)
+library(dplyr)
 library(data.table)
 # set adj.k value to adjust Tier
 adj.k <- 1.05
