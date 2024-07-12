@@ -129,65 +129,6 @@ def main():
     clinvarAlleleDf = []
     omimAlleleList = []
 
-    ## CL: It's no longer needed to extract info from HGMD_allmut.txt
-    """
-    #read HGMD files
-    if 'curate' in moduleList:
-        #hgmd dir
-        fileName='/run/annotation/HGMD_allmut.txt'
-        hgmdDf=pd.read_csv(fileName, sep='\t')
-        print('hgmdDf shape:', hgmdDf.shape)
-        hgmdDf=hgmdDf.fillna(0)
-        hgmdDf['startCoord']=hgmdDf['startCoord'].astype(int)
-        hgmdDf['endCoord']=hgmdDf['endCoord'].astype(int)
-        hgmdDf['chromosome']=hgmdDf['chromosome'].replace('X',23  )
-        hgmdDf['chromosome']=hgmdDf['chromosome'].replace('Y',24  )
-        hgmdDf['chromosome']=hgmdDf['chromosome'].replace('MT',25  )
-        hgmdDf['chromosome']=hgmdDf['chromosome'].replace('GL.*','26',regex=True )
-        #make chr as int
-        hgmdDf['chromosome']=hgmdDf['chromosome'].astype(int)
-        #sort by gene name
-        hgmdDf.sort_values("gene", inplace=True)
-        #setting gene as index column
-        hgmdDf.set_index("gene", inplace = True,drop=False)
-
-        #test/check HGMD
-        if debugFlag==1:
-            print('in HGMD')
-            #print('\tvar:', varObj.varId_dash, 'var-gene:', varObj.geneSymbol)
-            geneSymbol='SAMD11'
-            pos=865595
-            chrom='1'
-            print('\tchrom:', chrom, 'pos:',pos,'geneSymbol:', geneSymbol)
-            HGMDDict={}
-            hgmdGeneFound=0
-            hgmdVarFound=0
-            hgmdVarPhenIdList=[]
-            hgmdVarHPOIdList=[]
-            hgmdVarHPOStrList=[]
-            #check variant
-            print('\ttype pos:', type(hgmdVarDf['pos'][0]), 'type chrom:', type(hgmdVarDf['chrom'][0]))
-            vals=hgmdVarDf[(hgmdVarDf['pos']==pos) & (hgmdVarDf['chrom'] == int(chrom))]
-            numRows=len(vals.index)
-            print('\tvar numRows:', numRows)
-            if numRows>0:
-                hgmdVarFound=1
-                hgmdVarPhenIdList.extend(vals['phen_id'].tolist())
-                hgmdVarHPOIdList.extend(vals['hpo_id'].tolist())
-                hgmdVarHPOStrList.extend(vals['hpo_str'].tolist())
-
-            #check gene
-            vals=hgmdGeneDf[(hgmdGeneDf['gene']==geneSymbol)]
-            numRows=len(vals.index)
-            print('\tgene numRows:', numRows)
-            if numRows>0:
-                hgmdGeneFound=1
-            print('\thgmdVarFound:',hgmdVarFound,'hgmdGeneFound:',hgmdGeneFound,
-                  'hgmdVarPhenIdList:',hgmdVarPhenIdList,'hgmdVarHPOIdList:',hgmdVarHPOIdList,
-                  'hgmdVarHPOStrList:',hgmdVarHPOStrList)
-
-    """
-
     # read HPO files
     if "curate" in moduleList:
         fileName = args.patientHPOsimiOMIM
@@ -206,26 +147,21 @@ def main():
         if args.genomeRef == "hg38":
             fileName = "annotate/anno_hg19/gene_clinvar.csv"
         else:
-            fileName = "annotate/anno_hg19/gene_clinvar.csv"
-        # fileName='/database_test/gene_clinvar.csv'
-        # print('\nfileName:', fileName)
+           fileName = "annotate/anno_hg19/gene_clinvar.csv"
+
         clinvarGeneDf = pd.read_csv(fileName, sep=",")
         # sort by gene name
         clinvarGeneDf.sort_values("symbol", inplace=True)
         clinvarGeneDf.set_index(["symbol"], inplace=True, drop=False)
-        # print('clinvarGenes dim:', clinvarGeneDf.shape)#41754 x 10,, entrezId,symbol,chr,hg19Start,hg19Stop,totalClinvarVars,P,LP,LB,B
-        # print(clinvarGeneDf.head())
 
     # read OMIM
     if "curate" in moduleList:
         # read the OMIM gene file
         fileName = "annotate/anno_hg19/gene_omim.json"
-        # fileName='/database_test/gene_omim.json'
-        # print('\nfileName:', fileName)
+
         with open(fileName) as f:
             omimGeneList = json.load(f)
-        # print('type omimGeneList:', type(omimGeneList), 'len:', len(omimGeneList))
-        # check the type of data and keys
+
         if debugFlag == 1:
             for omimGeneDict in omimGeneList:
                 print("type of omimGeneDict:", type(omimGeneDict))
@@ -236,16 +172,12 @@ def main():
                     if isinstance(omimGeneDict[keyVal], list):
                         print("\n\t\tfound list")
                         print("\t\t type:", type(omimGeneDict[keyVal]))
-                        # print('\t\t type:',omimGeneDict[keyVal])
-                        # for row in omimGeneDict[keyVal]:
-                        #    print('row keys:', row.keys())
 
                 break
 
         # read the OMIM allele file
         fileName = "annotate/anno_hg19/omim_alleric_variants.json"
-        # fileName='/database_test/omim_alleric_variants.json'
-        # print('\nfileName:', fileName)
+
         with open(fileName) as f:
             omimAlleleList = json.load(f)
         if debugFlag == 1:
@@ -271,10 +203,7 @@ def main():
             fileName = "annotate/anno_hg38/dgv.csv"
         else:
             fileName = "annotate/anno_hg19/dgv.csv"
-        # fileName='/database_test/dgv.csv'
         dgvDf = pd.read_csv(fileName, sep=",")
-        # print('dgvDf shape:', dgvDf.shape)
-        # print('dgvHead:', dgvDf.head())
         # hg19Chr	hg19Start	hg19Stop
         dgvDf = dgvDf.fillna(0)
 
@@ -289,19 +218,8 @@ def main():
         dgvDf["Chr"] = dgvDf["Chr"].replace("GL.*", 26, regex=True)
 
         # make chr as int
-        # dgvDf = dgvDf.loc[dgvDf['Chr'].isin(list(range(27))),:].copy()
         dgvDf["Chr"] = dgvDf["Chr"].astype(int)
 
-        """ CL: change column name to be compatible with hg38
-        dgvDf['hg19Start']=dgvDf['hg19Start'].astype(int)
-        dgvDf['hg19Stop']=dgvDf['hg19Stop'].astype(int)
-        dgvDf['hg19Chr']=dgvDf['hg19Chr'].replace('X',23  )
-        dgvDf['hg19Chr']=dgvDf['hg19Chr'].replace('Y',24  )
-        dgvDf['hg19Chr']=dgvDf['hg19Chr'].replace('MT',25  )
-        dgvDf['hg19Chr']=dgvDf['hg19Chr'].replace('GL.*','26',regex=True )
-        #make chr as int
-        dgvDf['hg19Chr']=dgvDf['hg19Chr'].astype(int)
-        """
         print("finsihed reading DGV")
 
     # read DECIPHER database
@@ -311,13 +229,10 @@ def main():
             fileName = "annotate/anno_hg38/decipher.csv"
         else:
             fileName = "annotate/anno_hg19/decipher.csv"
-        # fileName='/database_test/decipher.csv'
         decipherDf = pd.read_csv(fileName, sep=",")
-        # print('decipherDf shape:', decipherDf.shape)
         # hg19Chr,hg19Start,hg19Stop
         decipherDf = decipherDf.fillna(0)
 
-        # if args.genomeRef == 'hg19':
         decipherDf.columns = ["Chr", "Start", "Stop"] + decipherDf.columns.tolist()[3:]
 
         decipherDf["Start"] = decipherDf["Start"].astype(int)
@@ -343,7 +258,8 @@ def main():
 
     # read the input variant file
     if args.inFileType == "vepAnnotTab" and flatFileFlag == 1:
-        # numHeaderSkip=354#this depends on the type of annotation used
+        # numHeaderSkip=354
+        # this depends on the type of annotation used
         numHeaderSkip = 0
         with open(args.varFile, "r") as F:
             for line in F:
@@ -356,7 +272,8 @@ def main():
         varDf = pd.read_csv(
             args.varFile, sep="\t", skiprows=numHeaderSkip, error_bad_lines=False
         )
-        # varDf=varDf[0:10]#do this if need to have a small test
+        # varDf=varDf[0:10]
+        # #do this if need to have a small test
         print("shape:", varDf.shape)
         t2 = time.time()
         inputReadTime = t2 - t1
@@ -414,8 +331,6 @@ def main():
                 stopVal = int(varObj.stop)
             
                 # CL 03-14-2023: changed column names to be compatible with hg38
-                # vals=dgvDf[ ( dgvDf['hg19Chr'] == chromVal ) & ( dgvDf['hg19Start']<=startVal ) & (dgvDf['hg19Stop']>=stopVal) ]
-
                 vals = dgvDf[(dgvDfV[:, 0] == chromVal) & (dgvDfV[:, 1] <= startVal) & (dgvDfV[:, 2] >= stopVal)]
                 numRows = len(vals.index)
             
@@ -441,16 +356,14 @@ def main():
     if "curate" in moduleList:
         df = []
         for i, varObj in annotateInfoDf.iterrows():
-            # print('var:', varObj.varId_dash, 'var-gene:', varObj.geneSymbol, 'var-gene-pLI:', varObj.gnomadGenePLI)
             # the curate score is under the utils_1.py file
-            # print('finding symptom matching')
             omimSymMatch(varObj, omimHPOScoreDf, args.inFileType)
             hgmdSymMatch(varObj, hgmdHPOScoreDf)
             clinVarSymMatch(varObj, args.inFileType)
             # OMIM and clinvar info
             retList = getCurationScore(
                 varObj
-            )  # retList=[omimScore, hgmdScore, clinVarScore, totalScore]
+            )
             df.append({
                 "curationScoreOMIM": retList[0],
                 "curationScoreHGMD": retList[1],

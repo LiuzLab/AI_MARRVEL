@@ -34,8 +34,8 @@ Prerequisites
 
 Citation
 =====================
-**Enhancing Molecular Diagnostics of Mendelian Disorders with AI-MARRVEL: A Knowledge-Driven Artificial Intelligence Approach.**
-Click `here <https://dx.doi.org/10.2139/ssrn.4465963>`_ for details.
+**AI-MARRVEL — A Knowledge-Driven AI System for Diagnosing Mendelian Disorders.**
+Click `here <https://ai.nejm.org/doi/full/10.1056/AIoa2300009>`_ for details.
 
 
 License

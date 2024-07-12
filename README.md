@@ -12,9 +12,6 @@
   <a href='https://ai-marrvel.readthedocs.io/en/latest/?badge=latest'>
       <img src='https://readthedocs.org/projects/ai-marrvel/badge/?version=latest' alt='Documentation Status' />
   </a>
-  <a style="text-decoration:none">
-    <img src="http://img.shields.io/badge/Preprint-DOI:10.2139/ssrn.4465963-lightgreen.svg"/>
-  </a>
 </p>
 
 **AI-MARRVEL (AIM)** is an AI system for rare genetic disease diagnosis.  
@@ -25,8 +22,10 @@ and generates **prediction score** + **confidence score** as output.
 
 
 You can use AI-MARRVEL from our [website](https://ai.marrvel.org/) or follow the [documentation](https://ai-marrvel.readthedocs.io/en/latest/) to run locally.
+  
 
-
+:new: Our paper is now published in [NEJM AI](https://ai.nejm.org/doi/full/10.1056/AIoa2300009)!
+  
 
 ## Quick Start
 
@@ -70,3 +69,23 @@ For business purpose, please contact us for licensing.
 ## Disclaimer
 - Some of the data and software included in the distribution may be subject to third-party constraints. Users of the data and software are solely responsible for establishing the nature of and complying with any such restrictions.
 - AI-MARRVEL provides this data and software in good faith, but make no warranty, express or implied, nor assume any legal liability or responsibility for any purpose for which they are used.
+
+## Citing AI-MARRVEL
+
+```bibtex
+@article{doi:10.1056/AIoa2300009,
+author = {Dongxue Mao  and Chaozhong Liu  and Linhua Wang  and Rami AI-Ouran  and Cole Deisseroth  and Sasidhar Pasupuleti  and Seon Young Kim  and Lucian Li  and Jill A. Rosenfeld  and Linyan Meng  and Lindsay C. Burrage  and Michael F. Wangler  and Shinya Yamamoto  and Michael Santana  and Victor Perez  and Priyank Shukla  and Christine M. Eng  and Brendan Lee  and Bo Yuan  and Fan Xia  and Hugo J. Bellen  and Pengfei Liu  and Zhandong Liu },
+title = {AI-MARRVEL — A Knowledge-Driven AI System for Diagnosing Mendelian Disorders},
+journal = {NEJM AI},
+volume = {1},
+number = {5},
+pages = {AIoa2300009},
+year = {2024},
+doi = {10.1056/AIoa2300009},
+
+URL = {https://ai.nejm.org/doi/abs/10.1056/AIoa2300009},
+eprint = {https://ai.nejm.org/doi/pdf/10.1056/AIoa2300009}
+,
+    abstract = { AI-MARRVEL is an AI system for genetic diagnosis that improves diagnostic accuracy, surpassing state-of-the-art benchmarked methods. }
+}
+```

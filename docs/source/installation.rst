@@ -32,23 +32,31 @@ If you want to keep a stable local version of AIM, follow the instruction below.
     git clone https://github.com/LiuzLab/AI_MARRVEL.git
     cd AI_MARRVEL
 
-    # Download necessary software
-    #   bcftools
-    wget https://github.com/samtools/bcftools/releases/download/1.9/bcftools-1.9.tar.bz2
-    #   bedtools
-    wget https://github.com/arq5x/bedtools2/releases/download/v2.30.0/bedtools.static.binary
-    mv bedtools.static.binary run/bedtools
-    chmod a+x run/bedtools
-
     # Build docker image (takes some time)
     docker build -t aim-lite .
 
 
 Install Required Data Dependencies
-===================================
-AIM utilizes various databases for variant annotation, all of which have been compiled and made available for user download.
+=================================== 
+AIM utilizes various databases for variant annotation, all of which have been compiled and are available for download. We use AWS S3 for data access, and the data can be downloaded by following these steps:
 
-We use Globus for data accessing `here <https://app.globus.org/file-manager?origin_id=6810458e-b702-423f-9f0c-070c1691482d&origin_path=%2F>`_
+1. **Install the AWS CLI**:
+   Follow the instructions provided in the `AWS CLI Installation Guide <https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html>`_
+
+
+2. **Navigate to Your Desired Directory**:
+   Change to the directory where you want your data dependencies downloaded. For example, in Ubuntu, use:
+
+   .. code-block:: bash
+
+      cd <desired/folder/path>
+
+3. **Use the following command to sync the S3 bucket to your local directory**:
+
+   .. code-block:: bash
+
+      aws s3 sync s3://aim-data-dependencies-public . --no-sign-request
+
 
 .. warning::
 
