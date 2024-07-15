@@ -38,28 +38,6 @@ process INDEX_VCF {
     """
 }
 
-process FILTER_EXONIC {
-    input:
-    path vcf
-    path tbi
-    path ref_exonic_filter_bed
-
-    output:
-    path "${params.run_id}.recode.vcf.gz"
-    path "${params.run_id}.recode.vcf.gz.tbi"
-
-    script:
-    """
-    if [ !${params.no_filter_exonic} ]; then
-        bcftools filter --regions-file ${ref_exonic_filter_bed} ${vcf} -Oz -o "${params.run_id}.recode.vcf.gz"
-        tabix -p vcf "${params.run_id}.recode.vcf.gz"
-    else
-        cp ${vcf} "${params.run_id}.recode.vcf.gz"
-        cp ${tbi} "${params.run_id}.recode.vcf.gz.tbi"
-    fi
-    """
-}
-
 process VCF_PRE_PROCESS {
     input:
     path vcf
@@ -373,9 +351,7 @@ process PREDICTION {
 workflow { 
     INDEX_VCF(params.input_vcf)
 
-    FILTER_EXONIC(INDEX_VCF.out, params.ref_exonic_filter_bed)
-
-    VCF_PRE_PROCESS(FILTER_EXONIC.out, params.chrmap)
+    VCF_PRE_PROCESS(INDEX_VCF.out, params.chrmap)
 
     REMOVE_MITO_AND_UNKOWN_CHR(VCF_PRE_PROCESS.out)
 

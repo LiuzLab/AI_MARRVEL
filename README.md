@@ -53,7 +53,6 @@ nextflow run .  --ref_dir <PATH_TO_REFERENCE_DIRECTORY>
                 --outdir <PATH_TO_OUTPUT_DIRECTORY>
                 --run_id [Sample Id] # Optional, default: 1
                 --ref_ver [Reference genome: hg19/hg38] # Optional, default: hg19
-                --no_filter_exonic # Optional, default: false
 ```
 
 Alternatively, the pipeline can be executed with a parameter file (yaml)
