@@ -52,13 +52,10 @@ def diffuseSample(ID, Anno_df, Phrank_folder):
         columnns contatins diffused phrank scores normalized as percentile.
     """
 
-    ## Get the PPI network for diffusion
-    cor_path = "mod5_diffusion/combined_score.hdf5"
-    cor_df = pd.read_hdf(cor_path, mode="r")
-    cor_df = cor_df[(cor_df.T != 0).sum() > 1]
-    cor_df = cor_df.loc[cor_df.index, cor_df.index]
-    cor = cor_df.values
-    cor_GeneID = pd.DataFrame({"ID": cor_df.columns.tolist()})
+    ## Load PPI Network for Diffusion
+    net_norm_cor_GeneID = np.load('./mod5_diffusion/net_norm_cor_GeneID.npz', allow_pickle=True)
+    net_norm = net_norm_cor_GeneID['net_norm']
+    cor_GeneID = pd.DataFrame(net_norm_cor_GeneID['cor_GeneID_arr'], columns=["ID"])
 
     # Phrank_path = Phrank_folder + ID.split('.')[0] + ".txt"
     Phrank_path = ID + ".phrank.txt"
@@ -100,11 +97,6 @@ def diffuseSample(ID, Anno_df, Phrank_folder):
     m12_wSimi = list(set(Phrank["Ensembl_Gene_ID"]) & set(m12_genes))
     m12_wSimi_woCor = list(set(m12_wSimi) - (set(cor_GeneID["ID"])))
     m12_wSimi_woCor = simi[simi["Ensembl_Gene_ID"].isin(m12_wSimi_woCor)]
-    ## normalized the cor matrix
-    net = abs(cor).astype('float32')
-    D = 1 / np.sqrt(net.sum(axis=1))
-    D2 = np.diag(D)
-    net_norm = D2 @ net @ D2
 
     ## Set Y as similarity score
     Y = cor_GeneID.merge(simi, left_on="ID", right_on="Ensembl_Gene_ID", how="left")
