@@ -212,8 +212,6 @@ VEP.f2 <- unique(VEP.f1.maxIMAPCT[,c("Uploaded_variation", "SYMBOL","Gene","GT",
 
 # STEP 3: assign Tiers ####
   
-# VEP.f2$GT <- ifelse(VEP.f2$GT=="HET", "0/1","1/1")
-
 # though Tier classification is Gene based, Tier should be assigned to each Variant 
   
 VEP.Tier.part1 <- data.frame(matrix(ncol = ncol(VEP.f2) + 6, nrow = 0))
@@ -236,7 +234,7 @@ for (g in unique(VEP.f2$Gene)){
   
   # duplicate rows with HOM var
   if ("HOM" %in% g.df$GT){
-    g.df2 <- rbind(g.df, g.df[g.df$GT == "1/1",])
+    g.df2 <- rbind(g.df, g.df[g.df$GT == "HOM",])
   }
   IMPACT.max <- g.df2$IMPACT.max
   if(sum(IMPACT.max==4) >=2){
@@ -334,7 +332,7 @@ for (g in unique(VEP.Tier$Gene)){
   
   # duplicate rows with HOM var
   if ("HOM" %in% g.df$GT){
-    g.df2 <- rbind(g.df, g.df[g.df$GT == "1/1",])
+    g.df2 <- rbind(g.df, g.df[g.df$GT == "HOM",])
   }
   IMPACT.max <- g.df2$IMPACT.max
   
