@@ -61,7 +61,6 @@ RUN apt install -y r-base r-base-core
 
 # Install R libs
 RUN R -e "install.packages('data.table',dependencies=TRUE, repos='http://cran.rstudio.com/')"
-RUN R -e "install.packages('dplyr',dependencies=TRUE, repos='http://cran.rstudio.com/')"
 RUN R -e "install.packages('ontologyIndex',dependencies=TRUE, repos='http://cran.rstudio.com/')"
 RUN R -e "install.packages('ontologySimilarity',dependencies=TRUE, repos='http://cran.rstudio.com/')"
 RUN R -e "install.packages('tidyverse',dependencies=TRUE, repos='http://cran.rstudio.com/')"
@@ -85,9 +84,19 @@ COPY run /run/
 RUN chmod +x /run/proc.sh
 
 # Install bedtools
-RUN wget https://github.com/arq5x/bedtools2/releases/download/v2.30.0/bedtools.static.binary
-RUN mv bedtools.static.binary /run/bedtools
-RUN chmod a+x /run/bedtools
+RUN wget https://github.com/arq5x/bedtools2/releases/download/v2.30.0/bedtools.static.binary \
+    && mv bedtools.static.binary /usr/local/bin/bedtools \
+    && chmod a+x /usr/local/bin/bedtools
 
+# Additonal tools for trio analysis
+# =======================================
+# GATK: broadinstitute/gatk:4.2.5.0
+# ======================================
 
-
+#add symbolic link to py3.8 for python to be invoked by GATK
+RUN ln -sf /usr/bin/python3.8 /usr/bin/python
+RUN wget https://github.com/broadinstitute/gatk/releases/download/4.2.6.0/gatk-4.2.6.0.zip \
+    && unzip gatk-4.2.6.0.zip \
+    && mv gatk-4.2.6.0 /opt/gatk \
+    && rm gatk-4.2.6.0.zip
+ENV PATH="/opt/gatk/:$PATH"
