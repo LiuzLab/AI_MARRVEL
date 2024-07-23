@@ -84,9 +84,9 @@ COPY run /run/
 RUN chmod +x /run/proc.sh
 
 # Install bedtools
-RUN wget https://github.com/arq5x/bedtools2/releases/download/v2.30.0/bedtools.static.binary \
-    && mv bedtools.static.binary /usr/local/bin/bedtools \
-    && chmod a+x /usr/local/bin/bedtools
+RUN wget https://github.com/arq5x/bedtools2/releases/download/v2.30.0/bedtools.static.binary
+RUN mv bedtools.static.binary /run/bedtools
+RUN chmod a+x /run/bedtools
 
 # Additonal tools for trio analysis
 # =======================================
