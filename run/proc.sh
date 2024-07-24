@@ -104,8 +104,8 @@ python2.7 /run/phrank/src/location_to_gene.py /out/$1-var-filt.txt ${REF_DIR} | 
 
 
 #echo "gene-sym"
-cat /out/$1-ensmbl.txt | sort -k5,5 | join -1 5 -2 1 - /run/data_dependencies/phrank/hg19/ensembl_to_symbol.txt | sed 's/ /\t/g' | cut -f2- > /out/$1-genesym.txt
-cat /out/$1-genesym.txt | cut -f5 | sort -u | join -t$'\t' -1 1 -2 2 - /run/data_dependencies/phrank/hg19/gene_to_symbol_sorted.txt | cut -f2 | sort -u > /out/$1-gene.txt
+cat /out/$1-ensmbl.txt | sort -k5,5 | join -1 5 -2 1 - /run/data_dependencies/phrank/ensembl_to_symbol.txt | sed 's/ /\t/g' | cut -f2- > /out/$1-genesym.txt
+cat /out/$1-genesym.txt | cut -f5 | sort -u | join -t$'\t' -1 1 -2 2 - /run/data_dependencies/phrank/gene_to_symbol_sorted.txt | cut -f2 | sort -u > /out/$1-gene.txt
 
 
 # #run phrank scoring

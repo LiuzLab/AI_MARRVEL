@@ -39,7 +39,7 @@ args = commandArgs(trailingOnly=TRUE)
 refg <- args[2]
 # load database: OMIM inheritance ####
 # genemap2.Inh.F <- readRDS(file.path("/run/genemap2.Inh.F.rds"))
-genemap2.Inh.F <- read.delim2(file.path(paste0('/run/data_dependencies/var_tier/',refg,'/genemap2.Inh.F.txt')))
+genemap2.Inh.F <- read.delim2(file.path(paste0('/run/data_dependencies/var_tier/','genemap2.Inh.F.txt')))
 
 # set the input output file / directory ####
 

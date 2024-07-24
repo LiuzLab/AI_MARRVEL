@@ -68,10 +68,10 @@ write.table(dat2, output_file_name2, sep = "\t", quote = F, row.names = F)
 
 
 # Load OMIM gene-disease data
-genemap2 <-readRDS("/run/data_dependencies/omim_annotate/hg19/genemap2_v2022.rds")
+genemap2 <-readRDS("/run/data_dependencies/omim_annotate/genemap2_v2022.rds")
 
 ## ---- Load OMIM Phenotype  ----
-HPO_orig <- read.table("/run/data_dependencies/omim_annotate/hg19/HPO_OMIM.tsv", sep="\t", header= T, stringsAsFactors = FALSE, comment.char = "", fill = TRUE, quote = "\"")
+HPO_orig <- read.table("/run/data_dependencies/omim_annotate/HPO_OMIM.tsv", sep="\t", header= T, stringsAsFactors = FALSE, comment.char = "", fill = TRUE, quote = "\"")
 OMIM_HPO <- HPO_orig[,c('OMIM_ID', 'DiseaseName', 'HPO_ID')]
 # rename colnames
 colnames(OMIM_HPO) = c("OMIM_ID", "Disease_Name", "HPO_ID")
