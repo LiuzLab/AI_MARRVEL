@@ -9,10 +9,11 @@ from confidence import *
 import sys
 
 #read in precalulated model
-model=joblib.load("/run/predict_trio/rf_trio_NDG.job")
+#! will need a more flexible way of reading the path
+model=joblib.load("/trio_pipeline/predict_trio/rf_trio_NDG.job")
 
 #read in features to use
-features=list(pd.read_csv("/run/predict_trio/features_NDG.csv"))
+features=list(pd.read_csv("/trio_pipeline/predict_trio/features_NDG.csv"))
 
 #predict with Linhua's code
 out=rank_patient(model, "/out/inheritance/"+sys.argv[1]+".trio.mtx.csv", features, train_causals=None)

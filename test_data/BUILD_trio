@@ -1,0 +1,41 @@
+
+
+
+#=====================================Notes for running the trio pipeline=====================================
+# NOTE: need the reference genome in data dependency folder: data_dependencies/var_annotator/hg38/hg38.fa
+
+#joint vcf: -v /path/to/joint.vcf:/input/joint.vcf
+#hpo file: -v /path/to/hpo.txt:/input/hpo.txt
+#ped file: -v /path/to/trio.ped:/input/trio.ped
+#output folder: -v /path/to/output:/out
+#data dependency folder: -v /path/to/data_dependencies:/run/data_dependencies
+
+#$1 submission id
+#$2 ref genome
+#$3 memory limitation
+#$4 keep intermediate
+
+# docker run -u $(id -u):$(id -g) \
+#         -v /path/to/joint.vcf:/input/joint.vcf \
+#         -v /path/to/hpo.txt:/input/hpo.txt \
+#         -v /path/to/trio.ped:/input/trio.ped \
+#         -v /path/to/output:/out \
+#         -v /path/to/data_dependencies:/run/data_dependencies \
+#         aim:trio /trio_pipeline/proc_trio.sh $1 $2 $3 $4 &> /path/to/full_logs.txt
+
+docker run -u $(id -u):$(id -g) \
+        -v /home/zhijiany/work_dir/trio_test/AI_MARRVEL/test_data/chr2_joint.vcf.gz:/input/joint.vcf \
+        -v /home/zhijiany/work_dir/trio_test/AI_MARRVEL/test_data/BCM427_HPO.txt:/input/hpo.txt \
+        -v /home/zhijiany/work_dir/trio_test/AI_MARRVEL/test_data/trio.ped:/input/trio.ped \
+        -v /home/zhijiany/work_dir/trio_test/triodocker_testoutput:/out \
+        -v /home/sasidhar/1023:/run/data_dependencies \
+        aim:trio /trio_pipeline/proc_trio.sh test185 hg38 20 True &> /home/zhijiany/work_dir/trio_test/AI_MARRVEL/test_data/full_logs.txt
+
+#test
+docker run -u $(id -u):$(id -g) -it \
+        -v /home/zhijiany/work_dir/trio_test/AI_MARRVEL/test_data/chr2_joint.vcf.gz:/input/joint.vcf \
+        -v /home/zhijiany/work_dir/trio_test/AI_MARRVEL/test_data/BCM427_HPO.txt:/input/hpo.txt \
+        -v /home/zhijiany/work_dir/trio_test/AI_MARRVEL/test_data/trio.ped:/input/trio.ped \
+        -v /home/zhijiany/work_dir/trio_test/triodocker_testoutput:/out \
+        -v /home/sasidhar/1023:/run/data_dependencies \
+        aim:trio 

@@ -26,7 +26,11 @@ RUN apt-get update && apt-get install -y \
     python3.8 \
     python3.8-dev \
     python3.8-distutils \
-    python3-apt
+    python3-apt \
+    openjdk-8-jdk-headless \
+    samtools \
+    picard-tools
+
 
 RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 RUN python3.8 get-pip.py
@@ -83,6 +87,10 @@ RUN tar -xf /opt/bcftools-1.9.tar.bz2 -C /opt/ && \
 COPY run /run/
 RUN chmod +x /run/proc.sh
 
+#Copy the trio_pipeline into Docker image
+COPY trio_pipeline /trio_pipeline/
+RUN chmod +x /trio_pipeline/proc_trio.sh
+
 # Install bedtools
 RUN wget https://github.com/arq5x/bedtools2/releases/download/v2.30.0/bedtools.static.binary
 RUN mv bedtools.static.binary /run/bedtools
@@ -90,7 +98,10 @@ RUN chmod a+x /run/bedtools
 
 # Additonal tools for trio analysis
 # =======================================
-# GATK: broadinstitute/gatk:4.2.5.0
+# GATK: broadinstitute/gatk:4.2.6.0
+# Java: openjdk-8-jdk-headless
+# Samtools
+# Picard-tools
 # ======================================
 
 #add symbolic link to py3.8 for python to be invoked by GATK

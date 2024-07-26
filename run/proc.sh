@@ -30,8 +30,11 @@ if [[ -z $(egrep 'HP:[0-9]{7}' /input/hpo.txt) ]] ; then
     echo "HP:0000001" > /input/hpo.txt
 fi
 
-
-cp /input/vcf.gz /out/vcf.gz  ### New Step: Copying file to output directory
+#if /out/vcf.gz not existing from trio files, copy /input/vcf.gz to /out/vcf.gz
+if [ ! -f "/out/vcf.gz" ]; then
+    cp /input/vcf.gz /out/vcf.gz
+fi
+ ### New Step: Copying file to output directory
 
 
 # Initial path of the VCF file
