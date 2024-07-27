@@ -1,5 +1,5 @@
 # List of dependencies installed
-#	bcftools v1.9-1-deb_cv1
+#	bcftools v1.20-1-deb_cv1
 #	ensemblorg/ensembl-vep:release_104.3
 #	python 2.7
 #	python 3.8.13
@@ -69,16 +69,16 @@ RUN R -e "install.packages('tidyverse',dependencies=TRUE, repos='http://cran.rst
 
 
 # Install bcftools
-RUN wget https://github.com/samtools/bcftools/releases/download/1.9/bcftools-1.9.tar.bz2
-RUN mv bcftools-1.9.tar.bz2 /opt/bcftools-1.9.tar.bz2
+RUN wget https://github.com/samtools/bcftools/releases/download/1.20/bcftools-1.20.tar.bz2
+RUN mv bcftools-1.20.tar.bz2 /opt/bcftools-1.20.tar.bz2
 
-RUN tar -xf /opt/bcftools-1.9.tar.bz2 -C /opt/ && \
-  rm /opt/bcftools-1.9.tar.bz2 && \
-  cd /opt/bcftools-1.9 && \
+RUN tar -xf /opt/bcftools-1.20.tar.bz2 -C /opt/ && \
+  rm /opt/bcftools-1.20.tar.bz2 && \
+  cd /opt/bcftools-1.20 && \
   ./configure && \
   make && \
   make install && \
-  rm -rf /opt/bcftools-1.9
+  rm -rf /opt/bcftools-1.20
 
 # Copy the pipeline into Docker image
 COPY run /run/
