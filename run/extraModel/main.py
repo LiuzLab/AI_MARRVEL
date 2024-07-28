@@ -16,15 +16,11 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-id', metavar='I', type=str,
                     help = 'sample ID')
 
-parser.add_argument('-n_cpu',  type=int, default=10,
-                    help = 'folders containing all extended final matrices')
-
 args = parser.parse_args()
 
 #st_time = time()
 #prj_name = args.project
 sample_id = args.id
-n_cpu = args.n_cpu
 
 out_folder = '/out/conf_4Model'
 
@@ -60,7 +56,7 @@ def assign_ranking(df):
     return pred_df
     
 
-def AIM(data_folder, sample_id, n_thread):
+def AIM(data_folder, sample_id):
     feature_fn = f'/out/final_matrix/{sample_id}.csv'
 
     if not os.path.exists(feature_fn):
@@ -88,7 +84,7 @@ def AIM(data_folder, sample_id, n_thread):
     generate_bivar_data.process_sample( data_folder = out_folder,
                                         sample_id = sample_id,
                                         default_pred = default_pred,                                           
-                                        labeling=False, n_thread = n_thread)
+                                        labeling=False)
 
     recessive_feature_file = f"{out_folder}/recessive_matrix/{sample_id}.csv"
     if os.path.exists(recessive_feature_file):
@@ -117,4 +113,4 @@ def AIM(data_folder, sample_id, n_thread):
     return
 
 #for sample_id in tqdm(sample_folders):
-AIM(out_folder, sample_id, n_thread = n_cpu)
+AIM(out_folder, sample_id)
