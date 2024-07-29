@@ -26,6 +26,15 @@ annot=annot.rename(columns={"varId":"origId", "IMPACT": "IMPACT_text", "clin_cod
 test=rm.merge(annot, right_on="varId_dash", left_on="Unnamed: 0", how="left")
 test=test.merge(ndg, right_on="Unnamed: 0", left_on="Unnamed: 0", how="left")
 
+
+# Rename columns for correct displaying in AIM web portal
+# =======================================
+# geneEnsId_y -> geneEnsId
+# predict_NDG -> predict (nd)
+# ranking_NDG -> ranking (nd)
+# ======================================
+test = test.rename(columns={"geneEnsId_y": "geneEnsId", "predict_NDG": "predict (nd)", "ranking_NDG": "ranking (nd)"})
+
 test.to_csv("/out/final_matrix_expanded/"+sys.argv[1]+".expanded.trio.csv.gz", index=False, compression="gzip")
 
 
