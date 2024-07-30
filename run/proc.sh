@@ -118,26 +118,39 @@ echo "Calculating phenotype similarities"
 Rscript /run/phenoSim.R /input/hpo.txt $1 ${REF_DIR} > /dev/null
 
 
+bgzip /out/$1.filt.rmMT.vcf
+tabix /out/$1.filt.rmMT.vcf.gz
+
+# Filter exomic variants when the number of variants are over 100k.
+variant_count=$(bcftools view -H /out/$1.filt.rmMT.vcf.gz | wc -l)
+if [ "$variant_count" -gt 100000 ]; then
+    echo "The number of variants is over 100k, so we will remove non-coding variants."
+    awk '{gsub(/^chr/, ""); print}' /run/data_dependencies/filter_exonic/$REF_DIR.bed > bed
+    bcftools filter --regions-file bed /out/$1.filt.rmMT.vcf.gz -Oz -o "/out/$1.filt.rmMT.recode.vcf.gz"
+    tabix /out/$1.filt.rmMT.recode.vcf.gz
+else
+    cp /out/$1.filt.rmMT.vcf.gz /out/$1.filt.rmMT.recode.vcf.gz
+    cp /out/$1.filt.rmMT.vcf.gz.tbi /out/$1.filt.rmMT.recode.vcf.gz.tbi
+fi
+
 #Filter proband vcf with blacklist
 echo "Filtering VCF with blacklist"
-bgzip /out/$1.filt.rmMT.vcf
 
-tabix /out/$1.filt.rmMT.vcf.gz
 mkdir -m777 /out/isec_tmp1
 bcftools isec -p /out/isec_tmp1 -w 1 -Oz \
-/out/$1.filt.rmMT.vcf.gz /run/data_dependencies/filter_vep/${REF_DIR}/gnomad.${REF_DIR}.blacklist.genomes.vcf.gz
+/out/$1.filt.rmMT.recode.vcf.gz /run/data_dependencies/filter_vep/${REF_DIR}/gnomad.${REF_DIR}.blacklist.genomes.vcf.gz
 
 tabix /out/isec_tmp1/0000.vcf.gz
 mkdir -m777 /out/isec_tmp2
 bcftools isec -p /out/isec_tmp2 -w 1 -Oz \
-/out/$1.filt.rmMT.vcf.gz /run/data_dependencies/filter_vep/${REF_DIR}/gnomad.${REF_DIR}.blacklist.exomes.vcf.gz
+/out/$1.filt.rmMT.recode.vcf.gz /run/data_dependencies/filter_vep/${REF_DIR}/gnomad.${REF_DIR}.blacklist.exomes.vcf.gz
 
 tabix /out/isec_tmp2/0000.vcf.gz
 mkdir -m777 /out/isec_tmp3
 bcftools isec -p /out/isec_tmp3 -Ov \
 /out/isec_tmp1/0000.vcf.gz /out/isec_tmp2/0000.vcf.gz
 
-mv /out/isec_tmp3/0002.vcf /out/$1.filt.rmBL.vcf
+mv /out/isec_tmp3/0002.vcf /out/$1.filt.rmBL.recode.vcf.gz
 rm -rf /out/isec_tmp1
 rm -rf /out/isec_tmp2
 rm -rf /out/isec_tmp3
@@ -162,7 +175,7 @@ then
         --plugin SpliceAI,snv=/run/data_dependencies/vep/hg38/spliceai_scores.masked.snv.hg38.vcf.gz,indel=/run/data_dependencies/vep/hg38/spliceai_scores.masked.indel.hg38.vcf.gz,cutoff=0.5 \
         --plugin CADD,/run/data_dependencies/vep/hg38/hg38_whole_genome_SNV.tsv.gz,ALL \
         --plugin dbNSFP,/run/data_dependencies/vep/hg38/dbNSFP4.1a_grch38.gz,ALL \
-        --individual all --output_file /out/$1-vep.txt --input_file /out/$1.filt.rmBL.vcf
+        --individual all --output_file /out/$1-vep.txt --input_file /out/$1.filt.rmBL.recode.vcf.gz
 else
 
      /opt/vep/src/ensembl-vep/vep \
@@ -178,7 +191,7 @@ else
         --plugin SpliceAI,snv=/run/data_dependencies/vep/hg19/spliceai_scores.masked.snv.hg19.vcf.gz,indel=/run/data_dependencies/vep/hg19/spliceai_scores.masked.indel.hg19.vcf.gz,cutoff=0.5 \
         --plugin CADD,/run/data_dependencies/vep/hg19/hg19_whole_genome_SNVs.tsv.gz,ALL \
         --plugin dbNSFP,/run/data_dependencies/vep/hg19/dbNSFP4.3a_grch37.gz,ALL \
-        --individual all --output_file /out/$1-vep.txt --input_file /out/$1.filt.rmBL.vcf
+        --individual all --output_file /out/$1-vep.txt --input_file /out/$1.filt.rmBL.recode.vcf.gz
 fi
 
 echo "Feature engineering"
@@ -260,6 +273,8 @@ if [ "$KEEP_INTERMEDIATE" = "False" ]; then
     rm /out/$1.filt.rmBL.vcf
     rm /out/$1.filt.rmMT.vcf.gz
     rm /out/$1.filt.rmMT.vcf.gz.tbi
+    rm /out/$1.filt.rmMT.recode.vcf.gz
+    rm /out/$1.filt.rmMT.recode.vcf.gz.tbi
     rm /out/$1.filt.vcf
     rm /out/$1-genesym.txt
     rm /out/$1-gene.txt
