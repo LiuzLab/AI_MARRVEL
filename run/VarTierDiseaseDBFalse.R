@@ -14,7 +14,7 @@ args <- commandArgs(trailingOnly = TRUE)
 refg <- args[2]
 
 cat("STEP0. load database: OMIM inheritance ####\n")
-omim_inheritance <- file.path(paste0("var_tier/", refg, "/genemap2.Inh.F.txt"))
+omim_inheritance <- file.path(paste0('/run/data_dependencies/var_tier/',refg,'/genemap2.Inh.F.txt'))
 
 in.f.path <- "/out/rami-test/"
 out.f.path <- "/out/tier-test-false/"
@@ -41,7 +41,7 @@ anno.columns <- c(
   "spliceAImax"
 )
 
-anno.orig <- readr::read_csv(in.f) 
+anno.orig <- readr::read_csv(file.path(in.f.path,in.f))
 anno <- anno.orig[, anno.columns]
 
 # rename the col
@@ -344,7 +344,7 @@ VEP.Tier.wInh$AR.matched <- ifelse(VEP.Tier.wInh$TierAR <= 2 &
 
 write.table(
   VEP.Tier.wInh,
-  out.f,
+  file.path(out.f.path,out.f),
   sep = "\t",
   quote = F,
   col.names = T,
