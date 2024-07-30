@@ -30,6 +30,40 @@ if [[ -z $(egrep 'HP:[0-9]{7}' /input/hpo.txt) ]] ; then
     echo "HP:0000001" > /input/hpo.txt
 fi
 
+# Function to check if the VCF is sorted
+is_sorted() {
+    # This checks sorting by chromosome and position comprehensively
+    if ! bcftools view -H "$1" | awk 'BEGIN{last_chr=""; last_pos=0} {if ($1 < last_chr || ($1 == last_chr && $2 < last_pos)) {print "File is not sorted at line: " NR; exit 1} last_chr = $1; last_pos = $2}'; then
+        return 1  # Not sorted
+    else
+        return 0  # Sorted
+    fi
+}
+
+# Function to sort the VCF
+force_sort_and_index() {
+    echo "Sorting the VCF file..."
+    bcftools sort "$1" -Oz -o "${1%.vcf.gz}.sorted.vcf.gz"
+    echo "Sorting completed."
+    mv "${1%.vcf.gz}.sorted.vcf.gz" "$1"
+    tabix -p vcf "$1"
+    echo "Indexing completed using tabix."
+}
+
+# Sort and index VCF if necessary using tabix
+sort_and_index_vcf() {
+    if is_sorted "$1"; then
+        echo "VCF file is already sorted."
+        tabix -p vcf "$1" || {  # Try to index, but capture failure
+            echo "Tabix failed to index. Re-sorting the file..."
+            force_sort_and_index "$1"
+        }
+        echo "Indexing completed using tabix."
+    else
+        force_sort_and_index "$1"
+    fi
+}
+
 
 cp /input/vcf.gz /out/vcf.gz  ### New Step: Copying file to output directory
 
@@ -47,18 +81,18 @@ if [ -e "$INPUT_VCF_PATH" ]; then
         # Check if it's bgzip format for tabix compatibility
         if echo "$INPUT_VCF_TYPE" | grep -q 'BGZF'; then
             echo "The file is in BGZF format, ready for tabix."
-            tabix -p vcf "$INPUT_VCF_PATH"  ### Adjusted Step: Only index if BGZF
+            sort_and_index_vcf "$INPUT_VCF_PATH"  ### Adjusted Step: Only index if BGZF
         else
             echo "GZIP format detected, converting to BGZF."
             gunzip -c "$INPUT_VCF_PATH" | bgzip > "${INPUT_VCF_PATH%.gz}"
             mv "${INPUT_VCF_PATH%.gz}" "$INPUT_VCF_PATH"  ### Ensuring the correct .gz extension
-            tabix -p vcf "$INPUT_VCF_PATH"  ### Index the newly bgzipped file
+            sort_and_index_vcf "$INPUT_VCF_PATH"  ### Index the newly bgzipped file
         fi
     elif echo "$INPUT_VCF_TYPE" | grep -q 'ASCII text'; then
         echo "Plain VCF file detected, compressing and indexing."
         bgzip -c "$INPUT_VCF_PATH" > "${INPUT_VCF_PATH}.gz"
         mv "${INPUT_VCF_PATH}.gz" "$INPUT_VCF_PATH"  ### Replace uncompressed with compressed
-        tabix -p vcf "$INPUT_VCF_PATH"  ### Index the newly bgzipped file
+        sort_and_index_vcf "$INPUT_VCF_PATH"  ### Index the newly bgzipped file
     fi
 else
     echo "The file $INPUT_VCF_PATH does not exist."
