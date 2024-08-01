@@ -98,6 +98,7 @@ def feature_engineering(score_file, tier_file):
     # patient = pd.read_csv(score_file,sep='\t')
     feature_stat = pd.read_csv("annotate/feature_stats.csv", index_col=0)
 
+
     patient = score_file.copy()
 
     patient = patient[variable_name]
@@ -199,7 +200,7 @@ def feature_engineering(score_file, tier_file):
             (pd.isna(patient["GERPpp_RS"])) & np.array(indel_index), "GERPpp_RS"
         ] = feature_stat.loc["GERPpp_RS", "mean"]
         patient.loc[pd.isna(patient["GERPpp_RS"]), "GERPpp_RS"] = feature_stat.loc[
-            "GERPpp_RS", "mean"
+            "GERPpp_RS", "min"
         ]
         patient["GERPpp_RS"] = patient["GERPpp_RS"].astype("float64")
     else:
@@ -210,7 +211,7 @@ def feature_engineering(score_file, tier_file):
         ] = patient["GERPpp_RS"].describe()["mean"]
         patient.loc[pd.isna(patient["GERPpp_RS"]), "GERPpp_RS"] = patient[
             "GERPpp_RS"
-        ].describe()["mean"]
+        ].describe()["min"]
 
     gnomadAFVal = patient["gnomadAF"].copy()
     gnomadAFVal = np.array([getValFromStr(str(i), "min") for i in gnomadAFVal])
@@ -249,7 +250,7 @@ def feature_engineering(score_file, tier_file):
             (pd.isna(patient["LRT_score"])) & np.array(indel_index), "LRT_score"
         ] = feature_stat.loc["LRT_score", "mean"]
         patient.loc[pd.isna(patient["LRT_score"]), "LRT_score"] = feature_stat.loc[
-            "LRT_score", "mean"
+            "LRT_score", "min"
         ]
         patient["LRT_score"] = patient["LRT_score"].astype("float64")
     else:
@@ -260,7 +261,7 @@ def feature_engineering(score_file, tier_file):
         ] = patient["LRT_score"].describe()["mean"]
         patient.loc[pd.isna(patient["LRT_score"]), "LRT_score"] = patient[
             "LRT_score"
-        ].describe()["mean"]
+        ].describe()["min"]
 
     patient.loc[patient["LRT_Omega"] == "-", "LRT_Omega"] = np.NaN
     if np.all(pd.isna(patient["LRT_Omega"])):
@@ -269,7 +270,7 @@ def feature_engineering(score_file, tier_file):
             (pd.isna(patient["LRT_Omega"])) & np.array(indel_index), "LRT_Omega"
         ] = feature_stat.loc["LRT_Omega", "mean"]
         patient.loc[pd.isna(patient["LRT_Omega"]), "LRT_Omega"] = feature_stat.loc[
-            "LRT_Omega", "mean"
+            "LRT_Omega", "min"
         ]
         patient["LRT_Omega"] = patient["LRT_Omega"].astype("float64")
     else:
@@ -280,7 +281,7 @@ def feature_engineering(score_file, tier_file):
         ] = patient["LRT_Omega"].describe()["mean"]
         patient.loc[pd.isna(patient["LRT_Omega"]), "LRT_Omega"] = patient[
             "LRT_Omega"
-        ].describe()["mean"]
+        ].describe()["min"]
 
     patient.loc[
         patient["phyloP100way_vertebrate"] == "-", "phyloP100way_vertebrate"
@@ -293,7 +294,7 @@ def feature_engineering(score_file, tier_file):
         ] = feature_stat.loc["phyloP100way_vertebrate", "mean"]
         patient.loc[
             pd.isna(patient["phyloP100way_vertebrate"]), "phyloP100way_vertebrate"
-        ] = feature_stat.loc["phyloP100way_vertebrate", "mean"]
+        ] = feature_stat.loc["phyloP100way_vertebrate", "min"]
         patient["phyloP100way_vertebrate"] = patient["phyloP100way_vertebrate"].astype(
             "float64"
         )
@@ -308,13 +309,13 @@ def feature_engineering(score_file, tier_file):
         ] = patient["phyloP100way_vertebrate"].describe()["mean"]
         patient.loc[
             pd.isna(patient["phyloP100way_vertebrate"]), "phyloP100way_vertebrate"
-        ] = patient["phyloP100way_vertebrate"].describe()["mean"]
+        ] = patient["phyloP100way_vertebrate"].describe()["min"]
 
     patient.loc[patient["gnomadGeneZscore"] == "-", "gnomadGeneZscore"] = np.NaN
     if np.all(pd.isna(patient["gnomadGeneZscore"])):
         # Single variant query
         patient.loc[pd.isna(patient["gnomadGeneZscore"]), "gnomadGeneZscore"] = (
-            feature_stat.loc["gnomadGeneZscore", "mean"]
+            feature_stat.loc["gnomadGeneZscore", "min"]
         )
         patient["gnomadGeneZscore"] = patient["gnomadGeneZscore"].astype("float64")
     else:
@@ -322,13 +323,13 @@ def feature_engineering(score_file, tier_file):
         patient["gnomadGeneZscore"] = patient["gnomadGeneZscore"].astype("float64")
         patient.loc[pd.isna(patient["gnomadGeneZscore"]), "gnomadGeneZscore"] = patient[
             "gnomadGeneZscore"
-        ].describe()["mean"]
+        ].describe()["min"]
 
     patient.loc[patient["gnomadGenePLI"] == "-", "gnomadGenePLI"] = np.NaN
     if np.all(pd.isna(patient["gnomadGenePLI"])):
         # Single variant query
         patient.loc[pd.isna(patient["gnomadGenePLI"]), "gnomadGenePLI"] = (
-            feature_stat.loc["gnomadGenePLI", "mean"]
+            feature_stat.loc["gnomadGenePLI", "min"]
         )
         patient["gnomadGenePLI"] = patient["gnomadGenePLI"].astype("float64")
     else:
@@ -336,13 +337,13 @@ def feature_engineering(score_file, tier_file):
         patient["gnomadGenePLI"] = patient["gnomadGenePLI"].astype("float64")
         patient.loc[pd.isna(patient["gnomadGenePLI"]), "gnomadGenePLI"] = patient[
             "gnomadGenePLI"
-        ].describe()["mean"]
+        ].describe()["min"]
 
     patient.loc[patient["gnomadGeneOELof"] == "-", "gnomadGeneOELof"] = np.NaN
     if np.all(pd.isna(patient["gnomadGeneOELof"])):
         # Single variant query
         patient.loc[pd.isna(patient["gnomadGeneOELof"]), "gnomadGeneOELof"] = (
-            feature_stat.loc["gnomadGeneOELof", "mean"]
+            feature_stat.loc["gnomadGeneOELof", "max"]
         )
         patient["gnomadGeneOELof"] = patient["gnomadGeneOELof"].astype("float64")
     else:
@@ -350,14 +351,14 @@ def feature_engineering(score_file, tier_file):
         patient["gnomadGeneOELof"] = patient["gnomadGeneOELof"].astype("float64")
         patient.loc[pd.isna(patient["gnomadGeneOELof"]), "gnomadGeneOELof"] = patient[
             "gnomadGeneOELof"
-        ].describe()["mean"]
+        ].describe()["max"]
 
     patient.loc[patient["gnomadGeneOELofUpper"] == "-", "gnomadGeneOELofUpper"] = np.NaN
     if np.all(pd.isna(patient["gnomadGeneOELofUpper"])):
         # Single variant query
         patient.loc[
             pd.isna(patient["gnomadGeneOELofUpper"]), "gnomadGeneOELofUpper"
-        ] = feature_stat.loc["gnomadGeneOELofUpper", "mean"]
+        ] = feature_stat.loc["gnomadGeneOELofUpper", "max"]
         patient["gnomadGeneOELofUpper"] = patient["gnomadGeneOELofUpper"].astype(
             "float64"
         )
@@ -368,7 +369,7 @@ def feature_engineering(score_file, tier_file):
         )
         patient.loc[
             pd.isna(patient["gnomadGeneOELofUpper"]), "gnomadGeneOELofUpper"
-        ] = patient["gnomadGeneOELofUpper"].describe()["mean"]
+        ] = patient["gnomadGeneOELofUpper"].describe()["max"]
 
     patient.loc[patient["IMPACT"] == "-", "IMPACT"] = 0
     patient.loc[patient["IMPACT"] == "MODIFIER", "IMPACT"] = 1
@@ -385,7 +386,7 @@ def feature_engineering(score_file, tier_file):
             (pd.isna(patient["CADD_phred"])) & np.array(indel_index), "CADD_phred"
         ] = feature_stat.loc["CADD_phred", "mean"]
         patient.loc[pd.isna(patient["CADD_phred"]), "CADD_phred"] = feature_stat.loc[
-            "CADD_phred", "mean"
+            "CADD_phred", "min"
         ]
         patient["CADD_phred"] = patient["CADD_phred"].astype("float64")
     else:
@@ -396,7 +397,7 @@ def feature_engineering(score_file, tier_file):
         ] = patient["CADD_phred"].describe()["mean"]
         patient.loc[pd.isna(patient["CADD_phred"]), "CADD_phred"] = patient[
             "CADD_phred"
-        ].describe()["mean"]
+        ].describe()["min"]
 
     patient.loc[patient["CADD_PHRED"] == "-", "CADD_PHRED"] = np.NaN
     if np.all(pd.isna(patient["CADD_PHRED"])):
@@ -405,7 +406,7 @@ def feature_engineering(score_file, tier_file):
             (pd.isna(patient["CADD_PHRED"])) & np.array(indel_index), "CADD_PHRED"
         ] = feature_stat.loc["CADD_PHRED", "mean"]
         patient.loc[pd.isna(patient["CADD_PHRED"]), "CADD_PHRED"] = feature_stat.loc[
-            "CADD_PHRED", "mean"
+            "CADD_PHRED", "min"
         ]
         patient["CADD_PHRED"] = patient["CADD_PHRED"].astype("float64")
     else:
@@ -416,7 +417,7 @@ def feature_engineering(score_file, tier_file):
         ] = patient["CADD_PHRED"].describe()["mean"]
         patient.loc[pd.isna(patient["CADD_PHRED"]), "CADD_PHRED"] = patient[
             "CADD_PHRED"
-        ].describe()["mean"]
+        ].describe()["min"]
 
     # DANN_score
     patient.loc[patient["DANN_score"] == "-", "DANN_score"] = np.NaN
@@ -426,7 +427,7 @@ def feature_engineering(score_file, tier_file):
             (pd.isna(patient["DANN_score"])) & np.array(indel_index), "DANN_score"
         ] = feature_stat.loc["DANN_score", "mean"]
         patient.loc[pd.isna(patient["DANN_score"]), "DANN_score"] = feature_stat.loc[
-            "DANN_score", "mean"
+            "DANN_score", "min"
         ]
         patient["DANN_score"] = patient["DANN_score"].astype("float64")
     else:
@@ -437,13 +438,12 @@ def feature_engineering(score_file, tier_file):
         ] = patient["DANN_score"].describe()["mean"]
         patient.loc[pd.isna(patient["DANN_score"]), "DANN_score"] = patient[
             "DANN_score"
-        ].describe()["mean"]
+        ].describe()["min"]
 
     # REVEL_score
-    # patient['Polyphen2_HDIV_score'] = patient['Polyphen2_HDIV_score'] #.str.split(',')
     patient.loc[patient["REVEL_score"] == "-", "REVEL_score"] = np.NaN
     for i in patient[~patient["REVEL_score"].isna()].index:
-        score_list = patient.loc[i, "REVEL_score"].split(",")
+        score_list = str(patient.loc[i, "REVEL_score"]).split(",")
         score_list = [float(i) for i in score_list if i != "-" and i != "."]
         if score_list == []:
             patient.loc[i, "REVEL_score"] = np.NaN
@@ -456,7 +456,7 @@ def feature_engineering(score_file, tier_file):
             (pd.isna(patient["REVEL_score"])) & np.array(indel_index), "REVEL_score"
         ] = feature_stat.loc["REVEL_score", "mean"]
         patient.loc[pd.isna(patient["REVEL_score"]), "REVEL_score"] = feature_stat.loc[
-            "REVEL_score", "mean"
+            "REVEL_score", "min"
         ]
         patient["REVEL_score"] = patient["REVEL_score"].astype("float64")
     else:
@@ -467,7 +467,7 @@ def feature_engineering(score_file, tier_file):
         ] = patient["REVEL_score"].describe()["mean"]
         patient.loc[pd.isna(patient["REVEL_score"]), "REVEL_score"] = patient[
             "REVEL_score"
-        ].describe()["mean"]
+        ].describe()["min"]
 
     # fathmm_MKL_coding_score
     patient.loc[
@@ -481,7 +481,7 @@ def feature_engineering(score_file, tier_file):
         ] = feature_stat.loc["fathmm_MKL_coding_score", "mean"]
         patient.loc[
             pd.isna(patient["fathmm_MKL_coding_score"]), "fathmm_MKL_coding_score"
-        ] = feature_stat.loc["fathmm_MKL_coding_score", "mean"]
+        ] = feature_stat.loc["fathmm_MKL_coding_score", "min"]
         patient["fathmm_MKL_coding_score"] = patient["fathmm_MKL_coding_score"].astype(
             "float64"
         )
@@ -496,7 +496,7 @@ def feature_engineering(score_file, tier_file):
         ] = patient["fathmm_MKL_coding_score"].describe()["mean"]
         patient.loc[
             pd.isna(patient["fathmm_MKL_coding_score"]), "fathmm_MKL_coding_score"
-        ] = patient["fathmm_MKL_coding_score"].describe()["mean"]
+        ] = patient["fathmm_MKL_coding_score"].describe()["min"]
 
     # conservationScoreGnomad
     patient.loc[
@@ -525,10 +525,10 @@ def feature_engineering(score_file, tier_file):
     )
 
     # Polyphen2_HDIV_score
-    patient["Polyphen2_HDIV_score"] = patient["Polyphen2_HDIV_score"]  # .str.split(',')
+    patient["Polyphen2_HDIV_score"] = patient["Polyphen2_HDIV_score"]
     patient.loc[patient["Polyphen2_HDIV_score"] == "-", "Polyphen2_HDIV_score"] = np.NaN
     for i in patient[~patient["Polyphen2_HDIV_score"].isna()].index:
-        score_list = patient.loc[i, "Polyphen2_HDIV_score"].split(",")
+        score_list = str(patient.loc[i, "Polyphen2_HDIV_score"]).split(",")
         score_list = [float(i) for i in score_list if i != "-" and i != "."]
         if score_list == []:
             patient.loc[i, "Polyphen2_HDIV_score"] = np.NaN
@@ -543,7 +543,7 @@ def feature_engineering(score_file, tier_file):
         ] = feature_stat.loc["Polyphen2_HDIV_score", "50%"]
         patient.loc[
             pd.isna(patient["Polyphen2_HDIV_score"]), "Polyphen2_HDIV_score"
-        ] = feature_stat.loc["Polyphen2_HDIV_score", "50%"]
+        ] = feature_stat.loc["Polyphen2_HDIV_score", "min"]
         patient["Polyphen2_HDIV_score"] = patient["Polyphen2_HDIV_score"].astype(
             "float64"
         )
@@ -558,13 +558,13 @@ def feature_engineering(score_file, tier_file):
         ] = patient["Polyphen2_HDIV_score"].describe()["50%"]
         patient.loc[
             pd.isna(patient["Polyphen2_HDIV_score"]), "Polyphen2_HDIV_score"
-        ] = patient["Polyphen2_HDIV_score"].describe()["50%"]
+        ] = patient["Polyphen2_HDIV_score"].describe()["min"]
 
     # Polyphen2_HVAR_score
-    patient["Polyphen2_HVAR_score"] = patient["Polyphen2_HVAR_score"]  # .str.split(',')
+    patient["Polyphen2_HVAR_score"] = patient["Polyphen2_HVAR_score"]
     patient.loc[patient["Polyphen2_HVAR_score"] == "-", "Polyphen2_HVAR_score"] = np.NaN
     for i in patient[~patient["Polyphen2_HVAR_score"].isna()].index:
-        score_list = patient.loc[i, "Polyphen2_HVAR_score"].split(",")
+        score_list = str(patient.loc[i, "Polyphen2_HVAR_score"]).split(",")
         score_list = [float(i) for i in score_list if i != "-" and i != "."]
         if score_list == []:
             patient.loc[i, "Polyphen2_HVAR_score"] = np.NaN
@@ -579,7 +579,7 @@ def feature_engineering(score_file, tier_file):
         ] = feature_stat.loc["Polyphen2_HVAR_score", "50%"]
         patient.loc[
             pd.isna(patient["Polyphen2_HVAR_score"]), "Polyphen2_HVAR_score"
-        ] = feature_stat.loc["Polyphen2_HVAR_score", "50%"]
+        ] = feature_stat.loc["Polyphen2_HVAR_score", "min"]
         patient["Polyphen2_HVAR_score"] = patient["Polyphen2_HVAR_score"].astype(
             "float64"
         )
@@ -594,13 +594,13 @@ def feature_engineering(score_file, tier_file):
         ] = patient["Polyphen2_HVAR_score"].describe()["50%"]
         patient.loc[
             pd.isna(patient["Polyphen2_HVAR_score"]), "Polyphen2_HVAR_score"
-        ] = patient["Polyphen2_HVAR_score"].describe()["50%"]
+        ] = patient["Polyphen2_HVAR_score"].describe()["min"]
 
     # SIFT_score
-    patient["SIFT_score"] = patient["SIFT_score"]  # .str.split(',')
+    patient["SIFT_score"] = patient["SIFT_score"]
     patient.loc[patient["SIFT_score"] == "-", "SIFT_score"] = np.NaN
     for i in patient[~patient["SIFT_score"].isna()].index:
-        score_list = patient.loc[i, "SIFT_score"].split(",")
+        score_list = str(patient.loc[i, "SIFT_score"]).split(",")
         score_list = [float(i) for i in score_list if i != "-" and i != "."]
         if score_list == []:
             patient.loc[i, "SIFT_score"] = np.NaN
@@ -613,7 +613,7 @@ def feature_engineering(score_file, tier_file):
             (pd.isna(patient["SIFT_score"])) & np.array(indel_index), "SIFT_score"
         ] = feature_stat.loc["SIFT_score", "50%"]
         patient.loc[pd.isna(patient["SIFT_score"]), "SIFT_score"] = feature_stat.loc[
-            "SIFT_score", "50%"
+            "SIFT_score", "max"
         ]
         patient["SIFT_score"] = patient["SIFT_score"].astype("float64")
     else:
@@ -624,7 +624,7 @@ def feature_engineering(score_file, tier_file):
         ] = patient["SIFT_score"].describe()["50%"]
         patient.loc[pd.isna(patient["SIFT_score"]), "SIFT_score"] = patient[
             "SIFT_score"
-        ].describe()["50%"]
+        ].describe()["max"]
 
     patient.loc[patient["zyg"] == "HET", "zyg"] = 1
     patient.loc[patient["zyg"] == "HOM", "zyg"] = 2
@@ -638,10 +638,10 @@ def feature_engineering(score_file, tier_file):
     # patient.loc[pd.isna(patient['GERPpp_NR']), 'GERPpp_NR'] = patient['GERPpp_NR'].describe()['min']
 
     # FATHMM_score
-    patient["FATHMM_score"] = patient["FATHMM_score"]  # .str.split(',')
+    patient["FATHMM_score"] = patient["FATHMM_score"]
     patient.loc[patient["FATHMM_score"] == "-", "FATHMM_score"] = np.NaN
     for i in patient[~patient["FATHMM_score"].isna()].index:
-        score_list = patient.loc[i, "FATHMM_score"].split(",")
+        score_list = str(patient.loc[i, "FATHMM_score"]).split(",")
         score_list = [float(i) for i in score_list if i != "-" and i != "."]
         if score_list == []:
             patient.loc[i, "FATHMM_score"] = np.NaN
@@ -654,7 +654,7 @@ def feature_engineering(score_file, tier_file):
             (pd.isna(patient["FATHMM_score"])) & np.array(indel_index), "FATHMM_score"
         ] = feature_stat.loc["FATHMM_score", "50%"]
         patient.loc[pd.isna(patient["FATHMM_score"]), "FATHMM_score"] = (
-            feature_stat.loc["FATHMM_score", "50%"]
+            feature_stat.loc["FATHMM_score", "max"]
         )
         patient["FATHMM_score"] = patient["FATHMM_score"].astype("float64")
     else:
@@ -665,7 +665,7 @@ def feature_engineering(score_file, tier_file):
         ] = patient["FATHMM_score"].describe()["50%"]
         patient.loc[pd.isna(patient["FATHMM_score"]), "FATHMM_score"] = patient[
             "FATHMM_score"
-        ].describe()["50%"]
+        ].describe()["max"]
 
     # M_CAP_score
     patient.loc[patient["M_CAP_score"] == "-", "M_CAP_score"] = np.NaN
@@ -675,7 +675,7 @@ def feature_engineering(score_file, tier_file):
             (pd.isna(patient["M_CAP_score"])) & np.array(indel_index), "M_CAP_score"
         ] = feature_stat.loc["M_CAP_score", "mean"]
         patient.loc[pd.isna(patient["M_CAP_score"]), "M_CAP_score"] = feature_stat.loc[
-            "M_CAP_score", "mean"
+            "M_CAP_score", "min"
         ]
         patient["M_CAP_score"] = patient["M_CAP_score"].astype("float64")
     else:
@@ -686,17 +686,15 @@ def feature_engineering(score_file, tier_file):
         ] = patient["M_CAP_score"].describe()["mean"]
         patient.loc[pd.isna(patient["M_CAP_score"]), "M_CAP_score"] = patient[
             "M_CAP_score"
-        ].describe()["mean"]
+        ].describe()["min"]
 
     # MutationAssessor_score
-    patient["MutationAssessor_score"] = patient[
-        "MutationAssessor_score"
-    ]  # .str.split(',')
+    patient["MutationAssessor_score"] = patient["MutationAssessor_score"]
     patient.loc[patient["MutationAssessor_score"] == "-", "MutationAssessor_score"] = (
         np.NaN
     )
     for i in patient[~patient["MutationAssessor_score"].isna()].index:
-        score_list = patient.loc[i, "MutationAssessor_score"].split(",")
+        score_list = str(patient.loc[i, "MutationAssessor_score"]).split(",")
         score_list = [float(i) for i in score_list if i != "-" and i != "."]
         if score_list == []:
             patient.loc[i, "MutationAssessor_score"] = np.NaN
@@ -711,7 +709,7 @@ def feature_engineering(score_file, tier_file):
         ] = feature_stat.loc["MutationAssessor_score", "50%"]
         patient.loc[
             pd.isna(patient["MutationAssessor_score"]), "MutationAssessor_score"
-        ] = feature_stat.loc["MutationAssessor_score", "50%"]
+        ] = feature_stat.loc["MutationAssessor_score", "min"]
         patient["MutationAssessor_score"] = patient["MutationAssessor_score"].astype(
             "float64"
         )
@@ -726,20 +724,20 @@ def feature_engineering(score_file, tier_file):
         ] = patient["MutationAssessor_score"].describe()["50%"]
         patient.loc[
             pd.isna(patient["MutationAssessor_score"]), "MutationAssessor_score"
-        ] = patient["MutationAssessor_score"].describe()["50%"]
+        ] = patient["MutationAssessor_score"].describe()["min"]
 
     # ESP6500_AA_AF
     patient.loc[patient["ESP6500_AA_AF"] == "-", "ESP6500_AA_AF"] = 0.0
     patient["ESP6500_AA_AF"] = patient["ESP6500_AA_AF"].astype("float64")
 
-    # ESP6500_AA_AF
+    # ESP6500_EA_AF
     patient.loc[patient["ESP6500_EA_AF"] == "-", "ESP6500_EA_AF"] = 0.0
     patient["ESP6500_EA_AF"] = patient["ESP6500_EA_AF"].astype("float64")
 
     # hom
     patient.loc[patient["hom"] == "-", "hom"] = np.NaN
     for i in patient[~patient["hom"].isna()].index:
-        score_list = patient.loc[i, "hom"].split(",")
+        score_list = str(patient.loc[i, "hom"]).split(",")
         score_list = [float(i) for i in score_list if i != "-" and i != "."]
         if score_list == []:
             patient.loc[i, "hom"] = np.NaN
@@ -761,7 +759,7 @@ def feature_engineering(score_file, tier_file):
     if np.all(pd.isna(patient["spliceAImax"])):
         # Single variant query
         patient.loc[pd.isna(patient["spliceAImax"]), "spliceAImax"] = feature_stat.loc[
-            "spliceAImax", "mean"
+            "spliceAImax", "min"
         ]
         patient["spliceAImax"] = patient["spliceAImax"].astype("float64")
     else:
@@ -769,7 +767,7 @@ def feature_engineering(score_file, tier_file):
         patient["spliceAImax"] = patient["spliceAImax"].astype("float64")
         patient.loc[pd.isna(patient["spliceAImax"]), "spliceAImax"] = patient.loc[
             ~pd.isna(patient["spliceAImax"]), "spliceAImax"
-        ].describe()["mean"]
+        ].describe()["min"]
 
     # Consequence
     consequence = [

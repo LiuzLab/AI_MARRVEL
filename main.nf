@@ -375,7 +375,7 @@ workflow {
     INDEX_VCF(params.input_vcf)
     VCF_PRE_PROCESS(INDEX_VCF.out, params.chrmap)
 
-    ANNOT_PHRANK(VCF_PRE_PROCESS.out)
+    ANNOT_PHRANK(INDEX_VCF.out[0])
     ANNOT_ENSMBLE(ANNOT_PHRANK.out, params.ref_loc)
     TO_GENE_SYM(ANNOT_ENSMBLE.out, params.ref_to_sym, params.ref_sorted_sym)
     PHRANK_SCORING( TO_GENE_SYM.out, 

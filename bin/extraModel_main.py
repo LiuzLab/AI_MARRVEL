@@ -104,8 +104,9 @@ def AIM(data_folder, sample_id):
                 df_pred.loc[:, model_dict[mn]["features"]]
             )[:, 1]
             df_pred.insert(loc=df_pred.shape[1] - 1, column="predict", value=predict)
+            df_pred = df_pred.sort_index()
             df_pred = assign_confidence_score(model_dict[mn]["ref"], df_pred)
-            df_pred = df_pred.sort_values("confidence", ascending=False)
+            df_pred = df_pred.sort_values("confidence", ascending=False, kind="stable")
             df_pred = assign_ranking(df_pred)
             df_pred.to_csv(f"{out_folder}/{sample_id}_{mn}_predictions.csv")
     else:
