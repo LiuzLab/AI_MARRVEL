@@ -26,6 +26,7 @@ from annotation.utils_for_marrvel_flatfile import *
 # from utils_for_marrvel_flatfile_module_3 import *
 from functools import partial
 from annotation.marrvel_score_recalc import *
+from annotation.utils_for_marrvel_flatfile_module_3 import getAnnotateInfoRows_2, getAnnotateInfoRows_3
 
 
 #############################################################
@@ -300,20 +301,35 @@ def main():
             omimGeneDf = pd.DataFrame(omimGeneList)
             omimGeneSortedDf = omimGeneDf.set_index('geneSymbol').sort_index()
 
-        def f(row):
-            return getAnnotateInfoRow_2(
-                row,
-                args.genomeRef,
-                clinvarGeneDf,
-                clinvarAlleleDf,
-                omimGeneSortedDf,
-                omimAlleleList,
-                hgmdHPOScoreDf,
-                moduleList,
-                decipherSortedDf,
-                gnomadMetricsGeneSortedDf,
-            )
-        annotateInfoDf = varDf.apply(f, axis=1, result_type='expand')
+        # def f(row):
+        #     return getAnnotateInfoRow_2(
+        #         row,
+        #         args.genomeRef,
+        #         clinvarGeneDf,
+        #         clinvarAlleleDf,
+        #         omimGeneSortedDf,
+        #         omimAlleleList,
+        #         hgmdHPOScoreDf,
+        #         moduleList,
+        #         decipherSortedDf,
+        #         gnomadMetricsGeneSortedDf,
+        #     )
+        # annotateInfoDf = varDf.apply(f, axis=1, result_type='expand')
+
+        annotateInfoDf = getAnnotateInfoRows_3(
+            varDf,
+            args.genomeRef,
+            clinvarGeneDf,
+            clinvarAlleleDf,
+            omimGeneSortedDf,
+            omimAlleleList,
+            hgmdHPOScoreDf,
+            moduleList,
+            decipherSortedDf,
+            gnomadMetricsGeneSortedDf,
+        )
+
+
         if "conserve" in moduleList:
             dgvDfV = dgvDf[['Chr', 'Start', 'Stop']].values.astype('int32')
             def f(varObj):
