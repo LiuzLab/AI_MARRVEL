@@ -282,16 +282,9 @@ def getAnnotateInfoRow_3_2(
     return varObj
 
 
-def getAnnotateInfoRow_3_x(
+def getAnnotateInfoRow_3_3(
         varObj,
-        genomeRef,
-        clinvarGeneDf,
-        clinvarAlleleDf,
-        omimGeneSortedDf,
-        omimAlleleList,
-        hgmdHPOScoreDf,
         moduleList,
-        decipherSortedDf,
         gnomadMetricsGeneSortedDf,
 ):
     if "conserve" in moduleList:
@@ -311,12 +304,19 @@ def getAnnotateInfoRow_3_x(
 
         retList = [gnomadGeneZscore, gnomadGenePLI, gnomadGeneOELof, gnomadGeneOELofUpper]
 
-        # [decipherDictList,decipherDeletionObsList,decipherStudyList, decipherVarFound]
         varObj.gnomadGeneZscore = retList[0]
         varObj.gnomadGenePLI = retList[1]
         varObj.gnomadGeneOELof = retList[2]  # O/E lof
         varObj.gnomadGeneOELofUpper = retList[3]  # O/E lof upper
 
+    return varObj
+
+
+def getAnnotateInfoRow_3_4(
+        varObj,
+        moduleList,
+        omimGeneSortedDf,
+):
     if "curate" in moduleList:
         # get OMIM: 2s
         # print('\nGetting OMIM')
@@ -402,9 +402,17 @@ def getAnnotateInfoRow_3_x(
         varObj.phenoMimList = omimRet[7]
         # print('OMIM res:')
         # print('\tgeneFound:',varObj.omimGeneFound,'varFound:',varObj.omimVarFound )
+    return varObj
 
-        # get clinvar: 0.1s
-        # print('\nReading clinVar')
+
+def getAnnotateInfoRow_3_5(
+        varObj,
+        clinvarGeneDf,
+        clinvarAlleleDf,
+        hgmdHPOScoreDf,
+        moduleList,
+):
+    if "curate" in moduleList:
         clinVarRet = getClinVarUsingMarrvelFlatFile(
             varObj, clinvarAlleleDf, clinvarGeneDf
         )
@@ -422,31 +430,16 @@ def getAnnotateInfoRow_3_x(
             varObj.clinvar_clnsig
         )  # clinVarRet[10] #CL: changed to clinvar.vcf.gz annotation
         varObj.clinvarCondition = clinVarRet[11]
-        # print('clinVar res:')
-        """
-        if debugFlag==1:
-            print('\tgeneFound::',varObj.clinVarGeneFound,'varFound:',varObj.clinVarVarFound)
-            print('\tnumVars:',varObj.clinvarTotalNumVars,'numPathologic:',varObj.clinvarNumP,'numBenign:',varObj.clinvarNumB)
-            print('\tsignDesc:', varObj.clinvarSignDesc)
-        """
 
-        # get HGMD: 0.3s
-        if "curate" in moduleList:
-            # print('\nReading HGMD')
-            hgmdRet = getHGMDUsingFlatFile(varObj, hgmdHPOScoreDf)
-            # hgmdVarFound,hgmdGeneFound,hgmdVarPhenIdList,hgmdVarHPOIdList,hgmdVarHPOStrList
-            varObj.hgmdVarFound = hgmdRet[0]
-            varObj.hgmdGeneFound = hgmdRet[1]
-            varObj.hgmdVarPhenIdList = hgmdRet[2]
-            varObj.hgmdVarHPOIdList = hgmdRet[3]
-            varObj.hgmdVarHPOStrList = hgmdRet[4]
-            # print('HGMD results:')
-            # print('\thgmdVarFound:',varObj.hgmdVarFound,'hgmdGeneFound:',varObj.hgmdGeneFound,
-            #      'hgmdVarPhenIdList:',varObj.hgmdVarPhenIdList,'hgmdVarHPOIdList:',
-            #      varObj.hgmdVarHPOIdList,
-            #      'hgmdVarHPOStrList:',varObj.hgmdVarHPOStrList)
+    if "curate" in moduleList:
+        hgmdRet = getHGMDUsingFlatFile(varObj, hgmdHPOScoreDf)
+        varObj.hgmdVarFound = hgmdRet[0]
+        varObj.hgmdGeneFound = hgmdRet[1]
+        varObj.hgmdVarPhenIdList = hgmdRet[2]
+        varObj.hgmdVarHPOIdList = hgmdRet[3]
+        varObj.hgmdVarHPOStrList = hgmdRet[4]
 
-        return varObj
+    return varObj
 
 
 def getAnnotateInfoRows_3(
@@ -467,22 +460,24 @@ def getAnnotateInfoRows_3(
     def f2(row):
         return getAnnotateInfoRow_3_2(row, moduleList, decipherSortedDf)
 
-    def fx(row):
-        return getAnnotateInfoRow_3_x(
+    def f3(row):
+        return getAnnotateInfoRow_3_3(row, moduleList, gnomadMetricsGeneSortedDf)
+
+    def f4(row):
+        return getAnnotateInfoRow_3_4(row, moduleList, omimGeneSortedDf)
+
+    def f5(row):
+        return getAnnotateInfoRow_3_5(
             row,
-            genomeRef,
             clinvarGeneDf,
             clinvarAlleleDf,
-            omimGeneSortedDf,
-            omimAlleleList,
             hgmdHPOScoreDf,
             moduleList,
-            decipherSortedDf,
-            gnomadMetricsGeneSortedDf,
         )
 
     df = df.apply(f1, axis=1, result_type='expand')
-    print(df)
     df = df.apply(f2, axis=1, result_type='expand')
-    annotateInfoDf = df.apply(fx, axis=1, result_type='expand')
+    df = df.apply(f3, axis=1, result_type='expand')
+    df = df.apply(f4, axis=1, result_type='expand')
+    annotateInfoDf = df.apply(f5, axis=1, result_type='expand')
     return annotateInfoDf
