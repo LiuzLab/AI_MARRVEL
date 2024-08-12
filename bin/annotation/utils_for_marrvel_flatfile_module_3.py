@@ -38,16 +38,8 @@ def getAnnotateInfoRows_2(
 
 
 def getAnnotateInfoRow_3_1(row, genomeRef):
-    # CL 03-14-2023: commented all printing lines
-    # print('type of row:', type(row))
     varObj = Variant()
     transcriptId = row.Feature
-    # s=row.Uploaded_variation.split('_') '1_10204_-/T' 1_1588250_T_A
-    ####row[0]: 21_11039079_C/A
-    ####s: ['21', '11039079', 'C/A']
-    # print('row[0]:', row[0])
-
-    # two ways of input of first column either 1_1588250_T_A OR 21_11039079_C/A, so use the option flag
     optFlag = 0
     if row[0].find("/") != -1:
         optFlag = 1
@@ -106,20 +98,6 @@ def getAnnotateInfoRow_3_1(row, genomeRef):
         varObj.start = start
         varObj.stop = stop
 
-        """
-        retList=gethg19LocFromHg38(chrom, pos)#called from the utils_1.py
-        # retList=[newChrom, newPos]
-        varObj.hg19Chrom=retList[0]
-        varObj.hg19Pos=retList[1]
-        varObj.chrom=retList[0]
-        varObj.pos=retList[1]
-        #get the start
-        retList=gethg19LocFromHg38(chrom, start)
-        varObj.start=int(retList[1])
-        #get the stop
-        retList=gethg19LocFromHg38(chrom, stop)
-        varObj.stop=int(retList[1])
-        """
     else:
         varObj.hg19Chrom = chrom
         varObj.hg19Pos = pos
@@ -319,15 +297,11 @@ def getAnnotateInfoRow_3_4(
 ):
     if "curate" in moduleList:
         # get OMIM: 2s
-        # print('\nGetting OMIM')
-        # varObj.omimList=jsonDict['omim']
-        # retList=[varFound, geneFound, omimDict, omimGeneDict, omimAlleleDict]
         inputSnpList = []
         if "," in varObj.rsId:
             inputSnpList = varObj.rsId.split(",")
         else:
             inputSnpList = varObj.rsId
-        # print('\tinputSnpList:', inputSnpList)
         varFound = 0
         geneFound = 0
         omimDict = {}
@@ -344,12 +318,8 @@ def getAnnotateInfoRow_3_4(
             omimGeneDict = omimGeneSortedDf.loc[varObj.geneSymbol]
             snpList = []
             for a in omimGeneDict["allelicVariants"]:
-                # print('a:', a)
-                # print('type:', type(a))
                 if "dbSnps" in a:
                     snpList.append(a["dbSnps"])
-            # print('\tsnpList:', snpList)
-            # print('\tlen snpList:', len(snpList))
             # check if input snpID matches the OMIM one
             set1 = set(inputSnpList)
             set2 = set(snpList)
@@ -376,11 +346,6 @@ def getAnnotateInfoRow_3_4(
                 phenoMimList.append(str(phenoMim))
                 # print('phenotype:', pheno,phenoMim,phenoInh)
 
-        # print('\tvarFound:', varFound)
-        # print('\tphenoList:', phenoList)
-        # print('\tphenoInhList:', phenoInhList)
-        # print('\tphenoMimList:', phenoMimList)
-
         omimRet = [
             varFound,
             geneFound,
@@ -400,8 +365,6 @@ def getAnnotateInfoRow_3_4(
         varObj.phenoList = omimRet[5]
         varObj.phenoInhList = omimRet[6]
         varObj.phenoMimList = omimRet[7]
-        # print('OMIM res:')
-        # print('\tgeneFound:',varObj.omimGeneFound,'varFound:',varObj.omimVarFound )
     return varObj
 
 
