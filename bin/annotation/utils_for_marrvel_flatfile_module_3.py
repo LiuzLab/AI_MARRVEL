@@ -237,17 +237,10 @@ def getAnnotateInfoRow_3_1(row, genomeRef):
     return vars(varObj)
 
 
-def getAnnotateInfoRow_3_x(
+def getAnnotateInfoRow_3_2(
         varObj,
-        genomeRef,
-        clinvarGeneDf,
-        clinvarAlleleDf,
-        omimGeneSortedDf,
-        omimAlleleList,
-        hgmdHPOScoreDf,
         moduleList,
         decipherSortedDf,
-        gnomadMetricsGeneSortedDf,
 ):
     if "conserve" in moduleList:
         # get decipher: 0.6s
@@ -286,6 +279,22 @@ def getAnnotateInfoRow_3_x(
         varObj.decipherStudyList = retList[2]
         varObj.decipherVarFound = retList[3]
 
+    return varObj
+
+
+def getAnnotateInfoRow_3_x(
+        varObj,
+        genomeRef,
+        clinvarGeneDf,
+        clinvarAlleleDf,
+        omimGeneSortedDf,
+        omimAlleleList,
+        hgmdHPOScoreDf,
+        moduleList,
+        decipherSortedDf,
+        gnomadMetricsGeneSortedDf,
+):
+    if "conserve" in moduleList:
         # get gnomad gene metrics from gnomad file: 3.1s
         if varObj.geneSymbol in gnomadMetricsGeneSortedDf.index:  # pLI, oe_lof, oe_lof_upper,mis_z
             val = gnomadMetricsGeneSortedDf.loc[varObj.geneSymbol]
@@ -437,138 +446,11 @@ def getAnnotateInfoRow_3_x(
             #      varObj.hgmdVarHPOIdList,
             #      'hgmdVarHPOStrList:',varObj.hgmdVarHPOStrList)
 
-        return {
-            "hg19Chrom": varObj.hg19Chrom,
-            "hg19Pos": varObj.hg19Pos,
-            "chrom": varObj.chrom,
-            "pos": varObj.pos,
-            "start": varObj.start,
-            "stop": varObj.stop,
-            "geneSymbol": varObj.geneSymbol,
-            "CADD_phred": varObj.CADD_phred,
-            "CADD_PHRED": varObj.CADD_PHRED,
-            "ref": varObj.ref,
-            "alt": varObj.alt,
-            "varId": varObj.varId,
-            "ZYG": varObj.zyg,
-            "HGVSc": varObj.HGVSc,
-            "HGVSp": varObj.HGVSp,
-            "Gene": varObj.geneEnsId,
-            "Existing_variation": varObj.rsId,
-            "GERPpp_RS": varObj.GERPpp_RS,
-            "Feature_type": varObj.featureType,
-            "gnomadAF": varObj.gnomadAF,
-            "gnomadAFg": varObj.gnomadAFg,
-            "CLIN_SIG": varObj.CLIN_SIG,
-            "LRT_Omega": varObj.LRT_Omega,
-            "LRT_score": varObj.LRT_score,
-            "phyloP100way_vertebrate": varObj.phyloP100way_vertebrate,
-            # dbnsfp attributes
-            "GERPpp_NR": varObj.GERPpp_NR,
-            "DANN_score": varObj.DANN_score,
-            "FATHMM_pred": varObj.FATHMM_pred,
-            "FATHMM_score": varObj.FATHMM_score,
-            "GTEx_V8_gene": varObj.GTEx_V8_gene,
-            "GTEx_V8_tissue": varObj.GTEx_V8_tissue,
-            "Polyphen2_HDIV_score": varObj.Polyphen2_HDIV_score,
-            "Polyphen2_HVAR_score": varObj.Polyphen2_HVAR_score,
-            "REVEL_score": varObj.REVEL_score,
-            "SIFT_score": varObj.SIFT_score,
-            "clinvar_AlleleID": varObj.clinvar_AlleleID,  # Clinvar allele ID from clinvar.vcf.gz
-            "clinvar_clnsig": varObj.clinvar_clnsig,  # CL: Clinvar SIG from clinvar.vcf.gz
-            "clinvar_CLNREVSTAT": varObj.clinvar_CLNREVSTAT,  # CL: Clinvar STAT from clinvar.vcf.gz, for interface only
-            "clinvar_CLNSIGCONF": varObj.clinvar_CLNSIGCONF,  # CL: Clinvar SIGCONF from clinvar.vcf.gz
-            "clin_code": varObj.clin_code,  # CL: feature for ai
-            "fathmm_MKL_coding_score": varObj.fathmm_MKL_coding_score,
-            "LRT_score": varObj.LRT_score,
-            "LRT_Omega": varObj.LRT_Omega,
-            "phyloP100way_vertebrate": varObj.phyloP100way_vertebrate,
-            "M_CAP_score": varObj.M_CAP_score,
-            "MutationAssessor_score": varObj.MutationAssessor_score,
-            "MutationTaster_score": varObj.MutationTaster_score,
-            "ESP6500_AA_AC": varObj.ESP6500_AA_AC,
-            "ESP6500_AA_AF": varObj.ESP6500_AA_AF,
-            "ESP6500_EA_AC": varObj.ESP6500_EA_AC,
-            "ESP6500_EA_AF": varObj.ESP6500_EA_AF,
-            # dbnsfp
-            "gnomadGeneZscore": varObj.gnomadGeneZscore,
-            "gnomadGenePLI": varObj.gnomadGenePLI,
-            "gnomadGeneOELof": varObj.gnomadGeneOELof,  # O/E lof
-            "gnomadGeneOELofUpper": varObj.gnomadGeneOELofUpper,  # O/E lof upper,
-            "IMPACT": varObj.IMPACT,
-            "Consequence": varObj.Consequence,
-            "omimVarFound": varObj.omimVarFound,
-            "omimGeneFound": varObj.omimGeneFound,
-            "omimDict": varObj.omimDict,
-            "omimGeneDict": varObj.omimGeneDict,
-            "omimAlleleDict": varObj.omimAlleleDict,
-            "phenoList": varObj.phenoList,
-            "phenoInhList": varObj.phenoInhList,
-            "phenoMimList": varObj.phenoMimList,
-            "clinVarVarFound": varObj.clinVarVarFound,
-            "clinVarVarDict": varObj.clinVarVarDict,
-            "clinVarGeneFound": varObj.clinVarGeneFound,
-            "clinVarGeneDict": varObj.clinVarGeneDict,
-            "clinvarTotalNumVars": varObj.clinvarTotalNumVars,
-            "clinvarNumP": varObj.clinvarNumP,
-            "clinvarNumLP": varObj.clinvarNumLP,
-            "clinvarNumLB": varObj.clinvarNumLB,
-            "clinvarNumB": varObj.clinvarNumB,
-            "clinvarTitle": varObj.clinvarTitle,
-            "clinvarSignDesc": varObj.clinvarSignDesc,
-            "clinvarCondition": varObj.clinvarCondition,
-            "hgmdVarFound": varObj.hgmdVarFound,
-            "hgmdGeneFound": varObj.hgmdGeneFound,
-            "hgmdVarPhenIdList": varObj.hgmdVarPhenIdList,
-            "hgmdVarHPOIdList": varObj.hgmdVarHPOIdList,
-            "hgmdVarHPOStrList": varObj.hgmdVarHPOStrList,
-            "varId_dash": varObj.varId_dash,
-            "dgvDictList": varObj.dgvDictList,
-            "dgvTypeList": varObj.dgvTypeList,
-            "dgvSubtypeList": varObj.dgvSubtypeList,
-            "dgvVarFound": varObj.dgvVarFound,
-            "decipherDictList": varObj.decipherDictList,
-            "decipherDeletionObsList": varObj.decipherDeletionObsList,
-            "decipherStudyList": varObj.decipherStudyList,
-            "decipherVarFound": varObj.decipherVarFound,
-            "gnomadGeneZscore": varObj.gnomadGeneZscore,
-            "gnomadGenePLI": varObj.gnomadGenePLI,
-            "gnomadGeneOELof": varObj.gnomadGeneOELof,
-            "gnomadGeneOELofUpper": varObj.gnomadGeneOELofUpper,
-            # symptom
-            "SymptomMatched": varObj.SymptomMatched,
-            "symptomScore": varObj.symptomScore,
-            "symptomName": varObj.symptomName,
-            "omimSymptomSimScore": varObj.omimSymptomSimScore,
-            "omimSymMatchFlag": varObj.omimSymMatchFlag,
-            "hgmdSymptomScore": varObj.hgmdSymptomScore,
-            "hgmdSymptomSimScore": varObj.hgmdSymptomSimScore,
-            "hgmdSymMatchFlag": varObj.hgmdSymMatchFlag,
-            "clinVarSymMatchFlag": varObj.clinVarSymMatchFlag,
-            "VARIANT_CLASS": varObj.VARIANT_CLASS,
-            "Feature": varObj.Feature,
-            "hom": varObj.hom,
-            "hgmd_rs": varObj.hgmd_rs,
-            "hgmd_id": varObj.hgmd_id,  # CL added
-            "hgmd_symbol": varObj.hgmd_symbol,  # CL added
-            "hgmd_PHEN": varObj.hgmd_PHEN,  # CL added
-            "hgmd_CLASS": varObj.hgmd_CLASS,  # CL added
-            "clin_dict": varObj.clin_dict,
-            "clin_PLP": varObj.clin_PLP,
-            "clin_PLP_perc": varObj.clin_PLP_perc,
-            "spliceAI": varObj.spliceAI,
-            "spliceAImax": varObj.spliceAImax,
-
-            "zyg": varObj.zyg,
-            'geneEnsId': varObj.geneEnsId,
-            'rsId': varObj.rsId
-        }
-
-
+        return varObj
 
 
 def getAnnotateInfoRows_3(
-        varDf,
+        df,
         genomeRef,
         clinvarGeneDf,
         clinvarAlleleDf,
@@ -581,6 +463,9 @@ def getAnnotateInfoRows_3(
 ):
     def f1(row):
         return getAnnotateInfoRow_3_1(row, genomeRef)
+
+    def f2(row):
+        return getAnnotateInfoRow_3_2(row, moduleList, decipherSortedDf)
 
     def fx(row):
         return getAnnotateInfoRow_3_x(
@@ -596,6 +481,8 @@ def getAnnotateInfoRows_3(
             gnomadMetricsGeneSortedDf,
         )
 
-    df = varDf.apply(f1, axis=1, result_type='expand')
+    df = df.apply(f1, axis=1, result_type='expand')
+    print(df)
+    df = df.apply(f2, axis=1, result_type='expand')
     annotateInfoDf = df.apply(fx, axis=1, result_type='expand')
     return annotateInfoDf
