@@ -301,21 +301,6 @@ def main():
             omimGeneDf = pd.DataFrame(omimGeneList)
             omimGeneSortedDf = omimGeneDf.set_index('geneSymbol').sort_index()
 
-        # def f(row):
-        #     return getAnnotateInfoRow_2(
-        #         row,
-        #         args.genomeRef,
-        #         clinvarGeneDf,
-        #         clinvarAlleleDf,
-        #         omimGeneSortedDf,
-        #         omimAlleleList,
-        #         hgmdHPOScoreDf,
-        #         moduleList,
-        #         decipherSortedDf,
-        #         gnomadMetricsGeneSortedDf,
-        #     )
-        # annotateInfoDf = varDf.apply(f, axis=1, result_type='expand')
-
         annotateInfoDf = getAnnotateInfoRows_3(
             varDf,
             args.genomeRef,

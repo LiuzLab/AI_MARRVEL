@@ -7,7 +7,7 @@ from .utils_for_marrvel_flatfile import (
     getAnnotateInfoRow_2,
 )
 
-# It is as it is, and supposed to be refactored.
+
 def getAnnotateInfoRows_2(
         varDf,
         genomeRef,
@@ -20,6 +20,8 @@ def getAnnotateInfoRows_2(
         decipherSortedDf,
         gnomadMetricsGeneSortedDf,
 ):
+    # NOTE(JL): It is old implementation, but left to for tracing purpose.
+    # Feel free to remove
     def f(row):
         return getAnnotateInfoRow_2(
             row,
@@ -217,154 +219,148 @@ def getAnnotateInfoRow_3_1(row, genomeRef):
 
 def getAnnotateInfoRow_3_2(
         varObj,
-        moduleList,
         decipherSortedDf,
 ):
-    if "conserve" in moduleList:
-        # get decipher: 0.6s
-        decipherDictList = []
-        decipherDeletionObsList = []
-        decipherStudyList = []
-        decipherVarFound = 0
-        deletionObs = "-"
-        # get the varaint object info from varObj
-        chromVal = int(varObj.chrom)
-        posVal = int(varObj.pos)
-        startVal = int(varObj.start)
-        stopVal = int(varObj.stop)
+    # get decipher: 0.6s
+    decipherDictList = []
+    decipherDeletionObsList = []
+    decipherStudyList = []
+    decipherVarFound = 0
+    deletionObs = "-"
+    # get the varaint object info from varObj
+    chromVal = int(varObj.chrom)
+    posVal = int(varObj.pos)
+    startVal = int(varObj.start)
+    stopVal = int(varObj.stop)
 
-        # CL 03-14-2023: changed column names to be compatible with hg38
-        # vals=decipherDf[ ( decipherDf['hg19Chr'] == chromVal ) & ( decipherDf['hg19Start']==startVal ) & (decipherDf['hg19Stop']==stopVal) ]
-        if (chromVal, startVal, stopVal) in decipherSortedDf:
-            vals = decipherSortedDf.loc[(chromVal, startVal, stopVal)]
+    # CL 03-14-2023: changed column names to be compatible with hg38
+    # vals=decipherDf[ ( decipherDf['hg19Chr'] == chromVal ) & ( decipherDf['hg19Start']==startVal ) & (decipherDf['hg19Stop']==stopVal) ]
+    if (chromVal, startVal, stopVal) in decipherSortedDf:
+        vals = decipherSortedDf.loc[(chromVal, startVal, stopVal)]
 
-            decipherVarFound = 1
-            deletionObs = vals.iloc[0]["deletion.obs"]
-            decipherDeletionObsList.append(deletionObs)
+        decipherVarFound = 1
+        deletionObs = vals.iloc[0]["deletion.obs"]
+        decipherDeletionObsList.append(deletionObs)
 
-        # print('\tchrom:', chromVal,'posVal:', posVal,'start:', startVal,'stopVal:', stopVal)
-        # print('\tdecipherVarFound:',decipherVarFound,'decipherDeletionObs:', deletionObs)
-        retList = [
-            decipherDictList,
-            decipherDeletionObsList,
-            decipherStudyList,
-            decipherVarFound,
-        ]
+    # print('\tchrom:', chromVal,'posVal:', posVal,'start:', startVal,'stopVal:', stopVal)
+    # print('\tdecipherVarFound:',decipherVarFound,'decipherDeletionObs:', deletionObs)
+    retList = [
+        decipherDictList,
+        decipherDeletionObsList,
+        decipherStudyList,
+        decipherVarFound,
+    ]
 
-        # [decipherDictList,decipherDeletionObsList,decipherStudyList, decipherVarFound]
-        varObj.decipherDictList = retList[0]
-        varObj.decipherDeletionObsList = retList[1]
-        varObj.decipherStudyList = retList[2]
-        varObj.decipherVarFound = retList[3]
+    # [decipherDictList,decipherDeletionObsList,decipherStudyList, decipherVarFound]
+    varObj.decipherDictList = retList[0]
+    varObj.decipherDeletionObsList = retList[1]
+    varObj.decipherStudyList = retList[2]
+    varObj.decipherVarFound = retList[3]
 
     return varObj
 
 
 def getAnnotateInfoRow_3_3(
         varObj,
-        moduleList,
         gnomadMetricsGeneSortedDf,
 ):
-    if "conserve" in moduleList:
-        # get gnomad gene metrics from gnomad file: 3.1s
-        if varObj.geneSymbol in gnomadMetricsGeneSortedDf.index:  # pLI, oe_lof, oe_lof_upper,mis_z
-            val = gnomadMetricsGeneSortedDf.loc[varObj.geneSymbol]
-            gnomadGeneZscore = val["mis_z"]
-            gnomadGenePLI = val["pLI"]
-            gnomadGeneOELof = val["oe_lof"]
-            gnomadGeneOELofUpper = val["oe_lof_upper"]
-        else:
-            # get the values
-            gnomadGeneZscore = "-"
-            gnomadGenePLI = "-"
-            gnomadGeneOELof = "-"
-            gnomadGeneOELofUpper = "-"
+    # get gnomad gene metrics from gnomad file: 3.1s
+    if varObj.geneSymbol in gnomadMetricsGeneSortedDf.index:  # pLI, oe_lof, oe_lof_upper,mis_z
+        val = gnomadMetricsGeneSortedDf.loc[varObj.geneSymbol]
+        gnomadGeneZscore = val["mis_z"]
+        gnomadGenePLI = val["pLI"]
+        gnomadGeneOELof = val["oe_lof"]
+        gnomadGeneOELofUpper = val["oe_lof_upper"]
+    else:
+        # get the values
+        gnomadGeneZscore = "-"
+        gnomadGenePLI = "-"
+        gnomadGeneOELof = "-"
+        gnomadGeneOELofUpper = "-"
 
-        retList = [gnomadGeneZscore, gnomadGenePLI, gnomadGeneOELof, gnomadGeneOELofUpper]
+    retList = [gnomadGeneZscore, gnomadGenePLI, gnomadGeneOELof, gnomadGeneOELofUpper]
 
-        varObj.gnomadGeneZscore = retList[0]
-        varObj.gnomadGenePLI = retList[1]
-        varObj.gnomadGeneOELof = retList[2]  # O/E lof
-        varObj.gnomadGeneOELofUpper = retList[3]  # O/E lof upper
+    varObj.gnomadGeneZscore = retList[0]
+    varObj.gnomadGenePLI = retList[1]
+    varObj.gnomadGeneOELof = retList[2]  # O/E lof
+    varObj.gnomadGeneOELofUpper = retList[3]  # O/E lof upper
 
     return varObj
 
 
 def getAnnotateInfoRow_3_4(
         varObj,
-        moduleList,
         omimGeneSortedDf,
 ):
-    if "curate" in moduleList:
-        # get OMIM: 2s
-        inputSnpList = []
-        if "," in varObj.rsId:
-            inputSnpList = varObj.rsId.split(",")
+    # get OMIM: 2s
+    inputSnpList = []
+    if "," in varObj.rsId:
+        inputSnpList = varObj.rsId.split(",")
+    else:
+        inputSnpList = varObj.rsId
+    varFound = 0
+    geneFound = 0
+    omimDict = {}
+    omimGeneDict = {}
+    omimAlleleDict = {}
+    phenoList = []
+    phenoInhList = []
+    phenoMimList = []
+    # check gene
+    # keys: dict_keys(['phenotypes', 'allelicVariants', 'mimNumber', 'status', 'title', 'description', 'geneEntrezId', 'geneSymbol'])
+    if varObj.geneSymbol in omimGeneSortedDf.index:
+        # print('\tgene:', varObj.geneSymbol, 'found')
+        geneFound = 1
+        omimGeneDict = omimGeneSortedDf.loc[varObj.geneSymbol]
+        snpList = []
+        for a in omimGeneDict["allelicVariants"]:
+            if "dbSnps" in a:
+                snpList.append(a["dbSnps"])
+        # check if input snpID matches the OMIM one
+        set1 = set(inputSnpList)
+        set2 = set(snpList)
+        if set1.intersection(set2):
+            varFound = 1
         else:
-            inputSnpList = varObj.rsId
-        varFound = 0
-        geneFound = 0
-        omimDict = {}
-        omimGeneDict = {}
-        omimAlleleDict = {}
-        phenoList = []
-        phenoInhList = []
-        phenoMimList = []
-        # check gene
-        # keys: dict_keys(['phenotypes', 'allelicVariants', 'mimNumber', 'status', 'title', 'description', 'geneEntrezId', 'geneSymbol'])
-        if varObj.geneSymbol in omimGeneSortedDf.index:
-            # print('\tgene:', varObj.geneSymbol, 'found')
-            geneFound = 1
-            omimGeneDict = omimGeneSortedDf.loc[varObj.geneSymbol]
-            snpList = []
-            for a in omimGeneDict["allelicVariants"]:
-                if "dbSnps" in a:
-                    snpList.append(a["dbSnps"])
-            # check if input snpID matches the OMIM one
-            set1 = set(inputSnpList)
-            set2 = set(snpList)
-            if set1.intersection(set2):
-                varFound = 1
+            varFound = 0
+
+        # get disease info from OMIM
+        # print('\tphenotypes:', type(omimGeneDict['phenotypes']), ' len:', len(omimGeneDict['phenotypes']) )
+        for a in omimGeneDict["phenotypes"]:
+            # print('type:', type(a))
+            pheno = a["phenotype"]
+            if "phenotypeMimNumber" in a:
+                phenoMim = a["phenotypeMimNumber"]
             else:
-                varFound = 0
+                phenoMim = "-"
+            if "phenotypeInheritance" in a:
+                phenoInh = a["phenotypeInheritance"]
+            else:
+                phenoInh = "-"
+            phenoList.append(pheno)
+            phenoInhList.append(phenoInh)
+            phenoMimList.append(str(phenoMim))
+            # print('phenotype:', pheno,phenoMim,phenoInh)
 
-            # get disease info from OMIM
-            # print('\tphenotypes:', type(omimGeneDict['phenotypes']), ' len:', len(omimGeneDict['phenotypes']) )
-            for a in omimGeneDict["phenotypes"]:
-                # print('type:', type(a))
-                pheno = a["phenotype"]
-                if "phenotypeMimNumber" in a:
-                    phenoMim = a["phenotypeMimNumber"]
-                else:
-                    phenoMim = "-"
-                if "phenotypeInheritance" in a:
-                    phenoInh = a["phenotypeInheritance"]
-                else:
-                    phenoInh = "-"
-                phenoList.append(pheno)
-                phenoInhList.append(phenoInh)
-                phenoMimList.append(str(phenoMim))
-                # print('phenotype:', pheno,phenoMim,phenoInh)
+    omimRet = [
+        varFound,
+        geneFound,
+        omimDict,
+        omimGeneDict,
+        omimAlleleDict,
+        phenoList,
+        phenoInhList,
+        phenoMimList,
+    ]
 
-        omimRet = [
-            varFound,
-            geneFound,
-            omimDict,
-            omimGeneDict,
-            omimAlleleDict,
-            phenoList,
-            phenoInhList,
-            phenoMimList,
-        ]
-
-        varObj.omimVarFound = omimRet[0]
-        varObj.omimGeneFound = omimRet[1]
-        varObj.omimDict = omimRet[2]
-        varObj.omimGeneDict = omimRet[3]
-        varObj.omimAlleleDict = omimRet[4]
-        varObj.phenoList = omimRet[5]
-        varObj.phenoInhList = omimRet[6]
-        varObj.phenoMimList = omimRet[7]
+    varObj.omimVarFound = omimRet[0]
+    varObj.omimGeneFound = omimRet[1]
+    varObj.omimDict = omimRet[2]
+    varObj.omimGeneDict = omimRet[3]
+    varObj.omimAlleleDict = omimRet[4]
+    varObj.phenoList = omimRet[5]
+    varObj.phenoInhList = omimRet[6]
+    varObj.phenoMimList = omimRet[7]
     return varObj
 
 
@@ -372,35 +368,38 @@ def getAnnotateInfoRow_3_5(
         varObj,
         clinvarGeneDf,
         clinvarAlleleDf,
-        hgmdHPOScoreDf,
-        moduleList,
 ):
-    if "curate" in moduleList:
-        clinVarRet = getClinVarUsingMarrvelFlatFile(
-            varObj, clinvarAlleleDf, clinvarGeneDf
-        )
-        varObj.clinVarVarFound = clinVarRet[0]
-        varObj.clinVarVarDict = clinVarRet[1]
-        varObj.clinVarGeneFound = clinVarRet[2]
-        varObj.clinVarGeneDict = clinVarRet[3]
-        varObj.clinvarTotalNumVars = clinVarRet[4]
-        varObj.clinvarNumP = clinVarRet[5]
-        varObj.clinvarNumLP = clinVarRet[6]
-        varObj.clinvarNumLB = clinVarRet[7]
-        varObj.clinvarNumB = clinVarRet[8]
-        varObj.clinvarTitle = clinVarRet[9]
-        varObj.clinvarSignDesc = (
-            varObj.clinvar_clnsig
-        )  # clinVarRet[10] #CL: changed to clinvar.vcf.gz annotation
-        varObj.clinvarCondition = clinVarRet[11]
+    clinVarRet = getClinVarUsingMarrvelFlatFile(
+        varObj, clinvarAlleleDf, clinvarGeneDf
+    )
+    varObj.clinVarVarFound = clinVarRet[0]
+    varObj.clinVarVarDict = clinVarRet[1]
+    varObj.clinVarGeneFound = clinVarRet[2]
+    varObj.clinVarGeneDict = clinVarRet[3]
+    varObj.clinvarTotalNumVars = clinVarRet[4]
+    varObj.clinvarNumP = clinVarRet[5]
+    varObj.clinvarNumLP = clinVarRet[6]
+    varObj.clinvarNumLB = clinVarRet[7]
+    varObj.clinvarNumB = clinVarRet[8]
+    varObj.clinvarTitle = clinVarRet[9]
+    varObj.clinvarSignDesc = (
+        varObj.clinvar_clnsig
+    )  # clinVarRet[10] #CL: changed to clinvar.vcf.gz annotation
+    varObj.clinvarCondition = clinVarRet[11]
 
-    if "curate" in moduleList:
-        hgmdRet = getHGMDUsingFlatFile(varObj, hgmdHPOScoreDf)
-        varObj.hgmdVarFound = hgmdRet[0]
-        varObj.hgmdGeneFound = hgmdRet[1]
-        varObj.hgmdVarPhenIdList = hgmdRet[2]
-        varObj.hgmdVarHPOIdList = hgmdRet[3]
-        varObj.hgmdVarHPOStrList = hgmdRet[4]
+    return varObj
+
+
+def getAnnotateInfoRow_3_6(
+        varObj,
+        hgmdHPOScoreDf,
+):
+    hgmdRet = getHGMDUsingFlatFile(varObj, hgmdHPOScoreDf)
+    varObj.hgmdVarFound = hgmdRet[0]
+    varObj.hgmdGeneFound = hgmdRet[1]
+    varObj.hgmdVarPhenIdList = hgmdRet[2]
+    varObj.hgmdVarHPOIdList = hgmdRet[3]
+    varObj.hgmdVarHPOStrList = hgmdRet[4]
 
     return varObj
 
@@ -421,26 +420,36 @@ def getAnnotateInfoRows_3(
         return getAnnotateInfoRow_3_1(row, genomeRef)
 
     def f2(row):
-        return getAnnotateInfoRow_3_2(row, moduleList, decipherSortedDf)
+        if "curate" not in moduleList:
+            return row
+        return getAnnotateInfoRow_3_2(row, decipherSortedDf)
 
     def f3(row):
-        return getAnnotateInfoRow_3_3(row, moduleList, gnomadMetricsGeneSortedDf)
+        if "conserve" not in moduleList:
+            return row
+        return getAnnotateInfoRow_3_3(row, gnomadMetricsGeneSortedDf)
 
     def f4(row):
-        return getAnnotateInfoRow_3_4(row, moduleList, omimGeneSortedDf)
+        if "curate" not in moduleList:
+            return row
+        return getAnnotateInfoRow_3_4(row, omimGeneSortedDf)
 
     def f5(row):
-        return getAnnotateInfoRow_3_5(
-            row,
-            clinvarGeneDf,
-            clinvarAlleleDf,
-            hgmdHPOScoreDf,
-            moduleList,
+        if "curate" not in moduleList:
+            return row
+        return getAnnotateInfoRow_3_5(row, clinvarGeneDf, clinvarAlleleDf)
+
+    def f6(row):
+        if "curate" not in moduleList:
+            return row
+        return getAnnotateInfoRow_3_6(
+            row, hgmdHPOScoreDf
         )
 
     df = df.apply(f1, axis=1, result_type='expand')
     df = df.apply(f2, axis=1, result_type='expand')
     df = df.apply(f3, axis=1, result_type='expand')
     df = df.apply(f4, axis=1, result_type='expand')
-    annotateInfoDf = df.apply(f5, axis=1, result_type='expand')
+    df = df.apply(f5, axis=1, result_type='expand')
+    annotateInfoDf = df.apply(f6, axis=1, result_type='expand')
     return annotateInfoDf
