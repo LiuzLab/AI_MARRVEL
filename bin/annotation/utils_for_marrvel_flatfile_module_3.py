@@ -20,8 +20,8 @@ def getAnnotateInfoRows_2(
         decipherSortedDf,
         gnomadMetricsGeneSortedDf,
 ):
-    # NOTE(JL): It is old implementation, but left to for tracing purpose.
-    # Feel free to remove
+    # NOTE(JL): It is old implementation and not used.
+    # But left to for tracing purpose. Feel free to remove
     def f(row):
         return getAnnotateInfoRow_2(
             row,
@@ -252,12 +252,12 @@ def getAnnotateInfoRow_3_2(
     ]
 
     # [decipherDictList,decipherDeletionObsList,decipherStudyList, decipherVarFound]
-    varObj.decipherDictList = retList[0]
-    varObj.decipherDeletionObsList = retList[1]
-    varObj.decipherStudyList = retList[2]
-    varObj.decipherVarFound = retList[3]
-
-    return varObj
+    return {
+        "decipherDictList": retList[0],
+        "decipherDeletionObsList": retList[1],
+        "decipherStudyList": retList[2],
+        "decipherVarFound": retList[3],
+    }
 
 
 def getAnnotateInfoRow_3_3(
@@ -280,12 +280,12 @@ def getAnnotateInfoRow_3_3(
 
     retList = [gnomadGeneZscore, gnomadGenePLI, gnomadGeneOELof, gnomadGeneOELofUpper]
 
-    varObj.gnomadGeneZscore = retList[0]
-    varObj.gnomadGenePLI = retList[1]
-    varObj.gnomadGeneOELof = retList[2]  # O/E lof
-    varObj.gnomadGeneOELofUpper = retList[3]  # O/E lof upper
-
-    return varObj
+    return {
+        "gnomadGeneZscore": retList[0],
+        "gnomadGenePLI": retList[1],
+        "gnomadGeneOELof": retList[2],  # O/E lof
+        "gnomadGeneOELofUpper": retList[3],  # O/E lof upper
+    }
 
 
 def getAnnotateInfoRow_3_4(
@@ -353,15 +353,16 @@ def getAnnotateInfoRow_3_4(
         phenoMimList,
     ]
 
-    varObj.omimVarFound = omimRet[0]
-    varObj.omimGeneFound = omimRet[1]
-    varObj.omimDict = omimRet[2]
-    varObj.omimGeneDict = omimRet[3]
-    varObj.omimAlleleDict = omimRet[4]
-    varObj.phenoList = omimRet[5]
-    varObj.phenoInhList = omimRet[6]
-    varObj.phenoMimList = omimRet[7]
-    return varObj
+    return {
+        "omimVarFound": omimRet[0],
+        "omimGeneFound": omimRet[1],
+        "omimDict": omimRet[2],
+        "omimGeneDict": omimRet[3],
+        "omimAlleleDict": omimRet[4],
+        "phenoList": omimRet[5],
+        "phenoInhList": omimRet[6],
+        "phenoMimList": omimRet[7],
+    }
 
 
 def getAnnotateInfoRow_3_5(
@@ -372,22 +373,23 @@ def getAnnotateInfoRow_3_5(
     clinVarRet = getClinVarUsingMarrvelFlatFile(
         varObj, clinvarAlleleDf, clinvarGeneDf
     )
-    varObj.clinVarVarFound = clinVarRet[0]
-    varObj.clinVarVarDict = clinVarRet[1]
-    varObj.clinVarGeneFound = clinVarRet[2]
-    varObj.clinVarGeneDict = clinVarRet[3]
-    varObj.clinvarTotalNumVars = clinVarRet[4]
-    varObj.clinvarNumP = clinVarRet[5]
-    varObj.clinvarNumLP = clinVarRet[6]
-    varObj.clinvarNumLB = clinVarRet[7]
-    varObj.clinvarNumB = clinVarRet[8]
-    varObj.clinvarTitle = clinVarRet[9]
-    varObj.clinvarSignDesc = (
-        varObj.clinvar_clnsig
-    )  # clinVarRet[10] #CL: changed to clinvar.vcf.gz annotation
-    varObj.clinvarCondition = clinVarRet[11]
 
-    return varObj
+    clinVarRet[10] = varObj.clinvar_clnsig  # clinVarRet[10] #CL: changed to clinvar.vcf.gz annotation
+
+    return {
+        "clinVarVarFound": clinVarRet[0],
+        "clinVarVarDict": clinVarRet[1],
+        "clinVarGeneFound": clinVarRet[2],
+        "clinVarGeneDict": clinVarRet[3],
+        "clinvarTotalNumVars": clinVarRet[4],
+        "clinvarNumP": clinVarRet[5],
+        "clinvarNumLP": clinVarRet[6],
+        "clinvarNumLB": clinVarRet[7],
+        "clinvarNumB": clinVarRet[8],
+        "clinvarTitle": clinVarRet[9],
+        "clinvarSignDesc": clinVarRet[10],
+        "clinvarCondition": clinVarRet[11],
+    }
 
 
 def getAnnotateInfoRow_3_6(
@@ -395,17 +397,18 @@ def getAnnotateInfoRow_3_6(
         hgmdHPOScoreDf,
 ):
     hgmdRet = getHGMDUsingFlatFile(varObj, hgmdHPOScoreDf)
-    varObj.hgmdVarFound = hgmdRet[0]
-    varObj.hgmdGeneFound = hgmdRet[1]
-    varObj.hgmdVarPhenIdList = hgmdRet[2]
-    varObj.hgmdVarHPOIdList = hgmdRet[3]
-    varObj.hgmdVarHPOStrList = hgmdRet[4]
 
-    return varObj
+    return {
+        "hgmdVarFound": hgmdRet[0],
+        "hgmdGeneFound": hgmdRet[1],
+        "hgmdVarPhenIdList": hgmdRet[2],
+        "hgmdVarHPOIdList": hgmdRet[3],
+        "hgmdVarHPOStrList": hgmdRet[4],
+    }
 
 
 def getAnnotateInfoRows_3(
-        df,
+        vepDf,
         genomeRef,
         clinvarGeneDf,
         clinvarAlleleDf,
@@ -446,10 +449,15 @@ def getAnnotateInfoRows_3(
             row, hgmdHPOScoreDf
         )
 
-    df = df.apply(f1, axis=1, result_type='expand')
-    df = df.apply(f2, axis=1, result_type='expand')
-    df = df.apply(f3, axis=1, result_type='expand')
-    df = df.apply(f4, axis=1, result_type='expand')
-    df = df.apply(f5, axis=1, result_type='expand')
-    annotateInfoDf = df.apply(f6, axis=1, result_type='expand')
+    annotateInfoDf = vepDf.apply(f1, axis=1, result_type='expand')
+    df = annotateInfoDf.apply(f2, axis=1, result_type='expand')
+    annotateInfoDf[df.columns] = df
+    df = annotateInfoDf.apply(f3, axis=1, result_type='expand')
+    annotateInfoDf[df.columns] = df
+    df = annotateInfoDf.apply(f4, axis=1, result_type='expand')
+    annotateInfoDf[df.columns] = df
+    df = annotateInfoDf.apply(f5, axis=1, result_type='expand')
+    annotateInfoDf[df.columns] = df
+    df = annotateInfoDf.apply(f6, axis=1, result_type='expand')
+    annotateInfoDf[df.columns] = df
     return annotateInfoDf
