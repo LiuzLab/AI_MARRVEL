@@ -38,11 +38,11 @@ process INDEX_VCF {
     """
 }
 
-process FILTER_EXONIC {
+process FILTER_BED {
     input:
     path vcf
     path tbi
-    path ref_exonic_filter_bed
+    path ref_filter_bed
 
     output:
     path "${params.run_id}.recode.vcf.gz"
@@ -50,8 +50,8 @@ process FILTER_EXONIC {
 
     script:
     """
-    if [ ${params.no_filter_exonic} == false ]; then
-        awk '{gsub(/^chr/, ""); print}' ${ref_exonic_filter_bed} > bed
+    if [ -f ${ref_filter_bed} ]; then
+        awk '{gsub(/^chr/, ""); print}' ${ref_filter_bed} > bed
         bcftools filter --regions-file bed ${vcf} -Oz -o "${params.run_id}.recode.vcf.gz"
         tabix -p vcf "${params.run_id}.recode.vcf.gz"
     else
@@ -392,10 +392,13 @@ workflow {
             params.omim_pheno)
 
     REMOVE_MITO_AND_UNKOWN_CHR(VCF_PRE_PROCESS.out)
-    FILTER_EXONIC(REMOVE_MITO_AND_UNKOWN_CHR.out, params.ref_exonic_filter_bed)
+    FILTER_BED(
+        REMOVE_MITO_AND_UNKOWN_CHR.out,
+        moduleDir.resolve(params.ref_filter_bed),
+    )
     FILTER_PROBAND(
-        FILTER_EXONIC.out[0],
-        FILTER_EXONIC.out[1],
+        FILTER_BED.out[0],
+        FILTER_BED.out[1],
         params.ref_gnomad_genome,
         params.ref_gnomad_genome_idx,
         params.ref_gnomad_exome,
