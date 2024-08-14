@@ -63,6 +63,14 @@ nextflow run . -params-file params.yaml
 ```
 NOTE: You need to create `params.yaml` by copying [params.yaml.example](params.yaml.example) file and follow the instruction.
 
+
+For more information on usage and parameters which are open for modification, please use `--help` option as shown below.
+
+```
+nextflow run main.nf --help
+```
+
+
 ## License
 AI-MARRVEL is licensed under GPL-3.0. You are welcomed to use it for research purpose.  
 For business purpose, please contact us for licensing.

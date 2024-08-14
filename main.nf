@@ -370,8 +370,20 @@ process PREDICTION {
     """
 }
 
+def SHOW_USEAGE() {
+        if (params.help) {
+        def helpFile = file(params.usage_file)  // Specify your Markdown file path here
+        if (helpFile.exists()) {
+            println helpFile.text
+        } else {
+            println "Sorry something went wrong, usage file not found! please vist our website for more info : https://ai-marrvel.readthedocs.io/en/latest/"
+        }
+        exit 0
+    }
+}
 
-workflow { 
+workflow {
+    SHOW_USEAGE()
     INDEX_VCF(params.input_vcf)
     VCF_PRE_PROCESS(INDEX_VCF.out, params.chrmap)
 

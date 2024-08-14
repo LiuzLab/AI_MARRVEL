@@ -1,0 +1,41 @@
+Usage: 
+      
+    nextflow run main.nf [All Args] [Options]
+        
+Example:  
+
+    nextflow run main.nf --ref_dir   path/to/aim_data_dependencies \
+                         --input_vcf path/to/sample.vcf.gz \
+                         --input_hpo path/to/sample/hpos.txt \
+                         --outdir    path/to/sample/Output \ 
+                         --run_id [Sample ID] \
+                         --ref_ver [hg19/hg38] 
+
+Args:
+  --input_vcf               Path to input VCF file.
+  --input_hpo               Path to input HPO file.
+  --ref_dir                 Path to aim pipeline dependencies directory.
+  --outdir                  Output directory.
+  --run_id                  Unique identifier for this run. (default: 1)
+  --ref_ver                 Reference genome version [hg38 or hg19] (default: hg19)
+                  
+
+Options:
+  --exome_filter            Enable exonic filter. Addition will filter out variants outside of exonic region  (default: false)
+  --help                    Displays the usage information.
+
+Reference Files:
+  --ref_loc                 Path to reference location file
+  --ref_to_sym              Path to reference to symbol file
+  --ref_sorted_sym          Path to reference sorted symbol file
+  --ref_exonic_filter_bed   Path to exonic filter BED file
+
+VEP Annotation:
+  --vep_dir_cache           Path to VEP cache directory
+  --vep_dir_plugins         Path to VEP plugins directory
+  --vep_custom_gnomad       Path to custom gnomAD file for VEP
+  --vep_custom_clinvar      Path to custom ClinVar file for VEP
+  --vep_custom_hgmd         Path to custom HGMD file for VEP
+
+For detailed information about each process, 
+please refer to the documentation. https://ai-marrvel.readthedocs.io/en/latest/ 
