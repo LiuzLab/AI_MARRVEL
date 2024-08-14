@@ -64,7 +64,7 @@ nextflow run . -params-file params.yaml
 NOTE: You need to create `params.yaml` by copying [params.yaml.example](params.yaml.example) file and follow the instruction.
 
 
-For more information on usage and parameters which can be are open for modification, please use `--help` Option.
+For more information on usage and parameters which are open for modification, please use `--help` option as shown below.
 
 ```
 nextflow run main.nf --help
