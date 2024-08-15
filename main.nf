@@ -319,7 +319,7 @@ process FEATURE_ENGINEERING_PART1 {
         # Combine the scores, keeping the header only for the first file
         if [ -f ${params.run_id}_scores.csv ]; then
             # File exists, remove the first line (header) before appending
-            head -n -1 scores.csv >> ${params.run_id}_scores.csv
+            tail -n +2 scores.csv >> ${params.run_id}_scores.csv
         else
             # File doesn't exist, move the first file with the header
             mv scores.csv ${params.run_id}_scores.csv
