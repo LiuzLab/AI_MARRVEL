@@ -294,10 +294,6 @@ process FEATURE_ENGINEERING_PART1 {
 
     script:
     """
-    AIM_FREE_RAM=\$(free -g | awk 'NR==2{printf \$7}')
-
-    split_vep_chunks.py $vep \$AIM_FREE_RAM
-
     while read -r INDEX LINEH LINEA LINEB
     do
         sed -n -e "\${LINEH}p" -e "\${LINEA},\${LINEB}p" $vep > vep-\${INDEX}.txt
