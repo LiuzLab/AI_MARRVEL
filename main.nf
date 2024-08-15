@@ -277,7 +277,8 @@ process VEP_ANNOTATE {
         --plugin SpliceAI,snv=${vep_plugin_spliceai_snv},indel=${vep_plugin_spliceai_indel},cutoff=0.5 \\
         --plugin CADD,${vep_plugin_cadd},ALL \\
         --plugin dbNSFP,${vep_plugin_dbnsfp},ALL \\
-        --individual all --output_file ${params.run_id}-vep.txt --input_file $vcf
+        --individual all --output_file ${params.run_id}-vep.txt --input_file $vcf \\
+        --buffer_size 50
     """
 }
 
@@ -294,13 +295,15 @@ process FEATURE_ENGINEERING_PART1 {
 
     script:
     """
-    cut -f1 $vep | tail -n +2 | sort -u > chr_list.txt
-    head -n 1 $vep > vep_header.txt
+    grep "^#" $vep > vep_header.txt
+    # Get the list of unique chromosomes, ignoring header lines and using regex to extract 'chr' columns
+    grep -v "^#" $vep | cut -f1 | cut -f1 -d_ | sort -u >> chr_list.txt
 
     while read -r CHR
     do
+        echo \${CHR}
         # Extract VEP data for the specific chromosome, using grep to match chromosome at the start of the line
-        grep "^\\${CHR}\\b" $vep > vep_body_\${CHR}.txt
+        grep -E "^\${CHR}_" $vep > vep_body_\${CHR}.txt
         cat vep_header.txt vep_body_\${CHR}.txt > vep-\${CHR}.txt
 
         feature.py \\
@@ -314,17 +317,16 @@ process FEATURE_ENGINEERING_PART1 {
             -modules curate,conserve
         
         # Combine the scores, keeping the header only for the first file
-        if [ -f scores.csv ]; then
-            sed -n "2,\$p" scores.csv > scores_\${CHR}.csv
+        if [ -f ${params.run_id}_scores.csv ]; then
+            # File exists, remove the first line (header) before appending
+            head -n -1 scores.csv >> ${params.run_id}_scores.csv
         else
-            mv scores.csv scores_\${CHR}.csv
+            # File doesn't exist, move the first file with the header
+            mv scores.csv ${params.run_id}_scores.csv
         fi
 
     done < chr_list.txt
 
-
-    # Merge the chromosome-specific score files into the final output
-    cat scores.csv > ${params.run_id}_scores.csv
     """
 }
 
