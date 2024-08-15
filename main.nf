@@ -294,32 +294,37 @@ process FEATURE_ENGINEERING_PART1 {
 
     script:
     """
-    while read -r INDEX LINEH LINEA LINEB
+    cut -f1 $vep | tail -n +2 | sort -u > chr_list.txt
+    head -n 1 $vep > vep_header.txt
+
+    while read -r CHR
     do
-        sed -n -e "\${LINEH}p" -e "\${LINEA},\${LINEB}p" $vep > vep-\${INDEX}.txt
+        # Extract VEP data for the specific chromosome, using grep to match chromosome at the start of the line
+        grep "^\\${CHR}\\b" $vep > vep_body_\${CHR}.txt
+        cat vep_header.txt vep_body_\${CHR}.txt > vep-\${CHR}.txt
 
         feature.py \\
             -patientHPOsimiOMIM $omim_sim \\
             -patientHPOsimiHGMD $hgmd_sim \\
-            -varFile vep-\${INDEX}.txt \\
+            -varFile vep-\${CHR}.txt \\
             -inFileType vepAnnotTab \\
             -patientFileType one \\
             -genomeRef ${params.ref_ver} \\
             -diseaseInh AD \\
             -modules curate,conserve
         
-        if [ \${INDEX} -gt 1 ]; then
-            sed -n "2,\$p" scores.csv > scores_\${INDEX}.csv
+        # Combine the scores, keeping the header only for the first file
+        if [ -f scores.csv ]; then
+            sed -n "2,\$p" scores.csv > scores_\${CHR}.csv
         else
-            mv scores.csv scores_\${INDEX}.csv
+            mv scores.csv scores_\${CHR}.csv
         fi
-    done < vep_split.txt
+
+    done < chr_list.txt
 
 
-    for INDEX in \$(cut -d\$'\\t' -f1 vep_split.txt)
-    do
-        cat scores_\${INDEX}.csv
-    done > ${params.run_id}_scores.csv
+    # Merge the chromosome-specific score files into the final output
+    cat scores.csv > ${params.run_id}_scores.csv
     """
 }
 
