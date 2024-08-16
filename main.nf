@@ -61,6 +61,51 @@ process FILTER_BED {
     """
 }
 
+def VALIDATE_INPUT_PARAMS() {
+    def checkPathParamMap = [
+        "input_vcf": params.input_vcf,
+        "input_hpo": params.input_hpo,
+        "ref_dir"  : params.ref_dir,
+        "ref_ver"  : params.ref_ver,
+    ]
+    
+    checkPathParamMap.each { paramName, paramValue -> 
+        if (paramValue) {
+            // Check if the file exists
+            if(!(paramName == "ref_ver")) {
+                def fileObj = file(paramValue, checkIfExists: true)
+                //  println("Check file: '--${paramName}' value '${paramValue}' ")
+
+                // Check the file type based on the parameter name
+                if (paramName == "input_vcf" && !(paramValue.endsWith(".vcf") || paramValue.endsWith(".vcf.gz"))) {
+                    println("Error: '--${paramName}' value '${paramValue}' should be a VCF file (.vcf) or (.vcf.gz)")
+                    println("To see usage and available parameters run `nextflow run main.nf --help`")
+                    exit 1
+                } else if (paramName == "input_hpo" && !(paramValue.endsWith(".hpo") || paramValue.endsWith(".txt"))) {
+                    println("Error: '--${paramName}' value '${paramValue}' should be an HPO file (.hpo) or (.txt)")
+                    println("To see usage and available parameters run `nextflow run main.nf --help`")
+                    exit 1
+                } else if (paramName == "ref_dir" && !fileObj.isDirectory()) {
+                    println("Error: '--${paramName}' value '${paramValue}' should be an directory.")
+                    println("To see usage and available parameters run `nextflow run main.nf --help`")
+                    exit 1
+                } 
+            }
+             
+            if (paramName == "ref_ver" && !(paramValue.equals("hg19") || paramValue.equals("hg38")) ) { 
+                println("Error: '--${paramName}' value ${paramValue} should be either set to 'hg19' or 'hg38'.")
+                println("To see usage and available parameters run `nextflow run main.nf --help`")
+                exit 1
+            }
+            
+        } else { 
+            println("Input parameter '${paramName}' not specified or is null!")
+            println("To see usage and available parameters run `nextflow run main.nf --help`")
+            exit 1 
+        }
+    }
+}
+
 process BUILD_REFERENCE_INDEX {
     container "broadinstitute/gatk"
     storeDir projectDir.resolve("out/reference_index/")
@@ -220,7 +265,7 @@ process ANNOT_PHRANK {
 process ANNOT_ENSMBLE {
     input:
     path vcf
-    path ref 
+    path ref
 
     output:
     path "${params.run_id}-ensmbl.txt"
@@ -463,7 +508,10 @@ def SHOW_USEAGE() {
         if (helpFile.exists()) {
             println helpFile.text
         } else {
-            println "Sorry something went wrong, usage file not found! please vist our website for more info : https://ai-marrvel.readthedocs.io/en/latest/"
+            println """
+            Sorry something went wrong, usage file not found!
+            Please vist our website for more info : https://ai-marrvel.readthedocs.io/en/latest/
+            """
         }
         exit 0
     }
@@ -471,14 +519,17 @@ def SHOW_USEAGE() {
 
 workflow {
     SHOW_USEAGE()
+    
+    VALIDATE_INPUT_PARAMS()
+
     BUILD_REFERENCE_INDEX()
 
     INDEX_VCF(params.input_vcf)
     VCF_PRE_PROCESS_PART1(
         INDEX_VCF.out,
-        BUILD_REFERENCE_INDEX.fasta,
-        BUILD_REFERENCE_INDEX.fasta_index,
-        BUILD_REFERENCE_INDEX.fasta_dict,
+        BUILD_REFERENCE_INDEX.out.fasta,
+        BUILD_REFERENCE_INDEX.out.fasta_index,
+        BUILD_REFERENCE_INDEX.out.fasta_dict,
         params.chrmap
     )
     VCF_PRE_PROCESS_PART2(VCF_PRE_PROCESS_PART1.out, params.chrmap)
