@@ -4,13 +4,19 @@ nextflow.enable.dsl = 2
 process INDEX_VCF {
     input:
     path vcf
+    val isValidationPassed
     
     output:
     path "input.vcf.gz"
     path "input.vcf.gz.tbi"
 
+    when:
+    isValidationPassed == true
+
     script:
     """
+    echo "validation Output is :: $isValidationPassed"
+
     # Determine the file type
     INPUT_VCF_TYPE="\$(file -b $vcf)"
 
@@ -43,10 +49,14 @@ process FILTER_BED {
     path vcf
     path tbi
     path ref_filter_bed
+    val isValidationPassed
 
     output:
     path "${params.run_id}.recode.vcf.gz"
     path "${params.run_id}.recode.vcf.gz.tbi"
+
+    when:
+    isValidationPassed == true
 
     script:
     """
@@ -65,10 +75,16 @@ process BUILD_REFERENCE_INDEX {
     container "broadinstitute/gatk"
     storeDir projectDir.resolve("out/reference_index/")
 
+    input:
+    val isValidationPassed
+
     output:
     path "final_${params.ref_ver}.fa", emit: fasta
     path "final_${params.ref_ver}.fa.fai", emit: fasta_index
     path "final_${params.ref_ver}.dict", emit: fasta_dict
+
+    when:
+    isValidationPassed == true
 
     script:
     """
@@ -91,11 +107,14 @@ process VCF_PRE_PROCESS_PART1 {
     path fasta_index
     path fasta_dict
     path chrmap_file
+    val isValidationPassed
 
     output:
     path "${params.run_id}.nog.vcf.gz"
     path "${params.run_id}.nog.vcf.gz.tbi"
 
+    when:
+    isValidationPassed == true
 
     script:
     """
@@ -153,9 +172,13 @@ process VCF_PRE_PROCESS_PART2 {
     path vcf
     path tbi
     path chrmap
+    val isValidationPassed
 
     output:
     path "${params.run_id}.filt.vcf.gz"
+
+    when:
+    isValidationPassed == true
 
     script:
     """
@@ -185,11 +208,14 @@ process REMOVE_MITO_AND_UNKOWN_CHR {
     publishDir "${params.outdir}/vcf/", mode: 'copy'
     input:
     path vcf
+    val isValidationPassed
 
     output:
     path "${params.run_id}.filt.rmMT.vcf.gz"
     path "${params.run_id}.filt.rmMT.vcf.gz.tbi"
 
+    when:
+    isValidationPassed == true
 
     script:
     """
@@ -205,9 +231,13 @@ process REMOVE_MITO_AND_UNKOWN_CHR {
 process ANNOT_PHRANK {
     input:
     path vcf
+    val isValidationPassed
 
     output:
     path "${params.run_id}-var-filt.txt"
+
+    when:
+    isValidationPassed == true
 
     script:
     """
@@ -220,10 +250,14 @@ process ANNOT_PHRANK {
 process ANNOT_ENSMBLE {
     input:
     path vcf
-    path ref 
+    path ref
+    val isValidationPassed 
 
     output:
     path "${params.run_id}-ensmbl.txt"
+
+    when:
+    isValidationPassed == true
 
     script:
     """
@@ -239,9 +273,13 @@ process TO_GENE_SYM {
     path ensmbl
     path ref_to_sym
     path ref_sorted_sym
+    val isValidationPassed
 
     output:
     path "${params.run_id}-gene.txt"
+
+    when:
+    isValidationPassed == true
 
     script:
     """
@@ -261,9 +299,13 @@ process PHRANK_SCORING {
     path disease_annotation
     path gene_annotation
     path disease_gene
+    val isValidationPassed
 
     output:
-    path "${params.run_id}.phrank.txt" 
+    path "${params.run_id}.phrank.txt"
+
+    when:
+    isValidationPassed == true
 
     script:
     """
@@ -280,10 +322,14 @@ process HPO_SIM {
     path omim_obo
     path omim_genemap2
     path omim_pheno
+    val isValidationPassed
 
     output:
     path "${params.run_id}-cz"
     path "${params.run_id}-dx"
+
+    when:
+    isValidationPassed == true
 
     script:
     """
@@ -303,9 +349,13 @@ process FILTER_PROBAND {
     path ref_gnomad_genome_idx
     path ref_gnomad_exome
     path ref_gnomad_exome_idx
+    val isValidationPassed
 
     output:
     path "${params.run_id}.filt.rmBL.vcf"
+
+    when:
+    isValidationPassed == true
 
     script:
     """
@@ -344,9 +394,13 @@ process VEP_ANNOTATE {
     path vep_plugin_cadd
     path vep_plugin_dbnsfp
     path vep_idx
+    val isValidationPassed
 
     output:
     path "${params.run_id}-vep.txt"
+
+    when:
+    isValidationPassed == true
 
     script:
     def ref_assembly = (params.ref_ver == 'hg38') ? 'GRCh38' : 'GRCh37'
@@ -375,9 +429,13 @@ process FEATURE_ENGINEERING_PART1 {
     path omim_sim
     path ref_annot_dir
     // not sure why projectDir is not working
+    val isValidationPassed
 
     output:
     path "${params.run_id}_scores.csv"
+
+    when:
+    isValidationPassed == true
 
     script:
     """
@@ -422,10 +480,14 @@ process FEATURE_ENGINEERING_PART2 {
     path ref_var_tier_dir
     path ref_merge_expand_dir
     path ref_mod5_diffusion_dir
+    val isValidationPassed
 
     output:
     path "${params.run_id}.matrix.txt"
     path "scores.txt.gz"
+
+    when:
+    isValidationPassed == true
 
     script:
     """
@@ -442,10 +504,14 @@ process PREDICTION {
     path scores
     path ref_predict_new_dir
     path ref_model_inputs_dir
+    val isValidationPassed
 
     output:
     path "conf_4Model/*.csv"
     path "conf_4Model/integrated/*.csv"
+
+    when:
+    isValidationPassed == true
 
     script:
     """
@@ -463,46 +529,88 @@ def SHOW_USEAGE() {
         if (helpFile.exists()) {
             println helpFile.text
         } else {
-            println "Sorry something went wrong, usage file not found! please vist our website for more info : https://ai-marrvel.readthedocs.io/en/latest/"
+            println """
+            Sorry something went wrong, usage file not found!
+            Please vist our website for more info : https://ai-marrvel.readthedocs.io/en/latest/
+            """
         }
         exit 0
     }
 }
 
+process VALIDATE_INPUT_PARAMS {
+    // Later will publish there validation error file into its own directory for webApp use.
+    input:
+    path vcf
+    path hpo
+    path refDir
+
+    output:
+    val isValidationPassed
+
+    script:
+    def userParamsJson = groovy.json.JsonOutput.toJson(params)
+    isValidationPassed = true
+    """
+    validate_inputs.py '${userParamsJson}' $vcf $hpo $refDir
+
+    file_path="\${PWD}/validation_results.csv"
+
+    if [ -f "\$file_path" ]; then
+        check_validation_status.py \$file_path
+    else
+        echo "CSV file not found: \$file_path"
+        exit 1
+    fi
+    """
+}
+
 workflow {
     SHOW_USEAGE()
-    BUILD_REFERENCE_INDEX()
 
-    INDEX_VCF(params.input_vcf)
+    VALIDATE_INPUT_PARAMS(params.input_vcf, params.input_hpo, params.ref_dir)
+    BUILD_REFERENCE_INDEX(VALIDATE_INPUT_PARAMS.out)
+
+    INDEX_VCF(params.input_vcf, VALIDATE_INPUT_PARAMS.out)
+
     VCF_PRE_PROCESS_PART1(
-        INDEX_VCF.out,
-        BUILD_REFERENCE_INDEX.fasta,
-        BUILD_REFERENCE_INDEX.fasta_index,
-        BUILD_REFERENCE_INDEX.fasta_dict,
-        params.chrmap
+        INDEX_VCF.out[0],
+        INDEX_VCF.out[1],
+        BUILD_REFERENCE_INDEX.out[0],
+        BUILD_REFERENCE_INDEX.out[1],
+        BUILD_REFERENCE_INDEX.out[2],
+        params.chrmap,
+        VALIDATE_INPUT_PARAMS.out
     )
-    VCF_PRE_PROCESS_PART2(VCF_PRE_PROCESS_PART1.out, params.chrmap)
+    VCF_PRE_PROCESS_PART2(VCF_PRE_PROCESS_PART1.out[0],
+                          VCF_PRE_PROCESS_PART1.out[1],
+                          params.chrmap,VALIDATE_INPUT_PARAMS.out)
 
-    ANNOT_PHRANK(INDEX_VCF.out[0])
-    ANNOT_ENSMBLE(ANNOT_PHRANK.out, params.ref_loc)
-    TO_GENE_SYM(ANNOT_ENSMBLE.out, params.ref_to_sym, params.ref_sorted_sym)
+    ANNOT_PHRANK(INDEX_VCF.out[0], VALIDATE_INPUT_PARAMS.out)
+    ANNOT_ENSMBLE(ANNOT_PHRANK.out, params.ref_loc, VALIDATE_INPUT_PARAMS.out)
+    TO_GENE_SYM(ANNOT_ENSMBLE.out, params.ref_to_sym,
+                 params.ref_sorted_sym, VALIDATE_INPUT_PARAMS.out)
     PHRANK_SCORING( TO_GENE_SYM.out, 
                     params.input_hpo, 
                     params.phrank_dagfile,
                     params.phrank_disease_annotation,
                     params.phrank_gene_annotation,
-                    params.phrank_disease_gene)
+                    params.phrank_disease_gene,
+                    VALIDATE_INPUT_PARAMS.out)
 
     HPO_SIM(params.input_hpo,
             params.omim_hgmd_phen,
             params.omim_obo,
             params.omim_genemap2,
-            params.omim_pheno)
+            params.omim_pheno,
+            VALIDATE_INPUT_PARAMS.out)
 
-    REMOVE_MITO_AND_UNKOWN_CHR(VCF_PRE_PROCESS_PART2.out)
+    REMOVE_MITO_AND_UNKOWN_CHR(VCF_PRE_PROCESS_PART2.out, VALIDATE_INPUT_PARAMS.out)
     FILTER_BED(
-        REMOVE_MITO_AND_UNKOWN_CHR.out,
+        REMOVE_MITO_AND_UNKOWN_CHR.out[0],
+        REMOVE_MITO_AND_UNKOWN_CHR.out[1],
         moduleDir.resolve(params.ref_filter_bed),
+        VALIDATE_INPUT_PARAMS.out
     )
     FILTER_PROBAND(
         FILTER_BED.out[0],
@@ -510,7 +618,8 @@ workflow {
         params.ref_gnomad_genome,
         params.ref_gnomad_genome_idx,
         params.ref_gnomad_exome,
-        params.ref_gnomad_exome_idx
+        params.ref_gnomad_exome_idx,
+        VALIDATE_INPUT_PARAMS.out
     )
     VEP_ANNOTATE(
         FILTER_PROBAND.out,
@@ -524,14 +633,16 @@ workflow {
         params.vep_plugin_spliceai_indel,
         params.vep_plugin_cadd,
         params.vep_plugin_dbnsfp,
-        file(params.vep_idx)
+        file(params.vep_idx),
+        VALIDATE_INPUT_PARAMS.out
     )
 
     FEATURE_ENGINEERING_PART1 ( // will rename it once we have analyzed/review the part
         VEP_ANNOTATE.out,
         HPO_SIM.out[0],
         HPO_SIM.out[1],
-        file(params.ref_annot_dir)
+        file(params.ref_annot_dir),
+        VALIDATE_INPUT_PARAMS.out
     )
 
     FEATURE_ENGINEERING_PART2 (
@@ -540,13 +651,16 @@ workflow {
         file(params.ref_annot_dir),
         file(params.ref_var_tier_dir),
         file(params.ref_merge_expand_dir),
-        file(params.ref_mod5_diffusion_dir)
+        file(params.ref_mod5_diffusion_dir),
+        VALIDATE_INPUT_PARAMS.out
     )
 
     PREDICTION( 
         FEATURE_ENGINEERING_PART2.out[0],
         FEATURE_ENGINEERING_PART2.out[1],
         file(params.ref_predict_new_dir),
-        file(params.ref_model_inputs_dir)
+        file(params.ref_model_inputs_dir),
+        VALIDATE_INPUT_PARAMS.out
     )
+
 }
