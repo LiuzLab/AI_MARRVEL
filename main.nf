@@ -373,31 +373,7 @@ process FILTER_PROBAND {
 
 }
 
-process SPLIT_VCF_BY_CHROMOSOME {
-    input:
-    path vcf 
-
-    output:
-    path "chr*.vcf.gz", emit: chr_vcfs
-
-    script:
-    """
-    # Get the list of chromosomes from the VCF file
-
-    bgzip ${vcf}
-    bcftools index ${vcf}.gz
-
-    bcftools query -f '%CHROM\n' ${vcf}.gz | sort | uniq > chrom_list.txt
-    # Split the VCF file by chromosome
-    while read chrom; do
-        bcftools view -r \${chrom} ${vcf}.gz -Oz -o chr\${chrom}.vcf.gz
-    done < chrom_list.txt
-    """
-}
-
 process VEP_ANNOTATE {
-
-    cpus 1 
     publishDir "${params.outdir}/vep/", mode: "copy"
 
     input:
@@ -415,8 +391,7 @@ process VEP_ANNOTATE {
     path vep_idx
 
     output:
-    path "${vcf.baseName}-vep.txt", emit: vep_output
-
+    path "${params.run_id}-vep.txt"
 
     script:
     def ref_assembly = (params.ref_ver == 'hg38') ? 'GRCh38' : 'GRCh37'
@@ -434,8 +409,7 @@ process VEP_ANNOTATE {
         --plugin SpliceAI,snv=${vep_plugin_spliceai_snv},indel=${vep_plugin_spliceai_indel},cutoff=0.5 \\
         --plugin CADD,${vep_plugin_cadd},ALL \\
         --plugin dbNSFP,${vep_plugin_dbnsfp},ALL \\
-        --individual all --output_file ${vcf.baseName}-vep.txt --input_file $vcf \\
-        --buffer_size 50
+        --individual all --output_file ${params.run_id}-vep.txt --input_file $vcf
     """
 }
 
@@ -448,21 +422,40 @@ process FEATURE_ENGINEERING_PART1 {
     // not sure why projectDir is not working
 
     output:
-    path "${vep.baseName}_scores.csv", emit: scores
+    path "${params.run_id}_scores.csv"
 
     script:
     """
-    feature.py \\
-        -patientHPOsimiOMIM $omim_sim \\
-        -patientHPOsimiHGMD $hgmd_sim \\
-        -varFile ${vep} \\
-        -inFileType vepAnnotTab \\
-        -patientFileType one \\
-        -genomeRef ${params.ref_ver} \\
-        -diseaseInh AD \\
-        -modules curate,conserve
-    
-        mv scores.csv ${vep.baseName}_scores.csv
+    AIM_FREE_RAM=\$(free -g | awk 'NR==2{printf \$7}')
+
+    split_vep_chunks.py $vep \$AIM_FREE_RAM
+
+    while read -r INDEX LINEH LINEA LINEB
+    do
+        sed -n -e "\${LINEH}p" -e "\${LINEA},\${LINEB}p" $vep > vep-\${INDEX}.txt
+
+        feature.py \\
+            -patientHPOsimiOMIM $omim_sim \\
+            -patientHPOsimiHGMD $hgmd_sim \\
+            -varFile vep-\${INDEX}.txt \\
+            -inFileType vepAnnotTab \\
+            -patientFileType one \\
+            -genomeRef ${params.ref_ver} \\
+            -diseaseInh AD \\
+            -modules curate,conserve
+        
+        if [ \${INDEX} -gt 1 ]; then
+            sed -n "2,\$p" scores.csv > scores_\${INDEX}.csv
+        else
+            mv scores.csv scores_\${INDEX}.csv
+        fi
+    done < vep_split.txt
+
+
+    for INDEX in \$(cut -d\$'\\t' -f1 vep_split.txt)
+    do
+        cat scores_\${INDEX}.csv
+    done > ${params.run_id}_scores.csv
     """
 }
 
@@ -476,36 +469,13 @@ process FEATURE_ENGINEERING_PART2 {
     path ref_mod5_diffusion_dir
 
     output:
-    path "${scores.baseName}.matrix.txt", emit: matrix
-    path "${scores.baseName}.scores.txt.gz", emit: compressed_scores
+    path "${params.run_id}.matrix.txt"
+    path "scores.txt.gz"
 
     script:
     """
     VarTierDiseaseDBFalse.R ${params.ref_ver}
     generate_new_matrix_2.py ${params.run_id} ${params.ref_ver}
-    mv scores.txt.gz  ${scores.baseName}.scores.txt.gz
-    mv ${params.run_id}.matrix.txt  ${scores.baseName}.matrix.txt
-    """
-}
-
-process MERGE_RESULTS {
-    publishDir "${params.outdir}/merged", mode: "copy"
-
-    input:
-    path matrices, stageAs: "*_scores.matrix.txt"
-    path compressed_scores, stageAs: "?/*_scores.scores.txt.gz"
-
-    output:
-    path "${params.run_id}.matrix.txt", emit: merged_matrix
-    path "scores.txt.gz", emit: merged_compressed_scores
-
-    script:
-    """
-    # Merge matrices
-    awk 'FNR==1 && NR!=1{next;}{print}' ${matrices} > ${params.run_id}.matrix.txt
-
-    # Merge compressed scores
-    zcat ${compressed_scores} | gzip > scores.txt.gz
     """
 }
 
@@ -593,9 +563,8 @@ workflow {
         params.ref_gnomad_exome,
         params.ref_gnomad_exome_idx
     )
-    SPLIT_VCF_BY_CHROMOSOME(FILTER_PROBAND.out)
     VEP_ANNOTATE(
-        SPLIT_VCF_BY_CHROMOSOME.out.chr_vcfs.flatten(),
+        FILTER_PROBAND.out,
         params.vep_dir_cache,
         params.vep_dir_plugins,
         params.vep_custom_gnomad,
@@ -610,14 +579,14 @@ workflow {
     )
 
     FEATURE_ENGINEERING_PART1 ( // will rename it once we have analyzed/review the part
-        VEP_ANNOTATE.out.vep_output,
+        VEP_ANNOTATE.out,
         HPO_SIM.out[0],
         HPO_SIM.out[1],
         file(params.ref_annot_dir)
     )
 
     FEATURE_ENGINEERING_PART2 (
-        FEATURE_ENGINEERING_PART1.out.scores,
+        FEATURE_ENGINEERING_PART1.out[0],
         PHRANK_SCORING.out,
         file(params.ref_annot_dir),
         file(params.ref_var_tier_dir),
@@ -625,15 +594,9 @@ workflow {
         file(params.ref_mod5_diffusion_dir)
     )
 
-    MERGE_RESULTS(
-        FEATURE_ENGINEERING_PART2.out.matrix.collect(),
-        FEATURE_ENGINEERING_PART2.out.compressed_scores.collect()
-    )
-
-    // Run Prediction on the final merged output
     PREDICTION( 
-        MERGE_RESULTS.out.merged_matrix,
-        MERGE_RESULTS.out.merged_compressed_scores,
+        FEATURE_ENGINEERING_PART2.out[0],
+        FEATURE_ENGINEERING_PART2.out[1],
         file(params.ref_predict_new_dir),
         file(params.ref_model_inputs_dir)
     )
