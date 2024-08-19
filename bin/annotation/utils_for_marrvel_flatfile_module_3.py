@@ -394,9 +394,9 @@ def getAnnotateInfoRow_3_5(
 
 def getAnnotateInfoRow_3_6(
         varObj,
-        hgmdHPOScoreDf,
+        hgmdHPOScoreGeneSortedDf,
 ):
-    hgmdRet = getHGMDUsingFlatFile(varObj, hgmdHPOScoreDf)
+    hgmdRet = getHGMDUsingFlatFile(varObj, hgmdHPOScoreGeneSortedDf)
 
     return {
         "hgmdVarFound": hgmdRet[0],
@@ -414,7 +414,7 @@ def getAnnotateInfoRows_3(
         clinvarAlleleDf,
         omimGeneSortedDf,
         omimAlleleList,
-        hgmdHPOScoreDf,
+        hgmdHPOScoreGeneSortedDf,
         moduleList,
         decipherSortedDf,
         gnomadMetricsGeneSortedDf,
@@ -446,7 +446,7 @@ def getAnnotateInfoRows_3(
         if "curate" not in moduleList:
             return row
         return getAnnotateInfoRow_3_6(
-            row, hgmdHPOScoreDf
+            row, hgmdHPOScoreGeneSortedDf
         )
 
     annotateInfoDf = vepDf.apply(f1, axis=1, result_type='expand')

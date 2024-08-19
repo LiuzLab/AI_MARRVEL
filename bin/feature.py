@@ -123,7 +123,6 @@ def main():
     # initialization
     dgvDf = []
     decipherDf = []
-    hgmdDf = []
     omimHPOScoreDf = []
     hgmdHPOScoreDf = []
     clinvarGeneDf = []
@@ -148,7 +147,7 @@ def main():
         if args.genomeRef == "hg38":
             fileName = "annotate/anno_hg19/gene_clinvar.csv"
         else:
-           fileName = "annotate/anno_hg19/gene_clinvar.csv"
+            fileName = "annotate/anno_hg19/gene_clinvar.csv"
 
         clinvarGeneDf = pd.read_csv(fileName, sep=",")
         # sort by gene name
@@ -162,19 +161,7 @@ def main():
 
         with open(fileName) as f:
             omimGeneList = json.load(f)
-
-        if debugFlag == 1:
-            for omimGeneDict in omimGeneList:
-                print("type of omimGeneDict:", type(omimGeneDict))
-                print("keys:", omimGeneDict.keys())
-                for keyVal in omimGeneDict.keys():
-                    print("keyVal:", keyVal)
-                    print("\tsubkeys type:", type(omimGeneDict[keyVal]))
-                    if isinstance(omimGeneDict[keyVal], list):
-                        print("\n\t\tfound list")
-                        print("\t\t type:", type(omimGeneDict[keyVal]))
-
-                break
+            omimGeneDf = pd.DataFrame(omimGeneList)
 
         # read the OMIM allele file
         fileName = "annotate/anno_hg19/omim_alleric_variants.json"
@@ -298,8 +285,9 @@ def main():
             gnomadMetricsGeneSortedDf = gnomadMetricsGeneDf.groupby('gene').first().sort_index()
 
         if "curate" in moduleList:
-            omimGeneDf = pd.DataFrame(omimGeneList)
             omimGeneSortedDf = omimGeneDf.set_index('geneSymbol').sort_index()
+            hgmdHPOScoreGeneSortedDf = hgmdHPOScoreDf.groupby('gene_sym').first().sort_index()
+            hgmdHPOScoreAccSortedDf = hgmdHPOScoreDf.groupby('acc_num').first().sort_index()
 
         annotateInfoDf = getAnnotateInfoRows_3(
             varDf,
@@ -308,7 +296,7 @@ def main():
             clinvarAlleleDf,
             omimGeneSortedDf,
             omimAlleleList,
-            hgmdHPOScoreDf,
+            hgmdHPOScoreGeneSortedDf,
             moduleList,
             decipherSortedDf,
             gnomadMetricsGeneSortedDf,
@@ -359,7 +347,7 @@ def main():
         for i, varObj in annotateInfoDf.iterrows():
             # the curate score is under the utils_1.py file
             omimSymMatch(varObj, omimHPOScoreDf, args.inFileType)
-            hgmdSymMatch(varObj, hgmdHPOScoreDf)
+            hgmdSymMatch(varObj, hgmdHPOScoreAccSortedDf, hgmdHPOScoreGeneSortedDf)
             clinVarSymMatch(varObj, args.inFileType)
             # OMIM and clinvar info
             retList = getCurationScore(
