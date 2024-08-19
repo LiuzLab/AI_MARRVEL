@@ -58,7 +58,7 @@ def omimSymMatch(varObj, omimHPOScoreDf, inFileType):
     # print('\tomimSymMatchFlag:', varObj.omimSymMatchFlag)
 
 
-def hgmdSymMatch(varObj, hgmdHPOScoreAccSortedDf, hgmdHPOScoreGeneSortedDf):
+def hgmdSymMatch(varObj, hgmdHPOScoreDf):
     """
     Find HGMD symptom match score
     Param:
@@ -71,16 +71,44 @@ def hgmdSymMatch(varObj, hgmdHPOScoreAccSortedDf, hgmdHPOScoreGeneSortedDf):
     # print('\nin HGMDSymMatch')
     # print('\tvar:', varObj.varId_dash)
     hgmdSymptomSimScore = "-"
-    if varObj.hgmd_id in hgmdHPOScoreAccSortedDf.index:
-        varScore = hgmdHPOScoreAccSortedDf.loc[varObj.hgmd_id].Similarity_Score
-
+    """ old version
+    if varObj.hgmdVarFound:
+        var_tmp = varObj.varId_dash.split('-')
+        var_tmp = 'chr%s:%s %s>%s'%(var_tmp[0],var_tmp[1],var_tmp[2],var_tmp[3])
+        print('\tvar_tmp:', var_tmp)
+        if var_tmp in hgmdHPOScoreDf['hgvs'].tolist():
+            varDf = hgmdHPOScoreDf[hgmdHPOScoreDf['hgvs'] == var_tmp]
+            varScore = max(varDf['Similarity_Score'].tolist())
+            varObj.hgmdSymptomScore = varScore
+            if varScore >= 0.2:
+                varObj.hgmdSymMatchFlag = 1
+            hgmdSymptomSimScore=varScore
+        else:
+            pass
+    elif varObj.hgmdGeneFound:
+        if varObj.geneSymbol in hgmdHPOScoreDf['Gene'].tolist():
+            geneDf = hgmdHPOScoreDf[hgmdHPOScoreDf['Gene'] == varObj.geneSymbol]
+            geneScore = max(geneDf['Similarity_Score'].tolist())
+            if geneScore >= 0.2:
+                varObj.hgmdSymMatchFlag = 1
+            hgmdSymptomSimScore=geneScore
+    #store
+    varObj.hgmdSymptomSimScore=hgmdSymptomSimScore
+    print('hgmdSymMatch results:')
+    print('\thgmdSymMatchFlag:', varObj.hgmdSymMatchFlag)
+    print('\thgmdSymptomSimScore:', varObj.hgmdSymptomSimScore)
+    """
+    if np.any(hgmdHPOScoreDf["acc_num"].isin([varObj.hgmd_id])):
+        varDf = hgmdHPOScoreDf[hgmdHPOScoreDf["acc_num"] == varObj.hgmd_id]
+        varScore = max(varDf["Similarity_Score"].tolist())
         varObj.hgmdSymptomScore = varScore
         if varScore >= 0.2:
             varObj.hgmdSymMatchFlag = 1
         hgmdSymptomSimScore = varScore
-    elif varObj.hgmdGeneFound:
-        geneScore = hgmdHPOScoreGeneSortedDf.loc[varObj.geneSymbol].Similarity_Score
 
+    elif varObj.hgmdGeneFound:
+        geneDf = hgmdHPOScoreDf[hgmdHPOScoreDf["gene_sym"] == varObj.geneSymbol]
+        geneScore = max(geneDf["Similarity_Score"].tolist())
         if geneScore >= 0.2:
             varObj.hgmdSymMatchFlag = 1
         hgmdSymptomSimScore = geneScore

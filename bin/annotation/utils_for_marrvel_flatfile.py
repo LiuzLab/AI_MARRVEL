@@ -199,34 +199,94 @@ def getClinVarUsingMarrvelFlatFile(varObj, clinvarAlleleDf, clinvarGeneDf):
     return retList
 
 
-def getHGMDUsingFlatFile(varObj, hgmdHPOScoreGeneSortedDf):
+def getHGMDUsingFlatFile(varObj, hgmdDf):
     """
     function to get HGMD from local flat file
     Params:
     varObj:a varaint object read from VEP annotation
-    hgmdHPOScoreGeneSortedDf: HGMD data frame read from local file
+    hgmdDf: HGMD data frame read from local file (CL: now it refers to hgmdHPOScoreDf in main.py)
 
     Returns:
     List of HGMD annotations
+
+    Update by CL:
     """
+    # print('\nin HGMD')
+    # print('\tvar:', varObj.varId_dash, 'var-gene:', varObj.geneSymbol)
+    HGMDDict = {}
     hgmdGeneFound = 0
     hgmdVarFound = 0
     hgmdVarPhenIdList = []
     hgmdVarHPOIdList = []
     hgmdVarHPOStrList = []
+    chromVal = varObj.chrom
+    posVal = int(varObj.pos)
+    startVal = int(varObj.start)
+    stopVal = int(varObj.stop)
+    # print('\tpos type:',type(varObj.start),'chrom:', type(chromVal) )
 
+    """
+    #using int columns
+    if 1:
+        vals=hgmdDf[ ( hgmdDf['chromosome'] == chromVal ) & ( hgmdDf['startCoord']==startVal ) & (hgmdDf['endCoord']==stopVal) ]
+        numRows=len(vals.index)
+    #using index
+    if 0:
+        idVal=str(chromVal)+'_'+str(startVal)+'_'+str(stopVal)
+        try:
+            vals=hgmdVarDf.loc[idVal]
+            numRows=len(vals.index)
+            print('index numRows:', numRows)
+        except:
+            numRows=0
+
+        print('\tvar numRows:', numRows)
+
+
+    if numRows>0:
+        hgmdVarFound=1
+        print('\tnumrows:',numRows)
+        print('\tvals:', vals)
+        if 'phen_id' in vals:
+            hgmdVarPhenIdList.extend(vals['phen_id'].tolist())
+        if 'hpo_id' in vals:
+            hgmdVarHPOIdList.extend(vals['hpo_id'].tolist())
+        if 'hpo_str' in vals:
+            hgmdVarHPOStrList.extend(vals['hpo_str'].tolist())
+        print('\tvals:', vals)
+    """
     # CL: check VarFound
     if varObj.hgmd_id != "-":
         hgmdVarFound = 1
     else:
         hgmdVarFound = 0
 
+    """
+    #check gene
+    #vals=hgmdGeneDf[(hgmdGeneDf['gene']==varObj.geneSymbol)]
+    print('\t1 HGMD geneSymbol:', varObj.geneSymbol)
+    try:
+        print('\t2 HGMD geneSymbol:', varObj.geneSymbol)
+        vals=hgmdDf.loc[varObj.geneSymbol]
+        #vals=hgmdDf[ ( hgmdDf['gene'] == varObj.geneSymbol ) ]
+        numRows=len(vals.index)
+    except:
+        numRows=0
+
+    print('\tHGMD gene found numRows:', numRows)
+    if numRows>0:
+        hgmdGeneFound=1
+    """
     # CL: check geneFound
-    if varObj.geneSymbol in hgmdHPOScoreGeneSortedDf.index:
+    if np.any(hgmdDf["gene_sym"].isin([varObj.geneSymbol])):
         hgmdGeneFound = 1
     else:
         hgmdGeneFound = 0
 
+    # print('\thgmdVarFound:',hgmdVarFound,'hgmdGeneFound:',hgmdGeneFound,
+    #      'hgmdVarPhenIdList:',hgmdVarPhenIdList,'hgmdVarHPOIdList:',hgmdVarHPOIdList,
+    #      'hgmdVarHPOStrList:',hgmdVarHPOStrList)
+    # return
     retList = [
         hgmdVarFound,
         hgmdGeneFound,
