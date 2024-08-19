@@ -69,10 +69,10 @@ validateInputParams()
 process INDEX_VCF {
     input:
     path vcf
-    
+
     output:
-    path "input.vcf.gz"
-    path "input.vcf.gz.tbi"
+    path "input.vcf.gz", emit: vcf
+    path "input.vcf.gz.tbi", emit: tbi
 
     script:
     """
@@ -110,8 +110,8 @@ process FILTER_BED {
     path ref_filter_bed
 
     output:
-    path "${params.run_id}.recode.vcf.gz"
-    path "${params.run_id}.recode.vcf.gz.tbi"
+    path "${params.run_id}.recode.vcf.gz", emit: vcf
+    path "${params.run_id}.recode.vcf.gz.tbi", emit: tbi
 
     script:
     """
@@ -158,8 +158,8 @@ process VCF_PRE_PROCESS_PART1 {
     path chrmap_file
 
     output:
-    path "${params.run_id}.nog.vcf.gz"
-    path "${params.run_id}.nog.vcf.gz.tbi"
+    path "${params.run_id}.nog.vcf.gz", emit: vcf
+    path "${params.run_id}.nog.vcf.gz.tbi", emit: tbi
 
 
     script:
@@ -220,7 +220,8 @@ process VCF_PRE_PROCESS_PART2 {
     path chrmap
 
     output:
-    path "${params.run_id}.filt.vcf.gz"
+    path "${params.run_id}.filt.vcf.gz", emit: vcf
+    path "${params.run_id}.filt.vcf.gz.tbi", emit: tbi
 
     script:
     """
@@ -242,6 +243,7 @@ process VCF_PRE_PROCESS_PART2 {
         echo "Pipeline will proceed with unfiltered VCF file."
         cp ${params.run_id}-add-id.vcf.gz ${params.run_id}.filt.vcf.gz
     fi
+    tabix -p vcf ${params.run_id}.filt.vcf.gz
     """
 }
 
@@ -250,15 +252,15 @@ process REMOVE_MITO_AND_UNKOWN_CHR {
     publishDir "${params.outdir}/vcf/", mode: 'copy'
     input:
     path vcf
+    path tbi
 
     output:
-    path "${params.run_id}.filt.rmMT.vcf.gz"
-    path "${params.run_id}.filt.rmMT.vcf.gz.tbi"
+    path "${params.run_id}.filt.rmMT.vcf.gz", emit: vcf
+    path "${params.run_id}.filt.rmMT.vcf.gz.tbi", emit: tbi
 
 
     script:
     """
-    tabix -p vcf $vcf
     bcftools view -r 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,X,Y $vcf -o ${params.run_id}.filt.rmMT.vcf
 
     bgzip ${params.run_id}.filt.rmMT.vcf
@@ -272,7 +274,7 @@ process ANNOT_PHRANK {
     path vcf
 
     output:
-    path "${params.run_id}-var-filt.txt"
+    path "${params.run_id}-var-filt.txt", emit: var
 
     script:
     """
@@ -284,7 +286,7 @@ process ANNOT_PHRANK {
 
 process ANNOT_ENSMBLE {
     input:
-    path vcf
+    path var
     path ref
 
     output:
@@ -292,7 +294,7 @@ process ANNOT_ENSMBLE {
 
     script:
     """
-    location_to_gene.py $vcf $ref | \\
+    location_to_gene.py $var $ref | \\
      sed 's/:/\\t/g' | sed 's/X\\t/23\\t/g' | sed 's/Y\\t/24\\t/g' | \\
      sed 's/MT\\t/25\\t/g' > ${params.run_id}-ensmbl.txt
     """
@@ -306,7 +308,7 @@ process TO_GENE_SYM {
     path ref_sorted_sym
 
     output:
-    path "${params.run_id}-gene.txt"
+    path "${params.run_id}-gene.txt", emit: gene
 
     script:
     """
@@ -328,7 +330,7 @@ process PHRANK_SCORING {
     path disease_gene
 
     output:
-    path "${params.run_id}.phrank.txt" 
+    path "${params.run_id}.phrank.txt", emit: phrank
 
     script:
     """
@@ -347,8 +349,8 @@ process HPO_SIM {
     path omim_pheno
 
     output:
-    path "${params.run_id}-cz"
-    path "${params.run_id}-dx"
+    path "${params.run_id}-cz", emit: hgmd_sim
+    path "${params.run_id}-dx", emit: omim_sim
 
     script:
     """
@@ -360,7 +362,7 @@ process HPO_SIM {
 
 process FILTER_PROBAND {
     publishDir "${params.outdir}/vcf/", mode: 'copy'
-    
+
     input:
     path vcf
     path tbi
@@ -489,8 +491,8 @@ process FEATURE_ENGINEERING_PART2 {
     path ref_mod5_diffusion_dir
 
     output:
-    path "${params.run_id}.matrix.txt"
-    path "scores.txt.gz"
+    path "${params.run_id}.matrix.txt", emit: matrix
+    path "scores.txt.gz", emit: scores
 
     script:
     """
@@ -523,24 +525,28 @@ process PREDICTION {
 }
 
 workflow {
-
     BUILD_REFERENCE_INDEX()
 
     INDEX_VCF(params.input_vcf)
     VCF_PRE_PROCESS_PART1(
-        INDEX_VCF.out,
+        INDEX_VCF.out.vcf,
+        INDEX_VCF.out.tbi,
         BUILD_REFERENCE_INDEX.out.fasta,
         BUILD_REFERENCE_INDEX.out.fasta_index,
         BUILD_REFERENCE_INDEX.out.fasta_dict,
         params.chrmap
     )
-    VCF_PRE_PROCESS_PART2(VCF_PRE_PROCESS_PART1.out, params.chrmap)
+    VCF_PRE_PROCESS_PART2(
+        VCF_PRE_PROCESS_PART1.out.vcf,
+        VCF_PRE_PROCESS_PART1.out.tbi,
+        params.chrmap
+    )
 
-    ANNOT_PHRANK(INDEX_VCF.out[0])
+    ANNOT_PHRANK(INDEX_VCF.out.vcf)
     ANNOT_ENSMBLE(ANNOT_PHRANK.out, params.ref_loc)
     TO_GENE_SYM(ANNOT_ENSMBLE.out, params.ref_to_sym, params.ref_sorted_sym)
-    PHRANK_SCORING( TO_GENE_SYM.out, 
-                    params.input_hpo, 
+    PHRANK_SCORING(TO_GENE_SYM.out,
+                    params.input_hpo,
                     params.phrank_dagfile,
                     params.phrank_disease_annotation,
                     params.phrank_gene_annotation,
@@ -552,14 +558,18 @@ workflow {
             params.omim_genemap2,
             params.omim_pheno)
 
-    REMOVE_MITO_AND_UNKOWN_CHR(VCF_PRE_PROCESS_PART2.out)
+    REMOVE_MITO_AND_UNKOWN_CHR(
+        VCF_PRE_PROCESS_PART2.out.vcf,
+        VCF_PRE_PROCESS_PART2.out.tbi,
+    )
     FILTER_BED(
-        REMOVE_MITO_AND_UNKOWN_CHR.out,
+        REMOVE_MITO_AND_UNKOWN_CHR.out.vcf,
+        REMOVE_MITO_AND_UNKOWN_CHR.out.tbi,
         moduleDir.resolve(params.ref_filter_bed),
     )
     FILTER_PROBAND(
-        FILTER_BED.out[0],
-        FILTER_BED.out[1],
+        FILTER_BED.out.vcf,
+        FILTER_BED.out.tbi,
         params.ref_gnomad_genome,
         params.ref_gnomad_genome_idx,
         params.ref_gnomad_exome,
@@ -582,13 +592,13 @@ workflow {
 
     FEATURE_ENGINEERING_PART1 ( // will rename it once we have analyzed/review the part
         VEP_ANNOTATE.out,
-        HPO_SIM.out[0],
-        HPO_SIM.out[1],
+        HPO_SIM.out.hgmd_sim,
+        HPO_SIM.out.omim_sim,
         file(params.ref_annot_dir)
     )
 
     FEATURE_ENGINEERING_PART2 (
-        FEATURE_ENGINEERING_PART1.out[0],
+        FEATURE_ENGINEERING_PART1.out,
         PHRANK_SCORING.out,
         file(params.ref_annot_dir),
         file(params.ref_var_tier_dir),
@@ -596,9 +606,9 @@ workflow {
         file(params.ref_mod5_diffusion_dir)
     )
 
-    PREDICTION( 
-        FEATURE_ENGINEERING_PART2.out[0],
-        FEATURE_ENGINEERING_PART2.out[1],
+    PREDICTION(
+        FEATURE_ENGINEERING_PART2.out.matrix,
+        FEATURE_ENGINEERING_PART2.out.scores,
         file(params.ref_predict_new_dir),
         file(params.ref_model_inputs_dir)
     )
