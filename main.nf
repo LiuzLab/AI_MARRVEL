@@ -1,5 +1,70 @@
 nextflow.enable.dsl = 2
 
+
+def showUsage() {
+    if (params.help) {
+        def helpFile = file(params.usage_file)  // Specify your Markdown file path here
+        if (helpFile.exists()) {
+            println helpFile.text
+        } else {
+            println """
+            Sorry something went wrong, usage file not found!
+            Please vist our website for more info : https://ai-marrvel.readthedocs.io/en/latest/
+            """
+        }
+        exit 0
+    }
+}
+
+def validateInputParams() {
+    def checkPathParamMap = [
+        "input_vcf": params.input_vcf,
+        "input_hpo": params.input_hpo,
+        "ref_dir"  : params.ref_dir,
+        "ref_ver"  : params.ref_ver,
+    ]
+
+    checkPathParamMap.each { paramName, paramValue ->
+        if (paramValue) {
+            // Check if the file exists
+            if(!(paramName == "ref_ver")) {
+                def fileObj = file(paramValue, checkIfExists: true)
+                //  println("Check file: '--${paramName}' value '${paramValue}' ")
+
+                // Check the file type based on the parameter name
+                if (paramName == "input_vcf" && !(paramValue.endsWith(".vcf") || paramValue.endsWith(".vcf.gz"))) {
+                    println("Error: '--${paramName}' value '${paramValue}' should be a VCF file (.vcf) or (.vcf.gz)")
+                    println("To see usage and available parameters run `nextflow run main.nf --help`")
+                    exit 1
+                } else if (paramName == "input_hpo" && !(paramValue.endsWith(".hpo") || paramValue.endsWith(".txt"))) {
+                    println("Error: '--${paramName}' value '${paramValue}' should be an HPO file (.hpo) or (.txt)")
+                    println("To see usage and available parameters run `nextflow run main.nf --help`")
+                    exit 1
+                } else if (paramName == "ref_dir" && !fileObj.isDirectory()) {
+                    println("Error: '--${paramName}' value '${paramValue}' should be an directory.")
+                    println("To see usage and available parameters run `nextflow run main.nf --help`")
+                    exit 1
+                }
+            }
+
+            if (paramName == "ref_ver" && !(paramValue.equals("hg19") || paramValue.equals("hg38")) ) { 
+                println("Error: '--${paramName}' value ${paramValue} should be either set to 'hg19' or 'hg38'.")
+                println("To see usage and available parameters run `nextflow run main.nf --help`")
+                exit 1
+            }
+
+        } else {
+            println("Input parameter '${paramName}' not specified or is null!")
+            println("To see usage and available parameters run `nextflow run main.nf --help`")
+            exit 1
+        }
+    }
+}
+
+showUsage()
+validateInputParams()
+
+
 // Process to handle the VCF file
 process INDEX_VCF {
     input:
@@ -59,51 +124,6 @@ process FILTER_BED {
         cp ${tbi} "${params.run_id}.recode.vcf.gz.tbi"
     fi
     """
-}
-
-def VALIDATE_INPUT_PARAMS() {
-    def checkPathParamMap = [
-        "input_vcf": params.input_vcf,
-        "input_hpo": params.input_hpo,
-        "ref_dir"  : params.ref_dir,
-        "ref_ver"  : params.ref_ver,
-    ]
-    
-    checkPathParamMap.each { paramName, paramValue -> 
-        if (paramValue) {
-            // Check if the file exists
-            if(!(paramName == "ref_ver")) {
-                def fileObj = file(paramValue, checkIfExists: true)
-                //  println("Check file: '--${paramName}' value '${paramValue}' ")
-
-                // Check the file type based on the parameter name
-                if (paramName == "input_vcf" && !(paramValue.endsWith(".vcf") || paramValue.endsWith(".vcf.gz"))) {
-                    println("Error: '--${paramName}' value '${paramValue}' should be a VCF file (.vcf) or (.vcf.gz)")
-                    println("To see usage and available parameters run `nextflow run main.nf --help`")
-                    exit 1
-                } else if (paramName == "input_hpo" && !(paramValue.endsWith(".hpo") || paramValue.endsWith(".txt"))) {
-                    println("Error: '--${paramName}' value '${paramValue}' should be an HPO file (.hpo) or (.txt)")
-                    println("To see usage and available parameters run `nextflow run main.nf --help`")
-                    exit 1
-                } else if (paramName == "ref_dir" && !fileObj.isDirectory()) {
-                    println("Error: '--${paramName}' value '${paramValue}' should be an directory.")
-                    println("To see usage and available parameters run `nextflow run main.nf --help`")
-                    exit 1
-                } 
-            }
-             
-            if (paramName == "ref_ver" && !(paramValue.equals("hg19") || paramValue.equals("hg38")) ) { 
-                println("Error: '--${paramName}' value ${paramValue} should be either set to 'hg19' or 'hg38'.")
-                println("To see usage and available parameters run `nextflow run main.nf --help`")
-                exit 1
-            }
-            
-        } else { 
-            println("Input parameter '${paramName}' not specified or is null!")
-            println("To see usage and available parameters run `nextflow run main.nf --help`")
-            exit 1 
-        }
-    }
 }
 
 process BUILD_REFERENCE_INDEX {
@@ -502,25 +522,7 @@ process PREDICTION {
     """
 }
 
-def SHOW_USEAGE() {
-    if (params.help) {
-        def helpFile = file(params.usage_file)  // Specify your Markdown file path here
-        if (helpFile.exists()) {
-            println helpFile.text
-        } else {
-            println """
-            Sorry something went wrong, usage file not found!
-            Please vist our website for more info : https://ai-marrvel.readthedocs.io/en/latest/
-            """
-        }
-        exit 0
-    }
-}
-
 workflow {
-    SHOW_USEAGE()
-    
-    VALIDATE_INPUT_PARAMS()
 
     BUILD_REFERENCE_INDEX()
 
