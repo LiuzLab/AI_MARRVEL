@@ -549,8 +549,9 @@ process PREDICTION {
     publishDir "${params.outdir}/prediction/", mode: "copy"
 
     input:
-    path matrix
-    path scores
+    path merged_matrix  
+    path merged_compressed_scores  
+
     path ref_predict_new_dir
     path ref_model_inputs_dir
 
