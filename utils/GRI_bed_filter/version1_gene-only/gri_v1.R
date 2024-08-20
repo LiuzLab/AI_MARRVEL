@@ -22,21 +22,23 @@ library(readr)
 library(data.table)
 
 # Function to generate GRI region based on genome version
-generate_gri_geneonly<-function(genome_version="hg38"){
+generate_gri_geneonly <- function(genome_version = "hg38") {
   # data preparation --------------------------------------------------------
   
   ## hgmd local file name
-  hgmd_file = paste0("HGMD_Pro_2022.2_",genome_version,".vcf.gz")
+  hgmd_file = paste0("HGMD_Pro_2022.2_", genome_version, ".vcf.gz")
   
   ## use different data based on genome version
   if (genome_version == "hg38") {
     ##load chr size
     hg38 <- BSgenome.Hsapiens.UCSC.hg38
     size <- seqlengths(hg38)
-    chr_size <- data.frame(seqnames = names(size), chr_end = as.integer(size))[c(1:24), ]
+    chr_size <-
+      data.frame(seqnames = names(size), chr_end = as.integer(size))[c(1:24),]
     
     ##load gencode data
-    url <- "https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_46/gencode.v46.basic.annotation.gtf.gz"
+    url <-
+      "https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_46/gencode.v46.basic.annotation.gtf.gz"
     destfile <- "gencode.gtf.gz"
     GET(url, write_disk(destfile, overwrite = TRUE))
     gtf_data <- rtracklayer::import(destfile)
@@ -45,7 +47,8 @@ generate_gri_geneonly<-function(genome_version="hg38"){
     hgmd_data <- readVcf(hgmd_file, genome = "hg38")
     
     ##load clinvar data
-    url <- "https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/clinvar.vcf.gz"
+    url <-
+      "https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/clinvar.vcf.gz"
     destfile <- "clinvar.vcf.gz"
     GET(url, write_disk(destfile, overwrite = TRUE))
     clinvar_data <- readVcf(destfile, genome = "hg38")
@@ -54,10 +57,12 @@ generate_gri_geneonly<-function(genome_version="hg38"){
     ##load chr size
     hg19 <- BSgenome.Hsapiens.UCSC.hg19
     size <- seqlengths(hg19)
-    chr_size <- data.frame(seqnames = names(size), chr_end = as.integer(size))[c(1:24), ]
+    chr_size <-
+      data.frame(seqnames = names(size), chr_end = as.integer(size))[c(1:24),]
     
     ##load gencode data
-    url <- "https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_46/GRCh37_mapping/gencode.v46lift37.basic.annotation.gtf.gz"
+    url <-
+      "https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_46/GRCh37_mapping/gencode.v46lift37.basic.annotation.gtf.gz"
     destfile <- "gencode.gtf.gz"
     GET(url, write_disk(destfile, overwrite = TRUE))
     gtf_data <- rtracklayer::import(destfile)
@@ -66,7 +71,8 @@ generate_gri_geneonly<-function(genome_version="hg38"){
     hgmd_data <- readVcf(hgmd_file, genome = "hg19")
     
     ##load clinvar data
-    url <- "https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh37/clinvar.vcf.gz"
+    url <-
+      "https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh37/clinvar.vcf.gz"
     destfile <- "clinvar.vcf.gz"
     GET(url, write_disk(destfile, overwrite = TRUE))
     clinvar_data <- readVcf(destfile, genome = "hg19")
@@ -94,10 +100,12 @@ generate_gri_geneonly<-function(genome_version="hg38"){
   
   ## convert gtf data to data.table and add chr size
   gtf_dt <- as.data.table(gtf_data)
-  gtf_dt_size <- merge(gtf_dt, chr_size, by = "seqnames") # no MT chr
+  gtf_dt_size <-
+    merge(gtf_dt, chr_size, by = "seqnames") # no MT chr
   
   ## select protein coding genes
-  genes <- gtf_dt_size[type == "gene" & gene_type == "protein_coding"]
+  genes <-
+    gtf_dt_size[type == "gene" & gene_type == "protein_coding"]
   
   ## extract gene location info and save into bed format
   ## add source column
@@ -133,7 +141,7 @@ generate_gri_geneonly<-function(genome_version="hg38"){
     mutate(source = "HGMD_2022")
   
   ## exclude "rejected variants" in HGMD database
-  hgmd_noR <- hgmd[-which(hgmd$CLASS == "R"), ]
+  hgmd_noR <- hgmd[-which(hgmd$CLASS == "R"),]
   hgmd_noR <- hgmd_noR |>
     dplyr::mutate(seqnames = paste0("chr", seqnames))
   
@@ -173,7 +181,8 @@ generate_gri_geneonly<-function(genome_version="hg38"){
   # 3. Include clinvar variants----------------------------------------
   
   ## obtain pathogenic variants
-  info_df <- as.data.frame(clinvar_data@info) #faster to load as dataframe than datatable
+  info_df <-
+    as.data.frame(clinvar_data@info) #faster to load as dataframe than datatable
   range_df <- as.data.frame(clinvar_data@rowRanges)
   clinvar <- cbind(range_df, info_df)
   clinvar_patho <- clinvar |>
@@ -209,7 +218,8 @@ generate_gri_geneonly<-function(genome_version="hg38"){
     mutate(source = "Clinvar_latest") #the Clinvar link provides latest vcf file
   
   ## merge and reduce
-  bed_gencode_hgmd_clinvar <- rbind(bed_gencode_hgmd, bed_clinvar) |>
+  bed_gencode_hgmd_clinvar <-
+    rbind(bed_gencode_hgmd, bed_clinvar) |>
     arrange(chr, start, end)
   
   gr <- GRanges(
@@ -225,19 +235,15 @@ generate_gri_geneonly<-function(genome_version="hg38"){
   
   # write the bed file
   file_name <- paste0("gene_only.", genome_version, ".bed")
-  write_tsv(
-    bed_gencode_hgmd_clinvar.dt[, c(1:3)],
-    file = file_name,
-    col_names = FALSE
-  )
+  write_tsv(bed_gencode_hgmd_clinvar.dt[, c(1:3)],
+            file = file_name,
+            col_names = FALSE)
   
   # save the initial bed files which are not reduced, which contains the source column to indicate where that region is from
   file_name <- paste0("gene_only_source.", genome_version, ".bed")
-  write_tsv(
-    bed_gencode_hgmd_clinvar,
-    file = file_name,
-    col_names = FALSE
-  )
+  write_tsv(bed_gencode_hgmd_clinvar,
+            file = file_name,
+            col_names = FALSE)
   
 }
 
