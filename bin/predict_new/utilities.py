@@ -297,6 +297,8 @@ def rank_patient(model, fn, features, train_causals=None):
     df = pd.read_csv(
         fn, sep="\t", index_col=0
     )  ## File name format can be a parameter in the future
+    
+
     identifier = fn.split("/")[-1].split(".")[0]
     patient_features = df.loc[:, features]
     patient_preds = model.predict_proba(patient_features)[:, 1]
