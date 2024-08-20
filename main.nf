@@ -417,7 +417,6 @@ process VEP_ANNOTATE {
     output:
     path "${vcf.baseName}-vep.txt", emit: vep_output
 
-
     script:
     def ref_assembly = (params.ref_ver == 'hg38') ? 'GRCh38' : 'GRCh37'
     """
@@ -445,7 +444,6 @@ process FEATURE_ENGINEERING_PART1 {
     path hgmd_sim
     path omim_sim
     path ref_annot_dir
-    // not sure why projectDir is not working
 
     output:
     path "${vep.baseName}_scores.csv", emit: scores
@@ -470,21 +468,21 @@ process FEATURE_ENGINEERING_PART2 {
     input:
     path scores, stageAs: "scores.csv"
     path phrank
+
     path ref_annot_dir
     path ref_var_tier_dir
     path ref_merge_expand_dir
-    path ref_mod5_diffusion_dir
 
     output:
-    path "${scores.baseName}.matrix.txt", emit: matrix
-    path "${scores.baseName}.scores.txt.gz", emit: compressed_scores
+    path "${scores.baseName}_scores.txt.gz", emit: compressed_scores
+    path "${scores.baseName}_Tier.v2.tsv", emit: tier
 
     script:
     """
     VarTierDiseaseDBFalse.R ${params.ref_ver}
     generate_new_matrix_2.py ${params.run_id} ${params.ref_ver}
-    mv scores.txt.gz  ${scores.baseName}.scores.txt.gz
-    mv ${params.run_id}.matrix.txt  ${scores.baseName}.matrix.txt
+    mv scores.txt.gz  ${scores.baseName}_scores.txt.gz
+    mv Tier.v2.tsv ${scores.baseName}_Tier.v2.tsv
     """
 }
 
@@ -492,8 +490,13 @@ process MERGE_RESULTS {
     publishDir "${params.outdir}/merged", mode: "copy"
 
     input:
-    path matrices, stageAs: "*_scores.matrix.txt"
-    path compressed_scores, stageAs: "?/*_scores.scores.txt.gz"
+    path phrank
+    path tier, stageAs: "*_Tier.v2.tsv"
+    path compressed_scores, stageAs: "*_scores.txt.gz"
+
+    path ref_annot_dir
+    path ref_mod5_diffusion_dir
+    path ref_merge_expand_dir
 
     output:
     path "${params.run_id}.matrix.txt", emit: merged_matrix
@@ -502,10 +505,23 @@ process MERGE_RESULTS {
     script:
     """
     # Merge matrices
-    awk 'FNR==1 && NR!=1{next;}{print}' ${matrices} > ${params.run_id}.matrix.txt
+    awk 'FNR==1 && NR!=1{next;}{print}' ${tier} > Tier.v2.tsv
 
     # Merge compressed scores
-    zcat ${compressed_scores} | gzip > scores.txt.gz
+    header_written=false
+
+    for file in ${compressed_scores}; do
+        if [ "\$header_written" = false ]; then
+            # Write the first file's content, including the header
+            zcat \${file} | gzip > scores.txt.gz
+            header_written=true
+        else
+            # Skip the header and append the rest of the data
+            zcat \${file} | tail -n +2 | gzip >> scores.txt.gz
+        fi
+    done
+
+    post_processing.py ${params.run_id} ${params.ref_ver}
     """
 }
 
@@ -526,6 +542,7 @@ process PREDICTION {
     """
     mkdir final_matrix_expanded
     mkdir conf_4Model
+
     run_final.py ${params.run_id}
     merge_rm.py ${params.run_id}
     extraModel_main.py -id ${params.run_id}
@@ -619,15 +636,19 @@ workflow {
     FEATURE_ENGINEERING_PART2 (
         FEATURE_ENGINEERING_PART1.out.scores,
         PHRANK_SCORING.out,
+
         file(params.ref_annot_dir),
         file(params.ref_var_tier_dir),
-        file(params.ref_merge_expand_dir),
-        file(params.ref_mod5_diffusion_dir)
+        file(params.ref_merge_expand_dir)
     )
 
     MERGE_RESULTS(
-        FEATURE_ENGINEERING_PART2.out.matrix.collect(),
-        FEATURE_ENGINEERING_PART2.out.compressed_scores.collect()
+        PHRANK_SCORING.out,
+        FEATURE_ENGINEERING_PART2.out.tier.collect(),
+        FEATURE_ENGINEERING_PART2.out.compressed_scores.collect(),
+        file(params.ref_annot_dir),
+        file(params.ref_mod5_diffusion_dir),
+        file(params.ref_merge_expand_dir)
     )
 
     // Run Prediction on the final merged output
