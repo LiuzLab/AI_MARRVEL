@@ -6,8 +6,8 @@
 #	R 4.2.1
 
 # dc7a542b7e1f
-#FROM ubuntu:18.04
-FROM ensemblorg/ensembl-vep:release_104.3
+FROM ubuntu:18.04
+# FROM ensemblorg/ensembl-vep:release_104.3
 USER root
 ENV DEBIAN_FRONTEND noninteractive
 

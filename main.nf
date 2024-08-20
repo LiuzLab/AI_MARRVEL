@@ -396,6 +396,8 @@ process FILTER_PROBAND {
 }
 
 process VEP_ANNOTATE {
+    container "ensemblorg/ensembl-vep:release_104.3"
+    containerOptions '--user root'
     publishDir "${params.outdir}/vep/", mode: "copy"
 
     input:
