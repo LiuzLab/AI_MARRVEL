@@ -396,8 +396,6 @@ process SPLIT_VCF_BY_CHROMOSOME {
 }
 
 process VEP_ANNOTATE {
-
-    cpus 1 
     publishDir "${params.outdir}/vep/", mode: "copy"
 
     input:
