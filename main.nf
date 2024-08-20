@@ -395,6 +395,28 @@ process FILTER_PROBAND {
 
 }
 
+process SPLIT_VCF_BY_CHROMOSOME {
+    input:
+    path vcf 
+
+    output:
+    path "chr*.vcf.gz", emit: chr_vcfs
+
+    script:
+    """
+    # Get the list of chromosomes from the VCF file
+
+    bgzip ${vcf}
+    bcftools index ${vcf}.gz
+
+    bcftools query -f '%CHROM\n' ${vcf}.gz | sort | uniq > chrom_list.txt
+    # Split the VCF file by chromosome
+    while read chrom; do
+        bcftools view -r \${chrom} ${vcf}.gz -Oz -o chr\${chrom}.vcf.gz
+    done < chrom_list.txt
+    """
+}
+
 process VEP_ANNOTATE {
     publishDir "${params.outdir}/vep/", mode: "copy"
 
@@ -413,7 +435,7 @@ process VEP_ANNOTATE {
     path vep_idx
 
     output:
-    path "${params.run_id}-vep.txt"
+    path "${vcf.baseName}-vep.txt", emit: vep_output
 
     script:
     def ref_assembly = (params.ref_ver == 'hg38') ? 'GRCh38' : 'GRCh37'
@@ -431,7 +453,8 @@ process VEP_ANNOTATE {
         --plugin SpliceAI,snv=${vep_plugin_spliceai_snv},indel=${vep_plugin_spliceai_indel},cutoff=0.5 \\
         --plugin CADD,${vep_plugin_cadd},ALL \\
         --plugin dbNSFP,${vep_plugin_dbnsfp},ALL \\
-        --individual all --output_file ${params.run_id}-vep.txt --input_file $vcf
+        --individual all --output_file ${vcf.baseName}-vep.txt --input_file $vcf \\
+        --buffer_size 50
     """
 }
 
@@ -441,43 +464,23 @@ process FEATURE_ENGINEERING_PART1 {
     path hgmd_sim
     path omim_sim
     path ref_annot_dir
-    // not sure why projectDir is not working
 
     output:
-    path "${params.run_id}_scores.csv"
+    path "${vep.baseName}_scores.csv", emit: scores
 
     script:
     """
-    AIM_FREE_RAM=\$(free -g | awk 'NR==2{printf \$7}')
-
-    split_vep_chunks.py $vep \$AIM_FREE_RAM
-
-    while read -r INDEX LINEH LINEA LINEB
-    do
-        sed -n -e "\${LINEH}p" -e "\${LINEA},\${LINEB}p" $vep > vep-\${INDEX}.txt
-
-        feature.py \\
-            -patientHPOsimiOMIM $omim_sim \\
-            -patientHPOsimiHGMD $hgmd_sim \\
-            -varFile vep-\${INDEX}.txt \\
-            -inFileType vepAnnotTab \\
-            -patientFileType one \\
-            -genomeRef ${params.ref_ver} \\
-            -diseaseInh AD \\
-            -modules curate,conserve
-        
-        if [ \${INDEX} -gt 1 ]; then
-            sed -n "2,\$p" scores.csv > scores_\${INDEX}.csv
-        else
-            mv scores.csv scores_\${INDEX}.csv
-        fi
-    done < vep_split.txt
-
-
-    for INDEX in \$(cut -d\$'\\t' -f1 vep_split.txt)
-    do
-        cat scores_\${INDEX}.csv
-    done > ${params.run_id}_scores.csv
+    feature.py \\
+        -patientHPOsimiOMIM $omim_sim \\
+        -patientHPOsimiHGMD $hgmd_sim \\
+        -varFile ${vep} \\
+        -inFileType vepAnnotTab \\
+        -patientFileType one \\
+        -genomeRef ${params.ref_ver} \\
+        -diseaseInh AD \\
+        -modules curate,conserve
+    
+        mv scores.csv ${vep.baseName}_scores.csv
     """
 }
 
@@ -485,19 +488,60 @@ process FEATURE_ENGINEERING_PART2 {
     input:
     path scores, stageAs: "scores.csv"
     path phrank
+
     path ref_annot_dir
     path ref_var_tier_dir
     path ref_merge_expand_dir
-    path ref_mod5_diffusion_dir
 
     output:
-    path "${params.run_id}.matrix.txt", emit: matrix
-    path "scores.txt.gz", emit: scores
+    path "${scores.baseName}_scores.txt.gz", emit: compressed_scores
+    path "${scores.baseName}_Tier.v2.tsv", emit: tier
 
     script:
     """
     VarTierDiseaseDBFalse.R ${params.ref_ver}
     generate_new_matrix_2.py ${params.run_id} ${params.ref_ver}
+    mv scores.txt.gz  ${scores.baseName}_scores.txt.gz
+    mv Tier.v2.tsv ${scores.baseName}_Tier.v2.tsv
+    """
+}
+
+process MERGE_RESULTS {
+    publishDir "${params.outdir}/merged", mode: "copy"
+
+    input:
+    path phrank
+    path tier, stageAs: "*_Tier.v2.tsv"
+    path compressed_scores, stageAs: "*_scores.txt.gz"
+
+    path ref_annot_dir
+    path ref_mod5_diffusion_dir
+    path ref_merge_expand_dir
+
+    output:
+    path "${params.run_id}.matrix.txt", emit: merged_matrix
+    path "scores.txt.gz", emit: merged_compressed_scores
+
+    script:
+    """
+    # Merge matrices
+    awk 'FNR==1 && NR!=1{next;}{print}' ${tier} > Tier.v2.tsv
+
+    # Merge compressed scores
+    header_written=false
+
+    for file in ${compressed_scores}; do
+        if [ "\$header_written" = false ]; then
+            # Write the first file's content, including the header
+            zcat \${file} | gzip > scores.txt.gz
+            header_written=true
+        else
+            # Skip the header and append the rest of the data
+            zcat \${file} | tail -n +2 | gzip >> scores.txt.gz
+        fi
+    done
+
+    post_processing.py ${params.run_id} ${params.ref_ver}
     """
 }
 
@@ -505,8 +549,9 @@ process PREDICTION {
     publishDir "${params.outdir}/prediction/", mode: "copy"
 
     input:
-    path matrix
-    path scores
+    path merged_matrix  
+    path merged_compressed_scores  
+
     path ref_predict_new_dir
     path ref_model_inputs_dir
 
@@ -518,6 +563,7 @@ process PREDICTION {
     """
     mkdir final_matrix_expanded
     mkdir conf_4Model
+
     run_final.py ${params.run_id}
     merge_rm.py ${params.run_id}
     extraModel_main.py -id ${params.run_id}
@@ -575,8 +621,9 @@ workflow {
         params.ref_gnomad_exome,
         params.ref_gnomad_exome_idx
     )
+    SPLIT_VCF_BY_CHROMOSOME(FILTER_PROBAND.out)
     VEP_ANNOTATE(
-        FILTER_PROBAND.out,
+        SPLIT_VCF_BY_CHROMOSOME.out.chr_vcfs.flatten(),
         params.vep_dir_cache,
         params.vep_dir_plugins,
         params.vep_custom_gnomad,
@@ -591,24 +638,34 @@ workflow {
     )
 
     FEATURE_ENGINEERING_PART1 ( // will rename it once we have analyzed/review the part
-        VEP_ANNOTATE.out,
+        VEP_ANNOTATE.out.vep_output,
         HPO_SIM.out.hgmd_sim,
         HPO_SIM.out.omim_sim,
         file(params.ref_annot_dir)
     )
 
     FEATURE_ENGINEERING_PART2 (
-        FEATURE_ENGINEERING_PART1.out,
+        FEATURE_ENGINEERING_PART1.out.scores,
         PHRANK_SCORING.out,
+
         file(params.ref_annot_dir),
         file(params.ref_var_tier_dir),
-        file(params.ref_merge_expand_dir),
-        file(params.ref_mod5_diffusion_dir)
+        file(params.ref_merge_expand_dir)
     )
 
-    PREDICTION(
-        FEATURE_ENGINEERING_PART2.out.matrix,
-        FEATURE_ENGINEERING_PART2.out.scores,
+    MERGE_RESULTS(
+        PHRANK_SCORING.out,
+        FEATURE_ENGINEERING_PART2.out.tier.collect(),
+        FEATURE_ENGINEERING_PART2.out.compressed_scores.collect(),
+        file(params.ref_annot_dir),
+        file(params.ref_mod5_diffusion_dir),
+        file(params.ref_merge_expand_dir)
+    )
+
+    // Run Prediction on the final merged output
+    PREDICTION( 
+        MERGE_RESULTS.out.merged_matrix,
+        MERGE_RESULTS.out.merged_compressed_scores,
         file(params.ref_predict_new_dir),
         file(params.ref_model_inputs_dir)
     )

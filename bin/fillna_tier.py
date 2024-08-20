@@ -965,18 +965,6 @@ def feature_engineering(score_file, tier_file):
         "recessive",
         "dominant",
     ]  # ,
-    #'OMIM.Inheritance.both', 'OMIM.Inheritance.others']
-    """ CL: deleted
-    # recessive and dominant is enough
-    tier['OMIM.Inheritance.recessive'] = 0
-    tier['OMIM.Inheritance.dominant'] = 0
-    tier['OMIM.Inheritance.both'] = 0
-    tier['OMIM.Inheritance.others'] = 0
-    tier.loc[tier['OMIM.Inheritance'] == 'recessive', 'OMIM.Inheritance.recessive'] = 1
-    tier.loc[tier['OMIM.Inheritance'] == 'dominant', 'OMIM.Inheritance.dominant'] = 1
-    tier.loc[tier['OMIM.Inheritance'] == 'both', 'OMIM.Inheritance.both'] = 1
-    tier.loc[tier['OMIM.Inheritance'] == 'others', 'OMIM.Inheritance.others'] = 1
-    """
 
     tier.loc[:, ["TierAD", "TierAR", "TierAR.adj"]] = -tier.loc[
         :, ["TierAD", "TierAR", "TierAR.adj"]
