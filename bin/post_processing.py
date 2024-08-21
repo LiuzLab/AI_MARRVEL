@@ -14,15 +14,19 @@ from simple_repeat_anno import simple_repeat_anno
 def main():
     ### run diffusion module 5 ###
     merged = pd.read_csv("scores.txt.gz", sep="\t")
-    mod5 = diffuseSample(sys.argv[1], merged, ".")
     tier_f = pd.read_csv("Tier.v2.tsv", sep="\t").sort_index()
+
+    phrank_empty = True
+    path_phrank = sys.argv[1] + ".phrank.txt"
+    if os.path.getsize(path_phrank) != 0:
+        mod5 = diffuseSample(sys.argv[1], merged, ".")
+        phrank_empty = False
 
     ### run Chaozhong's feature engineering code ###
     iff = fillna(merged, tier_f)
 
-    ### add diffusion module data ###
     iff.insert(
-        loc=0, column="diffuse_Phrank_STRING", value=mod5["diffuse_Phrank_STRING"]
+        loc=0, column="diffuse_Phrank_STRING", value=0 if phrank_empty else mod5["diffuse_Phrank_STRING"]
     )
 
     ### remove chr 26 ###
