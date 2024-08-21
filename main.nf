@@ -62,6 +62,7 @@ def validateInputParams() {
 }
 
 def validateDataIntegrity() {
+    if (params.skip_data_checksum) return
     if (!"dvc status".execute().text.contains("Data and pipelines are up to date.")) {
         println("Error: Could not verify the data integrity.")
         exit 1
