@@ -61,9 +61,16 @@ def validateInputParams() {
     }
 }
 
+def validateDataIntegrity() {
+    if (!"dvc status".execute().text.contains("Data and pipelines are up to date.")) {
+        println("Error: Could not verify the data integrity.")
+        exit 1
+    }
+}
+
 showUsage()
 validateInputParams()
-
+validateDataIntegrity()
 
 // Process to handle the VCF file
 process NORMALIZE_VCF {
