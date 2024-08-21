@@ -1,0 +1,6 @@
+outs:
+- md5: 8c578f8c4096f64e97feff5241938fd5.dir
+  size: 4219633728
+  nfiles: 2
+  hash: md5
+  path: mod5_diffusion

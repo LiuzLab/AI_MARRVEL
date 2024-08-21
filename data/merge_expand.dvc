@@ -1,0 +1,6 @@
+outs:
+- md5: 5322a18f8584f271bf710196d3a5e31a.dir
+  size: 71967198
+  nfiles: 10
+  hash: md5
+  path: merge_expand

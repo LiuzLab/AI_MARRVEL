@@ -1,0 +1,6 @@
+outs:
+- md5: 637941a58b6336c7324600ea10c9f4a9.dir
+  size: 219672996
+  nfiles: 7
+  hash: md5
+  path: omim_annotate

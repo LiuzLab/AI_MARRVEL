@@ -1,0 +1,6 @@
+outs:
+- md5: 7b6f298fd65b84e4fd2aa999d250e3b8.dir
+  size: 106884295
+  nfiles: 3
+  hash: md5
+  path: predict_new

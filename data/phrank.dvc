@@ -1,0 +1,6 @@
+outs:
+- md5: 888d142fde59ff035b81c9d5cf5a8ec0.dir
+  size: 132477851
+  nfiles: 18
+  hash: md5
+  path: phrank
