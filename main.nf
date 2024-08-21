@@ -135,7 +135,7 @@ process FILTER_BED {
 
 process BUILD_REFERENCE_INDEX {
     container "broadinstitute/gatk"
-    storeDir projectDir.resolve("out/reference_index/")
+    storeDir file("${params.outdir}/reference_index/")
 
     output:
     path "final_${params.ref_ver}.fa", emit: fasta
@@ -598,12 +598,12 @@ workflow VCF_PRE_PROCESS {
         fasta,
         fasta_index,
         fasta_dict,
-        params.chrmap
+        file(params.chrmap),
     )
     FILTER_UNPASSED(
         CONVERT_GVCF.out.vcf,
         CONVERT_GVCF.out.tbi,
-        params.chrmap
+        file(params.chrmap),
     )
     FILTER_MITO_AND_UNKOWN_CHR(
         FILTER_UNPASSED.out.vcf,
@@ -612,15 +612,15 @@ workflow VCF_PRE_PROCESS {
     FILTER_BED(
         FILTER_MITO_AND_UNKOWN_CHR.out.vcf,
         FILTER_MITO_AND_UNKOWN_CHR.out.tbi,
-        moduleDir.resolve(params.ref_filter_bed),
+        file(params.ref_filter_bed),
     )
     FILTER_PROBAND(
         FILTER_BED.out.vcf,
         FILTER_BED.out.tbi,
-        params.ref_gnomad_genome,
-        params.ref_gnomad_genome_idx,
-        params.ref_gnomad_exome,
-        params.ref_gnomad_exome_idx
+        file(params.ref_gnomad_genome),
+        file(params.ref_gnomad_genome_idx),
+        file(params.ref_gnomad_exome),
+        file(params.ref_gnomad_exome_idx),
     )
 
     emit:
@@ -633,14 +633,23 @@ workflow PHRANK_SCORING {
 
     main:
     VCF_TO_VARIANTS(vcf)
-    VARIANTS_TO_ENSEMBL(VCF_TO_VARIANTS.out, params.ref_loc)
-    ENSEMBL_TO_GENESYM(VARIANTS_TO_ENSEMBL.out, params.ref_to_sym, params.ref_sorted_sym)
-    GENESYM_TO_PHRANK(ENSEMBL_TO_GENESYM.out,
-                    params.input_hpo,
-                    params.phrank_dagfile,
-                    params.phrank_disease_annotation,
-                    params.phrank_gene_annotation,
-                    params.phrank_disease_gene)
+    VARIANTS_TO_ENSEMBL(
+        VCF_TO_VARIANTS.out,
+        file(params.ref_loc),
+    )
+    ENSEMBL_TO_GENESYM(
+        VARIANTS_TO_ENSEMBL.out,
+        file(params.ref_to_sym),
+        file(params.ref_sorted_sym),
+    )
+    GENESYM_TO_PHRANK(
+        ENSEMBL_TO_GENESYM.out,
+        file(params.input_hpo),
+        file(params.phrank_dagfile),
+        file(params.phrank_disease_annotation),
+        file(params.phrank_gene_annotation),
+        file(params.phrank_disease_gene),
+    )
 
     emit:
     phrank = GENESYM_TO_PHRANK.out
@@ -661,30 +670,32 @@ workflow {
     SPLIT_VCF_BY_CHROMOSOME(VCF_PRE_PROCESS.out.vcf)
     ANNOTATE_BY_VEP(
         SPLIT_VCF_BY_CHROMOSOME.out.chr_vcfs.flatten(),
-        params.vep_dir_cache,
-        params.vep_dir_plugins,
-        params.vep_custom_gnomad,
-        params.vep_custom_clinvar,
-        params.vep_custom_hgmd,
-        params.vep_plugin_revel,
-        params.vep_plugin_spliceai_snv,
-        params.vep_plugin_spliceai_indel,
-        params.vep_plugin_cadd,
-        params.vep_plugin_dbnsfp,
+        file(params.vep_dir_cache),
+        file(params.vep_dir_plugins),
+        file(params.vep_custom_gnomad),
+        file(params.vep_custom_clinvar),
+        file(params.vep_custom_hgmd),
+        file(params.vep_plugin_revel),
+        file(params.vep_plugin_spliceai_snv),
+        file(params.vep_plugin_spliceai_indel),
+        file(params.vep_plugin_cadd),
+        file(params.vep_plugin_dbnsfp),
         file(params.vep_idx)
     )
 
-    HPO_SIM(params.input_hpo,
-            params.omim_hgmd_phen,
-            params.omim_obo,
-            params.omim_genemap2,
-            params.omim_pheno)
+    HPO_SIM(
+        params.input_hpo,
+        file(params.omim_hgmd_phen),
+        file(params.omim_obo),
+        file(params.omim_genemap2),
+        file(params.omim_pheno),
+    )
 
     ANNOTATE_BY_MODULES (
         ANNOTATE_BY_VEP.out.vep_output,
         HPO_SIM.out.hgmd_sim,
         HPO_SIM.out.omim_sim,
-        file(params.ref_annot_dir)
+        file(params.ref_annot_dir),
     )
 
     PHRANK_SCORING(
