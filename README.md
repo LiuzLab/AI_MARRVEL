@@ -29,6 +29,7 @@ You can use AI-MARRVEL from our [website](https://ai.marrvel.org/) or follow the
 
 ## Quick Start
 
+<!--
 ### Install Required Data Dependencies
 AIM utilizes various databases for variant annotation, all of which have been compiled and are available for download. We use AWS S3 for data access, and the data can be downloaded by following these steps:
 
@@ -44,22 +45,36 @@ AIM is released as a Docker image for easy distribution. To get it:
 ```
 docker pull chaozhongliu/aim-lite:latest
 ```
+-->
+### Install Required Softwares
+1. **Install the AWS CLI**: Follow the instructions provided in the [AWS CLI Installation Guide](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html).
+2. **Install the Data Version Control(DVC)**: Follow the instructions provided in the [DVC Installation Guide](https://dvc.org/doc/install).
+3. **Install the Nextflow**: Follow the instructions provided in the [Nextflow Installation Guide](https://www.nextflow.io/docs/latest/install.html).
+
+### Prepare Code and Data
+```bash
+$ git clone https://github.com/LiuzLab/AI_MARRVEL # Download Code
+$ cd AI_MARRVEL # Go into the Project Directory
+$ dvc pull # Download necessary data
+$ aws s3 cp s3://aim-data-dependencies-2.0/vep ./data/vep --recursive # Download VEP Cache
+$ nextflow run .
+```
 
 ### Run with your sample
-```
-nextflow run .  --ref_dir <PATH_TO_REFERENCE_DIRECTORY>
-                --input_vcf <PATH_TO_INPUT_VCF_FILE>
-                --input_hpo <PATH_TO_INPUT_HPO_FILE>
-                --outdir <PATH_TO_OUTPUT_DIRECTORY>
-                --bed_filter <PATH_TO_BED_FILE> # Optional
-                --run_id [Sample Id] # Optional, default: 1
-                --ref_ver [Reference genome: hg19/hg38] # Optional, default: hg19
-                --exome_filter # Optional
+```bash
+$ nextflow run .  --ref_dir <PATH_TO_REFERENCE_DIRECTORY>
+                  --input_vcf <PATH_TO_INPUT_VCF_FILE>
+                  --input_hpo <PATH_TO_INPUT_HPO_FILE>
+                  --outdir <PATH_TO_OUTPUT_DIRECTORY>
+                  --bed_filter <PATH_TO_BED_FILE> # Optional
+                  --run_id [Sample Id] # Optional, default: 1
+                  --ref_ver [Reference genome: hg19/hg38] # Optional, default: hg19
+                  --exome_filter # Optional
 ```
 
 Alternatively, the pipeline can be executed with a parameter file (yaml)
-```
-nextflow run . -params-file params.yaml
+```bash
+$ nextflow run . -params-file params.yaml
 ```
 NOTE: You need to create `params.yaml` by copying [params.yaml.example](params.yaml.example) file and follow the instruction.
 
