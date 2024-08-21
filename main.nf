@@ -146,7 +146,7 @@ process BUILD_REFERENCE_INDEX {
     """
 }
 
-process FILTER_GVCF {
+process CONVERT_GVCF {
     container "broadinstitute/gatk"
 
     input:
@@ -213,7 +213,7 @@ process FILTER_GVCF {
 }
 
 
-process FILTER_QUALITY {
+process FILTER_UNPASSED {
     input:
     path vcf
     path tbi
@@ -269,7 +269,7 @@ process FILTER_MITO_AND_UNKOWN_CHR {
 }
 
 
-process VCF_TO_VAR {
+process VCF_TO_VARIANTS {
     input:
     path vcf
 
@@ -284,7 +284,7 @@ process VCF_TO_VAR {
 }
 
 
-process VAR_TO_ENSEMBL {
+process VARIANTS_TO_ENSEMBL {
     input:
     path var
     path ref
@@ -417,7 +417,7 @@ process SPLIT_VCF_BY_CHROMOSOME {
     """
 }
 
-process VEP_ANNOTATE {
+process ANNOTATE_BY_VEP {
     tag "${vcf.simpleName}"
     publishDir "${params.outdir}/vep/", mode: "copy"
 
@@ -459,7 +459,7 @@ process VEP_ANNOTATE {
     """
 }
 
-process DB_ANNOTATE {
+process ANNOTATE_BY_MODULES {
     tag "${vep.simpleName}"
 
     input:
@@ -487,7 +487,7 @@ process DB_ANNOTATE {
     """
 }
 
-process JOIN_TIER_PHRANK_PART1 {
+process JOIN_TIER_PHRANK {
     tag "${scores.simpleName}"
 
     input:
@@ -512,7 +512,7 @@ process JOIN_TIER_PHRANK_PART1 {
     """
 }
 
-process JOIN_TIER_PHRANK_PART2 {
+process MERGE_SCORES_BY_CHROMOSOME {
     publishDir "${params.outdir}/merged", mode: "copy"
 
     input:
@@ -585,7 +585,7 @@ workflow VCF_PRE_PROCESS {
     fasta_dict
 
     main:
-    FILTER_GVCF(
+    CONVERT_GVCF(
         vcf,
         tbi,
         fasta,
@@ -593,14 +593,14 @@ workflow VCF_PRE_PROCESS {
         fasta_dict,
         params.chrmap
     )
-    FILTER_QUALITY(
-        FILTER_GVCF.out.vcf,
-        FILTER_GVCF.out.tbi,
+    FILTER_UNPASSED(
+        CONVERT_GVCF.out.vcf,
+        CONVERT_GVCF.out.tbi,
         params.chrmap
     )
     FILTER_MITO_AND_UNKOWN_CHR(
-        FILTER_QUALITY.out.vcf,
-        FILTER_QUALITY.out.tbi,
+        FILTER_UNPASSED.out.vcf,
+        FILTER_UNPASSED.out.tbi,
     )
     FILTER_BED(
         FILTER_MITO_AND_UNKOWN_CHR.out.vcf,
@@ -625,9 +625,9 @@ workflow PHRANK_SCORING {
     vcf
 
     main:
-    VCF_TO_VAR(vcf)
-    VAR_TO_ENSEMBL(VCF_TO_VAR.out, params.ref_loc)
-    ENSEMBL_TO_GENESYM(VAR_TO_ENSEMBL.out, params.ref_to_sym, params.ref_sorted_sym)
+    VCF_TO_VARIANTS(vcf)
+    VARIANTS_TO_ENSEMBL(VCF_TO_VARIANTS.out, params.ref_loc)
+    ENSEMBL_TO_GENESYM(VARIANTS_TO_ENSEMBL.out, params.ref_to_sym, params.ref_sorted_sym)
     GENESYM_TO_PHRANK(ENSEMBL_TO_GENESYM.out,
                     params.input_hpo,
                     params.phrank_dagfile,
@@ -652,7 +652,7 @@ workflow {
     )
 
     SPLIT_VCF_BY_CHROMOSOME(VCF_PRE_PROCESS.out.vcf)
-    VEP_ANNOTATE(
+    ANNOTATE_BY_VEP(
         SPLIT_VCF_BY_CHROMOSOME.out.chr_vcfs.flatten(),
         params.vep_dir_cache,
         params.vep_dir_plugins,
@@ -673,8 +673,8 @@ workflow {
             params.omim_genemap2,
             params.omim_pheno)
 
-    DB_ANNOTATE ( // will rename it once we have analyzed/review the part
-        VEP_ANNOTATE.out.vep_output,
+    ANNOTATE_BY_MODULES (
+        ANNOTATE_BY_VEP.out.vep_output,
         HPO_SIM.out.hgmd_sim,
         HPO_SIM.out.omim_sim,
         file(params.ref_annot_dir)
@@ -684,8 +684,8 @@ workflow {
         NORMALIZE_VCF.out.vcf,
     )
 
-    JOIN_TIER_PHRANK_PART1 (
-        DB_ANNOTATE.out.scores,
+    JOIN_TIER_PHRANK (
+        ANNOTATE_BY_MODULES.out.scores,
         PHRANK_SCORING.out,
 
         file(params.ref_annot_dir),
@@ -693,10 +693,10 @@ workflow {
         file(params.ref_merge_expand_dir)
     )
 
-    JOIN_TIER_PHRANK_PART2(
+    MERGE_SCORES_BY_CHROMOSOME(
         PHRANK_SCORING.out,
-        JOIN_TIER_PHRANK_PART1.out.tier.collect(),
-        JOIN_TIER_PHRANK_PART1.out.compressed_scores.collect(),
+        JOIN_TIER_PHRANK.out.tier.collect(),
+        JOIN_TIER_PHRANK.out.compressed_scores.collect(),
         file(params.ref_annot_dir),
         file(params.ref_mod5_diffusion_dir),
         file(params.ref_merge_expand_dir)
@@ -704,8 +704,8 @@ workflow {
 
     // Run Prediction on the final merged output
     PREDICTION(
-        JOIN_TIER_PHRANK_PART2.out.merged_matrix,
-        JOIN_TIER_PHRANK_PART2.out.merged_compressed_scores,
+        MERGE_SCORES_BY_CHROMOSOME.out.merged_matrix,
+        MERGE_SCORES_BY_CHROMOSOME.out.merged_compressed_scores,
         file(params.ref_predict_new_dir),
         file(params.ref_model_inputs_dir)
     )
