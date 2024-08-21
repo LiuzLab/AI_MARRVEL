@@ -1,13 +1,7 @@
 # General
 **/__pycache__
-bcftools-1.9.tar.bz2
-run/bedtools
 .vscode/
-.DS_Store
-*/.DS_Store
-test_data/
-test_ref/
-test_output/
+**/.DS_Store
 
 # Nextflow Related
 .nextflow*
@@ -20,3 +14,10 @@ params.yaml
 
 # Project Related
 /data/vep
+
+# Miscs
+bcftools-1.9.tar.bz2
+run/bedtools
+/test_data/ # Question(JL): Is there somebody need this line?
+/test_ref/ # Question(JL): Is there somebody need this line?
+/test_output/ # Question(JL): Is there somebody need this line?
