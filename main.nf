@@ -354,7 +354,7 @@ process HPO_SIM {
 
     script:
     """
-    if [ ! -s $hpo ]; then
+    if [[ -z \$(egrep 'HP:[0-9]{7}' $hpo) ]] ; then
         echo "HP:0000001" > $hpo
     fi
 
