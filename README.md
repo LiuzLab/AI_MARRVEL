@@ -57,6 +57,7 @@ $ git clone https://github.com/LiuzLab/AI_MARRVEL # Download Code
 $ cd AI_MARRVEL # Go into the Project Directory
 $ dvc pull # Download necessary data
 $ aws s3 cp s3://aim-data-dependencies-2.0/vep ./data/vep --recursive # Download VEP Cache
+$ ./utils/download_hgmd.sh ./data aim-data-dependencies-2.0 # Download HGMD Related Files
 $ nextflow run .
 ```
 

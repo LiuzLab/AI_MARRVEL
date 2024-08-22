@@ -1,0 +1,5 @@
+outs:
+- md5: 58136ff47b2f888dc2148a468f413e7b
+  size: 8394534
+  hash: md5
+  path: HPO_OMIM.tsv
