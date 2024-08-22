@@ -62,7 +62,7 @@ def validateInputParams() {
 }
 
 def validateDataSanity() {
-    if (params.skip_data_checksum) return
+    if (params.skip_data_verification) return
 
     ref_dir_tree = "tree -J ${params.ref_dir}".execute().text.split('\n').drop(2).join('\n')
     snapshot_dir_tree = "cat assets/ref_dir.snapshot.json".execute().text.split('\n').drop(2).join('\n')
