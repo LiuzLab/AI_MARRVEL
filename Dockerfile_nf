@@ -1,0 +1,99 @@
+# Use the existing Dockerfile setup
+FROM ensemblorg/ensembl-vep:release_104.3
+USER root
+ENV DEBIAN_FRONTEND noninteractive
+
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    git \
+    build-essential \
+    libncurses-dev \
+    zlib1g-dev \
+    libz-dev \
+    libbz2-dev \
+    liblzma-dev \
+    tabix \
+    python2.7 \
+    python3.8 \
+    python3.8-dev \
+    python3.8-distutils \
+    python3-apt \
+    parallel
+
+
+RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+RUN python3.8 get-pip.py
+
+# Install python 3.8 dependencies
+COPY requirements.txt /opt/requirements.txt
+RUN pip3 install --upgrade pip
+RUN pip3 install -r /opt/requirements.txt
+RUN pip3 install bgzip
+
+# Install R
+RUN apt-get update
+RUN apt install -y --no-install-recommends software-properties-common dirmngr
+# Add the keys
+RUN apt install wget
+RUN wget -qO- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc | tee -a /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc
+
+# add the R 4.0 repo from CRAN -- adjust 'focal' to 'groovy' or 'bionic' as needed
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9 || \
+    apt-key adv --keyserver ha.pool.sks-keyservers.net --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9 || \
+    apt-key adv --keyserver pgp.mit.edu --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9 || \
+    apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9 || \
+    apt-key adv --keyserver keyserver.pgp.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9
+
+
+
+RUN add-apt-repository "deb https://cloud.r-project.org/bin/linux/ubuntu $(lsb_release -cs)-cran40/"
+
+RUN apt-get update && apt install -y r-base r-base-core r-recommended
+
+# Install R libs
+RUN R -e "install.packages('data.table',dependencies=TRUE, repos='http://cran.rstudio.com/')"
+RUN R -e "install.packages('dplyr',dependencies=TRUE, repos='http://cran.rstudio.com/')"
+RUN R -e "install.packages('ontologyIndex',dependencies=TRUE, repos='http://cran.rstudio.com/')"
+RUN R -e "install.packages('ontologySimilarity',dependencies=TRUE, repos='http://cran.rstudio.com/')"
+RUN R -e "install.packages('tidyverse',dependencies=TRUE, repos='http://cran.rstudio.com/')"
+
+# Install bcftools
+COPY bcftools-1.20.tar.bz2 /opt/bcftools-1.20.tar.bz2
+RUN tar -xf /opt/bcftools-1.20.tar.bz2 -C /opt/ && \
+  rm /opt/bcftools-1.20.tar.bz2 && \
+  cd /opt/bcftools-1.20 && \
+  ./configure && \
+  make && \
+  make install && \
+  rm -rf /opt/bcftools-1.20
+
+# Install Miniconda
+RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O Miniconda3-latest-Linux-x86_64.sh
+RUN bash Miniconda3-latest-Linux-x86_64.sh -b -p /opt/conda
+ENV PATH=/opt/conda/bin:$PATH
+
+# Create Conda environment and install Nextflow
+RUN conda create -n nextflow-env -c bioconda nextflow
+RUN echo "source activate nextflow-env" >> ~/.bashrc
+ENV PATH /opt/conda/envs/nextflow-env/bin:$PATH
+RUN conda install -n nextflow-env -c bioconda gatk4
+# Copy the pipeline and configuration files into the Docker image
+COPY . /workspace/
+
+WORKDIR /mnt/output
+
+# Download Nextflow binary
+RUN curl -sL https://get.nextflow.io | bash
+RUN mv nextflow /usr/local/bin/
+
+# Set Nextflow to use local paths and not attempt to connect to the internet
+
+ENV NXF_HOME=/mnt/output/nextflow_home
+ENV NXF_WORK=/mnt/output/nextflow_work
+ENV NXF_OFFLINE=true
+
+RUN apt-get update && apt-get install -y samtools
+# Pre-download Nextflow dependencies (if any known)
+# Example: Pre-download Nextflow plugins or other necessary components
+# RUN nextflow -download some_plugin
