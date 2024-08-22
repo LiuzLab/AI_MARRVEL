@@ -354,6 +354,10 @@ process HPO_SIM {
 
     script:
     """
+    if [ ! -s $hpo ]; then
+        echo "HP:0000001" > $hpo
+    fi
+
     phenoSim.R $hpo $omim_hgmd_phen $omim_obo $omim_genemap2 $omim_pheno \\
         ${params.run_id}-cz ${params.run_id}-dx
     """
