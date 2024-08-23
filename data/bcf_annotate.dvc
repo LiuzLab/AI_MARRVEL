@@ -1,0 +1,6 @@
+outs:
+- md5: 01bb557232e7e545b93ec2f71911037e.dir
+  size: 194
+  nfiles: 1
+  hash: md5
+  path: bcf_annotate

@@ -1,0 +1,5 @@
+outs:
+- md5: aef2ff5f9168cf2a9c62a4566ab39597
+  size: 344743
+  hash: md5
+  path: clin_nc.tsv.gz

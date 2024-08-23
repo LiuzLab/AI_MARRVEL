@@ -1,0 +1,6 @@
+outs:
+- md5: 0e300d50db7dbc17d75e26e9e8fbba7e.dir
+  size: 37826762
+  nfiles: 5
+  hash: md5
+  path: filter_exonic

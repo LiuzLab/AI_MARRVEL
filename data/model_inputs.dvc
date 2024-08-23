@@ -1,0 +1,6 @@
+outs:
+- md5: 8856a401299ac0da3447899396b8ac89.dir
+  size: 215125720
+  nfiles: 12
+  hash: md5
+  path: model_inputs

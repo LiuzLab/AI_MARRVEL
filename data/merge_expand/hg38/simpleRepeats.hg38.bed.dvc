@@ -1,0 +1,5 @@
+outs:
+- md5: 8a7f6fde1079652d9176149a5ea4f910
+  size: 22405251
+  hash: md5
+  path: simpleRepeats.hg38.bed

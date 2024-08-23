@@ -1,0 +1,5 @@
+outs:
+- md5: 57d1659137a707b6dd1beb64283d46f6
+  size: 255647
+  hash: md5
+  path: genemap2_v2022.rds

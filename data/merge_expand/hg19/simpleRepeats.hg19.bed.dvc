@@ -1,0 +1,5 @@
+outs:
+- md5: 9341590e91f0d0a27aba658720f3dd51
+  size: 21237075
+  hash: md5
+  path: simpleRepeats.hg19.bed
