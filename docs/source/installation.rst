@@ -11,30 +11,34 @@ Installation Java and nextflow
 It is highly recommend to install java using `SDKMAN <https://sdkman.io/install/>``
 
    .. code-block:: bash
-   curl -s https://get.sdkman.io | bash # install sdkman
-   sdk install java 17.0.10-tem         # install java 17
-   java -version                        # confirm the correct version of java is installed
+
+      curl -s https://get.sdkman.io | bash # install sdkman
+      sdk install java 17.0.10-tem         # install java 17
+      java -version                        # confirm the correct version of java is installed
 
 After then install nextflow with the command-line
 
    .. code-block:: bash
-   curl -s https://get.nextflow.io | bash # donwload nextflow
-   chmod +x nextflow                      # make nextflow excutable
-   sudo mv nextflow /usr/local/bin        # move to an executable path (in $PATH)
-   nextflow info                          # confirm the installation is done.
 
-## Running AIM
+      curl -s https://get.nextflow.io | bash # donwload nextflow
+      chmod +x nextflow                      # make nextflow excutable
+      sudo mv nextflow /usr/local/bin        # move to an executable path (in $PATH)
+      nextflow info                          # confirm the installation is done.
+
+Running AIM
+==============
 
 Use following command-line to run AIM.
 
    .. code-block:: bash
-   nextflow run Liuzlab/AI_MARRVEL -r nextflow_conversion \
-                  --ref_dir <PATH_TO_REFERENCE_DIRECTORY> \
-                  --ref_ver [Reference genome: hg19/hg38] \
-                  --input_vcf <PATH_TO_INPUT_VCF_FILE> \
-                  --input_hpo <PATH_TO_INPUT_HPO_FILE> \
-                  --outdir <PATH_TO_OUTPUT_DIRECTORY> \
-                  --run_id [Sample Id] 
+
+      nextflow run Liuzlab/AI_MARRVEL -r nextflow_conversion \
+                     --ref_dir <PATH_TO_REFERENCE_DIRECTORY> \
+                     --ref_ver [Reference genome: hg19/hg38] \
+                     --input_vcf <PATH_TO_INPUT_VCF_FILE> \
+                     --input_hpo <PATH_TO_INPUT_HPO_FILE> \
+                     --outdir <PATH_TO_OUTPUT_DIRECTORY> \
+                     --run_id [Sample Id] 
 
 
 
