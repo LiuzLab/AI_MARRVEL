@@ -18,6 +18,7 @@ Args:
   --outdir                  Output directory.
   --run_id                  Unique identifier for this run. (default: 1)
   --ref_ver                 Reference genome version [hg38 or hg19] (default: hg19)
+  --bed_filter              Path to a BED file to perform an analysis only for regions of interest (optional)
                   
 
 Options:
