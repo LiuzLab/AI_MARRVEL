@@ -128,7 +128,7 @@ process FILTER_BED {
 
 process BUILD_REFERENCE_INDEX {
     container "broadinstitute/gatk"
-    storeDir projectDir.resolve("out/reference_index/")
+    storeDir "${params.outdir}/general/reference_index/"
 
     output:
     path "final_${params.ref_ver}.fa", emit: fasta
@@ -249,7 +249,7 @@ process FILTER_UNPASSED {
 
 
 process FILTER_MITO_AND_UNKOWN_CHR {
-    publishDir "${params.outdir}/vcf/", mode: 'copy'
+    publishDir "${params.outdir}/${params.run_id}/vcf/", mode: 'copy'
     input:
     path vcf
     path tbi
@@ -319,7 +319,7 @@ process ENSEMBL_TO_GENESYM {
 
 
 process GENESYM_TO_PHRANK {
-    publishDir "${params.outdir}/phrank/", mode: 'copy'
+    publishDir "${params.outdir}/${params.run_id}/phrank/", mode: 'copy'
 
     input:
     path gene
@@ -365,7 +365,7 @@ process HPO_SIM {
 }
 
 process FILTER_PROBAND {
-    publishDir "${params.outdir}/vcf/", mode: 'copy'
+    publishDir "${params.outdir}/${params.run_id}/vcf/", mode: 'copy'
 
     input:
     path vcf
@@ -423,7 +423,7 @@ process SPLIT_VCF_BY_CHROMOSOME {
 
 process ANNOTATE_BY_VEP {
     tag "${vcf.simpleName}"
-    publishDir "${params.outdir}/vep/", mode: "copy"
+    publishDir "${params.outdir}/${params.run_id}/vep/", mode: "copy"
 
     input:
     path vcf
@@ -517,7 +517,7 @@ process JOIN_TIER_PHRANK {
 }
 
 process MERGE_SCORES_BY_CHROMOSOME {
-    publishDir "${params.outdir}/merged", mode: "copy"
+    publishDir "${params.outdir}/${params.run_id}/merged", mode: "copy"
 
     input:
     path phrank
@@ -556,7 +556,7 @@ process MERGE_SCORES_BY_CHROMOSOME {
 }
 
 process PREDICTION {
-    publishDir "${params.outdir}/prediction/", mode: "copy"
+    publishDir "${params.outdir}/${params.run_id}/prediction/", mode: "copy"
 
     input:
     path merged_matrix  
