@@ -41,7 +41,6 @@ Use following command-line to run AIM.
                      --run_id [Sample Id] 
 
 
-
 Install Required Data Dependencies
 =================================== 
 AIM utilizes various databases for variant annotation, all of which have been compiled and are available for download. We use AWS S3 for data access, and the data can be downloaded by following these steps:
