@@ -4,36 +4,38 @@
 Installation
 *************
 
-To streamline the user experience and eliminate the need for environment setup, AIM is delivered as a Docker image
 
+Installation Java and nextflow
+=============================
 
-AIM-Lite
-=============
-AIM-Lite processes VCF and HPO inputs to output predictions, representing the most compact functional component of the AI-MARRVEL suite.
+It is highly recommend to install java using `SDKMAN <https://sdkman.io/install/>``
 
-.. note::
+   .. code-block:: bash
+   curl -s https://get.sdkman.io | bash # install sdkman
+   sdk install java 17.0.10-tem         # install java 17
+   java -version                        # confirm the correct version of java is installed
 
-   An more powerful batch-enabled AIM docker image is under development.
+After then install nextflow with the command-line
 
-**Pull AIM-Lite Docker from Docker Hub**
+   .. code-block:: bash
+   curl -s https://get.nextflow.io | bash # donwload nextflow
+   chmod +x nextflow                      # make nextflow excutable
+   sudo mv nextflow /usr/local/bin        # move to an executable path (in $PATH)
+   nextflow info                          # confirm the installation is done.
 
-.. code-block:: bash
-    
-    docker pull chaozhongliu/aim-lite:latest
+## Running AIM
 
+Use following command-line to run AIM.
 
-**Alternatively, Build Local AIM-Lite Docker**
+   .. code-block:: bash
+   nextflow run Liuzlab/AI_MARRVEL -r nextflow_conversion \
+                  --ref_dir <PATH_TO_REFERENCE_DIRECTORY> \
+                  --ref_ver [Reference genome: hg19/hg38] \
+                  --input_vcf <PATH_TO_INPUT_VCF_FILE> \
+                  --input_hpo <PATH_TO_INPUT_HPO_FILE> \
+                  --outdir <PATH_TO_OUTPUT_DIRECTORY> \
+                  --run_id [Sample Id] 
 
-If you want to keep a stable local version of AIM, follow the instruction below.
-
-.. code-block:: bash
-    
-    # Clone repositories
-    git clone https://github.com/LiuzLab/AI_MARRVEL.git
-    cd AI_MARRVEL
-
-    # Build docker image (takes some time)
-    docker build -t aim-lite .
 
 
 Install Required Data Dependencies
@@ -60,10 +62,7 @@ AIM utilizes various databases for variant annotation, all of which have been co
 
 .. warning::
 
-   Due to licensing restrictions, the HGMD-related database is not included in the public download. 
-   However, AIM operates effectively without this data.
-
-   To prepare HGMD database, see below.
+   Due to licensing restrictions, the HGMD-related database is not included in the public download. To prepare HGMD database, see below.
 
 
 Prepare HGMD-related data
