@@ -21,7 +21,7 @@ In making prediction, it takes variant annotation from [MARRVEL](https://marrvel
 and generates **prediction score** + **confidence score** as output.  
 
 
-You can use AI-MARRVEL from our [website](https://ai.marrvel.org/) or follow the [documentation](https://ai-marrvel.readthedocs.io/en/latest/) to run locally.
+You can use AI-MARRVEL from our [website](https://ai.marrvel.org/) or follow the [documentation](https://aimarrvel.readthedocs.io/en/main/) to run locally.
   
 
 :new: Our paper is now published in [NEJM AI](https://ai.nejm.org/doi/full/10.1056/AIoa2300009)!
