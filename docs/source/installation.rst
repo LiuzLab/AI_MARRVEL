@@ -4,32 +4,33 @@
 Installation
 *************
 
-<!--To streamline the user experience and eliminate the need for environment setup, AIM is delivered as a Docker image-->
-
-
 Installation Java and nextflow
 =============================
 
-It is highly recommend to install java using `SDKMAN <https://sdkman.io/install/>``
+It is highly recommend to install java using `SDKMAN <https://sdkman.io/install/>`_
 
-   .. code-block:: bash
+.. code-block:: bash
+
    curl -s https://get.sdkman.io | bash # install sdkman
    sdk install java 17.0.10-tem         # install java 17
    java -version                        # confirm the correct version of java is installed
 
 After then install nextflow with the command-line
 
-   .. code-block:: bash
+.. code-block:: bash
+
    curl -s https://get.nextflow.io | bash # donwload nextflow
    chmod +x nextflow                      # make nextflow excutable
    sudo mv nextflow /usr/local/bin        # move to an executable path (in $PATH)
    nextflow info                          # confirm the installation is done.
 
-## Running AIM
+Running AIM
+===================
 
 Use following command-line to run AIM.
 
-   .. code-block:: bash
+.. code-block:: bash
+
    nextflow run Liuzlab/AI_MARRVEL -r nextflow_conversion \
                   --ref_dir <PATH_TO_REFERENCE_DIRECTORY> \
                   --ref_ver [Reference genome: hg19/hg38] \
@@ -51,13 +52,13 @@ AIM utilizes various databases for variant annotation, all of which have been co
 2. **Navigate to Your Desired Directory**:
    Change to the directory where you want your data dependencies downloaded. For example, in Ubuntu, use:
 
-   .. code-block:: bash
+.. code-block:: bash
 
       cd <desired/folder/path>
 
 3. **Use the following command to sync the S3 bucket to your local directory**:
 
-   .. code-block:: bash
+.. code-block:: bash
 
       aws s3 sync s3://aim-data-dependencies-public . --no-sign-request
 

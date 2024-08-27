@@ -16,6 +16,15 @@ def showUsage() {
     }
 }
 
+def showVersion() {
+    if (!params.version) {
+        return
+    }
+
+    println "1.0.0"
+    exit 0
+}
+
 def validateInputParams() {
     def checkPathParamMap = [
         "input_vcf": params.input_vcf,
@@ -62,6 +71,7 @@ def validateInputParams() {
 }
 
 showUsage()
+showVersion()
 validateInputParams()
 
 

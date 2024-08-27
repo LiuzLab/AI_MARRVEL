@@ -30,7 +30,8 @@ Citation
 
 Mao, D., Liu, C., Wang, L., AI-Ouran, R., Deisseroth, C., Pasupuleti, S., Kim, S. Y., Li, L., Rosenfeld, J. A., Meng, L., B
 urrage, L. C., Wangler, M. F., Yamamoto, S., Santana, M., Perez, V., Shukla, P., Eng, C. M., Lee, B., Yuan, B., … Liu, Z. (2024). 
-**AI-MARRVEL—A knowledge-driven ai system for diagnosing mendelian disorders. NEJM AI, 1(5).** <a href="https://doi.org/10.1056/AIoa2300009">https://doi.org/10.1056/AIoa2300009</a>
+**AI-MARRVEL—A knowledge-driven ai system for diagnosing mendelian disorders. NEJM AI, 1(5).** DOI: `10.1056/AIoa2300009
+<https://doi.org/10.1056/AIoa2300009>`_
 
 
 License
