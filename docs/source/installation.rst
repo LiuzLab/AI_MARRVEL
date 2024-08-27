@@ -4,15 +4,13 @@
 Installation
 *************
 
-<!--To streamline the user experience and eliminate the need for environment setup, AIM is delivered as a Docker image-->
-
-
 Installation Java and nextflow
 =============================
 
-It is highly recommend to install java using `SDKMAN <https://sdkman.io/install/>``
+It is highly recommend to install java using `SDKMAN <https://sdkman.io/install/>`_
 
 .. code-block:: bash
+
    curl -s https://get.sdkman.io | bash # install sdkman
    sdk install java 17.0.10-tem         # install java 17
    java -version                        # confirm the correct version of java is installed
@@ -20,16 +18,19 @@ It is highly recommend to install java using `SDKMAN <https://sdkman.io/install/
 After then install nextflow with the command-line
 
 .. code-block:: bash
+
    curl -s https://get.nextflow.io | bash # donwload nextflow
    chmod +x nextflow                      # make nextflow excutable
    sudo mv nextflow /usr/local/bin        # move to an executable path (in $PATH)
    nextflow info                          # confirm the installation is done.
 
-## Running AIM
+Running AIM
+===================
 
 Use following command-line to run AIM.
 
 .. code-block:: bash
+
    nextflow run Liuzlab/AI_MARRVEL -r nextflow_conversion \
                   --ref_dir <PATH_TO_REFERENCE_DIRECTORY> \
                   --ref_ver [Reference genome: hg19/hg38] \
