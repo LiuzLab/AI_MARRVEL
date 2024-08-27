@@ -1,7 +1,7 @@
 # BED region =  all exons
 #             + HGMD mutations (50 flanking bp)
 #             + Cinvar mutations (50 flanking bp)
-#             + spliceAI data
+#             + spliceAI data (50 flanking bp)
 #
 # gencode data:
 # https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_46/gencode.v46.basic.annotation.gtf.gz
