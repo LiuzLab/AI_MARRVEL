@@ -7,7 +7,7 @@ Running AIM
 Quick Start
 =============
 
-**AIM-Lite**
+**AIM**
 
 Install the software and data dependencies. Download our example `here <https://app.globus.org/file-manager?origin_id=bacf3c02-a7a5-4a4d-b706-43cf37f0445a&origin_path=%2F>`_. 
 
