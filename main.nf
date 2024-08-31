@@ -70,10 +70,23 @@ def validateInputParams() {
     }
 }
 
+def validateDataSanity() {
+    if (params.skip_data_verification) return
+
+    ref_dir_tree = "tree -J ${params.ref_dir}".execute().text.split('\n').drop(2).join('\n')
+    snapshot_dir_tree = "cat assets/ref_dir.snapshot.json".execute().text.split('\n').drop(2).join('\n')
+    snapshot_public_dir_tree = "cat assets/ref_dir.snapshot.public.json".execute().text.split('\n').drop(2).join('\n')
+
+    if (ref_dir_tree != snapshot_dir_tree && ref_dir_tree != snapshot_public_dir_tree) {
+        println("Error: Could not verify the data sanity.")
+        exit 1
+    }
+}
+
 showUsage()
 showVersion()
 validateInputParams()
-
+validateDataSanity()
 
 // Process to handle the VCF file
 process NORMALIZE_VCF {
