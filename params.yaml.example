@@ -1,0 +1,9 @@
+# Please Copy This File to `params.yaml`
+# And Complete Placeholder Marked With <BRACKET>,
+# Examples Are In Comment
+# NOTE: It's intended that params.yaml file is not tracked by git.
+
+ref_dir: <PATH_TO_REFERENCE_DIRECTORY> # Example: "/home/jaeyeon/Data/aim_data_dependencies/"
+input_vcf: <PATH_TO_INPUT_VCF_FILE> # Example: "/home/jaeyeon/Data/aim_test/demo.vcf.gz"
+input_hpo: <PATH_TO_INPUT_HPO_FILE> # Example: "/home/jaeyeon/Data/aim_test/demo.hpos.txt"
+outdir: <PATH_TO_OUTPUT_DIRECTORY> # Example: "./out"

@@ -21,7 +21,7 @@ In making prediction, it takes variant annotation from [MARRVEL](https://marrvel
 and generates **prediction score** + **confidence score** as output.  
 
 
-You can use AI-MARRVEL from our [website](https://ai.marrvel.org/) or follow the [documentation](https://ai-marrvel.readthedocs.io/en/latest/) to run locally.
+You can use AI-MARRVEL from our [website](https://ai.marrvel.org/) or follow the [documentation](https://aimarrvel.readthedocs.io/en/main/) to run locally.
   
 
 :new: Our paper is now published in [NEJM AI](https://ai.nejm.org/doi/full/10.1056/AIoa2300009)!
@@ -35,24 +35,45 @@ AIM utilizes various databases for variant annotation, all of which have been co
 1. **Install the AWS CLI**: Follow the instructions provided in the [AWS CLI Installation Guide](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html).
 2. **Navigate to Your Desired Directory**: Change to the directory where you want your data dependencies downloaded. For example, in Ubuntu, use:
    ```bash
-   cd <desired/folder/path>
+   $ cd <desired/folder/path>
+   ```
 3. Use the following command to sync the S3 bucket to your local directory:  
-    ``` bash
-    aws s3 sync s3://aim-data-dependencies-public . --no-sign-request
+    ```bash
+    $ aws s3 sync s3://aim-data-dependencies-2.0-public . --no-sign-request
+    ```
+
 ### Get the software
-AIM is released as a Docker image for easy distribution. To get it:
-```
-docker pull chaozhongliu/aim-lite:latest
+AIM is released as a Nextflow pipeline for easy distribution. To get it:
+```bash
+$ git clone -b nextflow_conversion https://github.com/LiuzLab/AI_MARRVEL
+$ cd AI_MARRVEL
+$ nextflow run main.nf --version
 ```
 
 ### Run with your sample
+```bash
+$ nextflow run main.nf  --ref_dir <PATH_TO_REFERENCE_DIRECTORY>
+                  --input_vcf <PATH_TO_INPUT_VCF_FILE>
+                  --input_hpo <PATH_TO_INPUT_HPO_FILE>
+                  --outdir <PATH_TO_OUTPUT_DIRECTORY>
+                  --bed_filter <PATH_TO_BED_FILE> # Optional
+                  --run_id [Sample Id] # Optional, default: 1
+                  --ref_ver [Reference genome: hg19/hg38] # Optional, default: hg19
+                  --exome_filter # Optional
 ```
-docker run -v <Path to VCF File>:/input/vcf.gz \
-           -v <Path to HPO file>:/input/hpo.txt \
-           -v <Path to downloaded database>:/run/data_dependencies \
-           -v <Path to output folder>:/out \
-       chaozhongliu/aim-lite /run/proc.sh [Sample ID] [Reference genome: hg19/hg38] [Memory Limit (G)]
+
+Alternatively, the pipeline can be executed with a parameter file (yaml)
+```bash
+$ nextflow run main.nf -params-file params.yaml
 ```
+NOTE: You need to create `params.yaml` by copying [params.yaml.example](params.yaml.example) file and follow the instruction.
+
+For more information on usage and parameters which are open for modification, please use `--help` option as shown below.
+
+```
+$ nextflow run main.nf --help
+```
+
 
 ## License
 AI-MARRVEL is licensed under GPL-3.0. You are welcomed to use it for research purpose.  

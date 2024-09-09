@@ -4,36 +4,41 @@
 Installation
 *************
 
-To streamline the user experience and eliminate the need for environment setup, AIM is delivered as a Docker image
+Installation Java and nextflow
+=============================
 
-
-AIM-Lite
-=============
-AIM-Lite processes VCF and HPO inputs to output predictions, representing the most compact functional component of the AI-MARRVEL suite.
-
-.. note::
-
-   An more powerful batch-enabled AIM docker image is under development.
-
-**Pull AIM-Lite Docker from Docker Hub**
+It is highly recommend to install java using `SDKMAN <https://sdkman.io/install/>`_
 
 .. code-block:: bash
-    
-    docker pull chaozhongliu/aim-lite:latest
 
+   curl -s https://get.sdkman.io | bash # install sdkman
+   sdk install java 17.0.10-tem         # install java 17
+   java -version                        # confirm the correct version of java is installed
 
-**Alternatively, Build Local AIM-Lite Docker**
-
-If you want to keep a stable local version of AIM, follow the instruction below.
+After then install nextflow with the command-line
 
 .. code-block:: bash
-    
-    # Clone repositories
-    git clone https://github.com/LiuzLab/AI_MARRVEL.git
-    cd AI_MARRVEL
 
-    # Build docker image (takes some time)
-    docker build -t aim-lite .
+   curl -s https://get.nextflow.io | bash # donwload nextflow
+   chmod +x nextflow                      # make nextflow excutable
+   sudo mv nextflow /usr/local/bin        # move to an executable path (in $PATH)
+   nextflow info                          # confirm the installation is done.
+
+Running AIM
+===================
+
+Use following command-line to run AIM.
+
+.. code-block:: bash
+
+   nextflow run Liuzlab/AI_MARRVEL -r nextflow_conversion \
+                  --ref_dir <PATH_TO_REFERENCE_DIRECTORY> \
+                  --ref_ver [Reference genome: hg19/hg38] \
+                  --input_vcf <PATH_TO_INPUT_VCF_FILE> \
+                  --input_hpo <PATH_TO_INPUT_HPO_FILE> \
+                  --outdir <PATH_TO_OUTPUT_DIRECTORY> \
+                  --run_id [Sample Id] 
+
 
 
 Install Required Data Dependencies
@@ -47,23 +52,20 @@ AIM utilizes various databases for variant annotation, all of which have been co
 2. **Navigate to Your Desired Directory**:
    Change to the directory where you want your data dependencies downloaded. For example, in Ubuntu, use:
 
-   .. code-block:: bash
+.. code-block:: bash
 
       cd <desired/folder/path>
 
 3. **Use the following command to sync the S3 bucket to your local directory**:
 
-   .. code-block:: bash
+.. code-block:: bash
 
-      aws s3 sync s3://aim-data-dependencies-public . --no-sign-request
+      aws s3 sync s3://aim-data-dependencies-2.0-public . --no-sign-request
 
 
 .. warning::
 
-   Due to licensing restrictions, the HGMD-related database is not included in the public download. 
-   However, AIM operates effectively without this data.
-
-   To prepare HGMD database, see below.
+   Due to licensing restrictions, the HGMD-related database is not included in the public download. To prepare HGMD database, see below.
 
 
 Prepare HGMD-related data

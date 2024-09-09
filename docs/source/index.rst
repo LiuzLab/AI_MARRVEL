@@ -15,34 +15,30 @@ Web Interface
 You can use AI-MARRVEL from our `website <https://ai.marrvel.org/>`_ or follow the documentation to run locally.
 
 
-
-.. note::
-
-   AI-MARRVEL and web interface are under active development.
-
-
-
 Prerequisites
 =====================
 
 * Unix-like operating system
 * Docker installed
 * At least 480G space to download the preprocessed database
-* 32G free memeory recommended, but it can be smaller by passing memory limitation argument
+* 16G free memeory recommended for whole-exome sequencing data, greater memory is required for whole-genome sequencing data.
 
 
 
 Citation
 =====================
-**AI-MARRVEL — A Knowledge-Driven AI System for Diagnosing Mendelian Disorders.**
-Click `here <https://ai.nejm.org/doi/full/10.1056/AIoa2300009>`_ for details.
+
+Mao, D., Liu, C., Wang, L., AI-Ouran, R., Deisseroth, C., Pasupuleti, S., Kim, S. Y., Li, L., Rosenfeld, J. A., Meng, L., B
+urrage, L. C., Wangler, M. F., Yamamoto, S., Santana, M., Perez, V., Shukla, P., Eng, C. M., Lee, B., Yuan, B., … Liu, Z. (2024). 
+**AI-MARRVEL—A knowledge-driven ai system for diagnosing mendelian disorders. NEJM AI, 1(5).** DOI: `10.1056/AIoa2300009
+<https://doi.org/10.1056/AIoa2300009>`_
 
 
 License
 =====================
 AI-MARRVEL is licensed under `GPL-3.0 <https://github.com/LiuzLab/AI_MARRVEL/blob/main/LICENSE>`_.
 
-© Copyright 2023 by Zhandong Liu's lab at Baylor College of Medicine.
+© Copyright 2024 by Zhandong Liu's lab at Baylor College of Medicine.
 
 .. toctree::
    :hidden:
