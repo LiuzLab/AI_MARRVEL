@@ -97,18 +97,19 @@ process NORMALIZE_VCF {
  
     if echo "\${INPUT_VCF_TYPE}" | grep -q 'BGZF'; then
         echo "The file is in BGZF format, ready for tabix."
-        cp $vcf input.vcf.gz
+        cp $vcf input.unsorted.vcf.gz
     elif echo "\${INPUT_VCF_TYPE}" | grep -q 'gzip compressed data'; then
         echo "GZIP format detected, converting to BGZF."
-        gunzip -c $vcf | bgzip > input.vcf.gz
+        gunzip -c $vcf | bgzip > input.unsorted.vcf.gz
     elif echo "\${INPUT_VCF_TYPE}" | grep -q 'ASCII text'; then
         echo "Plain VCF file detected, compressing and indexing."
-        bgzip -c $vcf > input.vcf.gz
+        bgzip -c $vcf > input.unsorted.vcf.gz
     else
         echo "The file $vcf does not exist or is not a recognized format."
         exit 1
     fi
 
+    bcftools sort input.unsorted.vcf.gz -Oz -o input.vcf.gz
     tabix -p vcf input.vcf.gz
     """
 }
