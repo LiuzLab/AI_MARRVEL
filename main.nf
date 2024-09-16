@@ -579,6 +579,7 @@ process PREDICTION {
     output:
     path "conf_4Model/*.csv"
     path "conf_4Model/integrated/*.csv"
+    path "final_matrix_expanded/*.csv.gz"
 
     script:
     """
