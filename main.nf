@@ -109,6 +109,7 @@ process NORMALIZE_VCF {
         exit 1
     fi
 
+    tabix -p vcf input.unsorted.vcf.gz # to mitigate the header problem
     bcftools sort input.unsorted.vcf.gz -Oz -o input.vcf.gz
     tabix -p vcf input.vcf.gz
     """
