@@ -78,11 +78,11 @@ validateInputParams()
 // Process to handle the VCF file
 process NORMALIZE_VCF {
     input:
-    path vcf
+    path vcf, stageAs: "input.vcf.unk"
 
     output:
-    path "input.vcf.gz", emit: vcf
-    path "input.vcf.gz.tbi", emit: tbi
+    path "input.mini.vcf.gz", emit: vcf
+    path "input.mini.vcf.gz.tbi", emit: tbi
 
     script:
     """
@@ -94,22 +94,25 @@ process NORMALIZE_VCF {
         INPUT_VCF_TYPE="\$(file -b \${SYM_LINK})"
     fi
 
- 
+
     if echo "\${INPUT_VCF_TYPE}" | grep -q 'BGZF'; then
         echo "The file is in BGZF format, ready for tabix."
-        cp $vcf input.vcf.gz
+        bgzip -d $vcf > input.vcf
     elif echo "\${INPUT_VCF_TYPE}" | grep -q 'gzip compressed data'; then
         echo "GZIP format detected, converting to BGZF."
-        gunzip -c $vcf | bgzip > input.vcf.gz
+        gunzip -c $vcf > input.vcf
     elif echo "\${INPUT_VCF_TYPE}" | grep -q 'ASCII text'; then
         echo "Plain VCF file detected, compressing and indexing."
-        bgzip -c $vcf > input.vcf.gz
+        cp $vcf input.vcf
     else
         echo "The file $vcf does not exist or is not a recognized format."
         exit 1
     fi
 
-    tabix -p vcf input.vcf.gz
+    minimize_vcf.py < input.vcf > input.mini.vcf
+    bgzip -c input.mini.vcf > input.mini.vcf.gz
+
+    tabix -p vcf input.mini.vcf.gz
     """
 }
 
