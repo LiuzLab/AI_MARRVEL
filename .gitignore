@@ -17,3 +17,7 @@ out/
 trace-*txt
 report-*html
 params.yaml
+
+# Ignore R history and session files
+.Rhistory
+.RData
