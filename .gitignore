@@ -8,6 +8,7 @@ run/bedtools
 test_data/
 test_ref/
 test_output/
+*.ipynb_checkpoints/
 
 # Nextflow Related
 .nextflow*
@@ -17,3 +18,7 @@ out/
 trace-*txt
 report-*html
 params.yaml
+
+# Ignore R history and session files
+.Rhistory
+.RData

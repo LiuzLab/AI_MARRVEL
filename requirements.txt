@@ -7,3 +7,5 @@ matplotlib
 requests
 tables
 scikit-learn==1.1.2
+shap
+lime
