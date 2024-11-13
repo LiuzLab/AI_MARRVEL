@@ -8,7 +8,7 @@ run/bedtools
 test_data/
 test_ref/
 test_output/
-*.ipynb_checkpoints/
+**/.ipynb_checkpoints/
 
 # Nextflow Related
 .nextflow*
