@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Genomic Variant Analysis Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 40px;
+            color: #333;
+        }
+        .header {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 30px;
+        }
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .summary-box {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .visualization {
+            margin: 30px 0;
+            text-align: center;
+        }
+        .variant-section {
+            margin: 30px 0;
+        }
+        .variant-card {
+            background-color: #fff;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .variant-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+        }
+        .impact-bar {
+            height: 20px;
+            background-color: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 5px 0;
+        }
+        .impact-value {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+        .impact-positive {
+            background-color: #2196f3;
+        }
+        .impact-negative {
+            background-color: #ff4444;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f8f9fa;
+        }
+        .prediction-high {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .prediction-low {
+            color: #28a745;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Genomic Variant Analysis Report</h1>
+        <p>Generated on: {{ timestamp }}</p>
+    </div>
+
+    <div class="summary">
+        <div class="summary-box">
+            <h3>Analysis Overview</h3>
+            <p>Model Type: {{ model_type }}</p>
+            <p>Total Variants Analyzed: {{ total_variants }}</p>
+            <p>Features Considered: {{ feature_count }}</p>
+        </div>
+    </div>
+
+    <div class="visualization">
+        <h2>Global Feature Importance</h2>
+        <img src="data:image/png;base64,{{ importance_plot }}" alt="Feature Importance Plot">
+    </div>
+
+    <div class="visualization">
+        <h2>SHAP Summary Plot</h2>
+        <img src="data:image/png;base64,{{ shap_plot }}" alt="SHAP Summary Plot">
+    </div>
+
+    <div class="variant-section">
+        <h2>Individual Variant Analysis</h2>
+        {% for variant in variants %}
+        <div class="variant-card">
+            <div class="variant-info">
+                <span>Variant ID: {{ variant.variant_id }}</span>
+            </div>
+            
+            <p>Prediction: 
+                <span class="prediction-{% if variant.prediction == 1 %}high{% else %}low{% endif %}">
+                    {{ "Pathogenic" if variant.prediction == 1 else "Benign" }}
+                </span>
+                {% if variant.probability is not none %}
+                (Confidence: {{ "%.1f"|format(variant.probability * 100) }}%)
+                {% endif %}
+            </p>
+
+            <h4>Feature Impacts:</h4>
+            <div class="visualization">
+                <img src="data:image/png;base64,{{ variant.impact_plot }}" alt="Feature Impact Plot">
+            </div>
+            
+            <table>
+                <tr>
+                    <th>Feature</th>
+                    <th>Impact</th>
+                    <th>Magnitude</th>
+                </tr>
+                {% for impact in variant.feature_impacts[:5] %}
+                <tr>
+                    <td>{{ impact.feature }}</td>
+                    <td>
+                        <div class="impact-bar">
+                            <div class="impact-value {{ 'impact-negative' if impact.impact_type == 'negative' else 'impact-positive' }}"
+                                 style="width: {{ (impact.magnitude / variant.feature_impacts[0].magnitude * 100)|round }}%">
+                            </div>
+                        </div>
+                    </td>
+                    <td>{{ "%.3f"|format(impact.magnitude) }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

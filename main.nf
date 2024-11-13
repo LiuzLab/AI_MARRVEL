@@ -590,6 +590,35 @@ process PREDICTION {
     """
 }
 
+process MODEL_INTERPRETABILITY {
+    publishDir "${params.outdir}/${params.run_id}/model_interpretability/", mode: "copy"
+    
+    input:
+    path feature_matrix  // Now this will be each CSV file that needs interpretation
+    path model_file     // The model file
+    
+    output:
+    path "${feature_matrix.baseName}/shap_outputs/shap_values.json", emit: shap_results
+    path "${feature_matrix.baseName}/lime_outputs/lime_values.json", emit: lime_results
+    
+    script:
+    """
+    mkdir -p "${feature_matrix.baseName}/shap_outputs" "${feature_matrix.baseName}/lime_outputs" "${feature_matrix.baseName}/outputs"
+    
+    echo "Analyzing predictions using feature matrix: ${feature_matrix}"
+    echo "Using model: ${model_file}"
+    
+    python ${projectDir}/bin/model_interpreter/main.py \
+        --model-path ${model_file} \
+        --input-path ${feature_matrix} \
+        --output-path ${feature_matrix.baseName}/outputs/values.json
+        
+    mv ${feature_matrix.baseName}/outputs/*_shap.json ${feature_matrix.baseName}/shap_outputs/
+    mv ${feature_matrix.baseName}/outputs/*_lime.json ${feature_matrix.baseName}/lime_outputs/
+    """
+}
+
+
 workflow VCF_PRE_PROCESS {
     take:
     vcf
@@ -723,4 +752,11 @@ workflow {
         file(params.ref_predict_new_dir),
         file(params.ref_model_inputs_dir)
     )
+
+    // Add Model Interpretability step - now with file paths from original
+    MODEL_INTERPRETABILITY(
+        PREDICTION.out.flatten().filter(~/.*\.csv$/),  // Get ALL CSV files
+        file("${params.ref_predict_new_dir}/hg19/final_model_wo_bg_val.job")
+    )
+
 }
