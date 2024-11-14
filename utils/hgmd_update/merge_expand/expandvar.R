@@ -124,10 +124,10 @@ tic("step 3 and 4")
 print("Runnning Step 3&4 --- pro2genome")
 
 # parse pro2g result from TransVar
-vcf.all <- readRDS(file.path(args[2], "hgmd_all.rds")) # 280294 var
+vcf.all <- readRDS(file.path(args[2], "hgmd_all.rds"))
 
 # keep CLASS == "DM" and "DM?"
-vcf.all <- vcf.all[vcf.all$CLASS %in% c("DM", "DM?"), ] # 268505 var
+vcf.all <- vcf.all[vcf.all$CLASS %in% c("DM", "DM?"), ]
 write.table(
   vcf.all,
   file.path(args[2], "hgmd_DM.txt"),
@@ -176,7 +176,7 @@ del <- separate(
   remove = F,
   sep = ":"
 )
-del_multi_AA <- del[grepl("_", del$pChange), ] # dim 2698
+del_multi_AA <- del[grepl("_", del$pChange), ]
 hgmd.filt <- hgmd.filt[!(hgmd.filt$ID %in% del_multi_AA$ID), ]
 
 hgmd.non.coding <- hgmd[!(hgmd$ID %in% hgmd.filt$ID), ]
@@ -246,7 +246,7 @@ del.1aa3$PROT2_exp <- paste0(del.1aa3$NP_ID,
 
 ##TransVar with del.1aa ####
 
-var4transVar.Del <-  unique(del.1aa3$PROT2_exp) # 50998 var4transVar.Del
+var4transVar.Del <-  unique(del.1aa3$PROT2_exp)
 write.table(
   var4transVar.Del,
   file.path(args[2], "TransVarInput", "del_var.txt"),
@@ -274,10 +274,10 @@ del2g.orig <- read.delim2(
   header = T,
   stringsAsFactors = F
 ) # 59567-2022version 80678-2024version
-del2g <- del2g.orig[del2g.orig$transcript != ".", ] # 59147
+del2g <- del2g.orig[del2g.orig$transcript != ".", ]
 
 # del2g <- del2g[grepl("candidate_codons=",del2g$info),] # 50711
-var <- unique(del2g$input) # 59147
+var <- unique(del2g$input)
 failed.del2g <- del.1aa3[!(del.1aa3$PROT2_exp %in% var) &
                            del.1aa3$pAlt != "Ter", ]
 
@@ -308,8 +308,8 @@ saveRDS(del2g.wID, file.path(args[2], "Expand_Result", "del2g.wID.rds"))
 # select var to run TransVar: non del
 NP_df <- hgmd.filt[!(hgmd.filt$PROT2 %in% del.1aa3$PROT2), ]
 
-var4transVar.p <-  unique(NP_df$PROT2) # 167983
-table(grepl("\\?", var4transVar.p)) # 807 T
+var4transVar.p <-  unique(NP_df$PROT2)
+table(grepl("\\?", var4transVar.p))
 
 write.table(
   var4transVar.p[!grepl("\\?", var4transVar.p)],
@@ -337,7 +337,7 @@ NP_df_exp$pLoc <- str_extract(NP_df_exp$pChange, "[0-9]+")
 
 NP_df_exp_3aa <-  NP_df_exp[NP_df_exp$pAlt %in% AA.3letter, ]
 NP_df_exp_1aa <- NP_df_exp[NP_df_exp$pAlt %in% LETTERS, ]
-NP_df_exp_qMark <- NP_df_exp[NP_df_exp$pAlt == "?", ] # all start loss
+NP_df_exp_qMark <- NP_df_exp[NP_df_exp$pAlt == "?", ]
 
 # 3 letters
 NP_df_exp_3aa <- NP_df_exp_3aa[rep(seq_len(nrow(NP_df_exp_3aa)), each = 20), ]
@@ -425,7 +425,7 @@ NP2g.orig <- read.delim2(
 ) # 166544
 # write.table(NP2g.orig, file.path(args[2],"TransVarOut","out_NP.txt"), col.names = T, row.names = F, quote = F, sep = "\t")
 
-NP2g <- NP2g.orig[NP2g.orig$transcript != ".", ] # 165680
+NP2g <- NP2g.orig[NP2g.orig$transcript != ".", ]
 NP2g <- NP2g[grepl("candidate_codons=", NP2g$info), ] # all failed are M1?, start loss, can be rescued in NP2g_exp
 
 # check failed
@@ -438,13 +438,13 @@ NP2g_exp.orig <- fread(
   header = T,
   stringsAsFactors = F,
   sep = "\t"
-) # 137258
+)
 
-NP2g_exp <- NP2g_exp.orig[NP2g_exp.orig$transcript != ".", ] #2624793
+NP2g_exp <- NP2g_exp.orig[NP2g_exp.orig$transcript != ".", ]
 # NP2g_exp <- NP2g_exp[grepl("candidate_codons=",NP2g_exp$info),] # 2167881
 
 # check failed
-var_exp <- unique(NP2g_exp$input) # 2624793
+var_exp <- unique(NP2g_exp$input)
 
 NP2g_exp.wID <- merge(
   NP2g_exp,
@@ -470,9 +470,7 @@ NP2g.wID <- merge(NP2g,
                   hgmd.filt,
                   by.x = "input",
                   by.y = "PROT2",
-                  all.x = T) # 137187
-# table(duplicated(NP2g.wID$input))
-# table(duplicated(NP2g.wID$ID))
+                  all.x = T)
 NP2g.wID$input_type <- "hgmd.NP_ID"
 NP2g.wID$PROT2 <- NP2g.wID$input
 
@@ -495,7 +493,7 @@ saveRDS(NP2g.wID, file.path(args[2], "Expand_Result", "NP2g.wID.rds"))
 # then run TransVar with pro change -> get the gDNA change
 
 var <- unique(c(NP2g.wID$input, del2g.wID$PROT2, NP2g_exp.wID$PROT2))
-failed.NP2g <- hgmd.filt[!(hgmd.filt$PROT2 %in% var), ] # 1524
+failed.NP2g <- hgmd.filt[!(hgmd.filt$PROT2 %in% var), ]
 failed.ID <- unique(failed.NP2g$ID)
 
 # get the gDNA for the failed.NP2g (failed NP and Gene)
@@ -575,8 +573,7 @@ info.df <- pDNA2pro  |>
     sep = "=",
     fill = "right",
     extra = "merge",
-    # Merge any additional splits into 'value'
-    remove = FALSE      # Retain the original 'fields' column
+    remove = FALSE
   ) |>
   rename(coordinates = coordinates.gDNA.cDNA.protein.)  |>
   select(fields, key, value, original_info, coordinates, input) |>
@@ -656,7 +653,7 @@ library(plyr)
 
 # pDNA2pro.failed <- gDNA.failed.NP2g.part[gDNA.failed.NP2g.part$ID %in% ID.failed,]
 pDNA2pro.failed <- pDNA2pro.wID.all[pDNA2pro.wID.all$ID %in% ID.failed, ]
-length(unique(pDNA2pro.failed$gDNA)) # 19
+length(unique(pDNA2pro.failed$gDNA))
 # "CD169908" "CD198588", TransVar failed to map to a pChange, therefore, no expansion can be done for this two cases.
 
 # expand the pDNA2pro.wID
@@ -792,7 +789,10 @@ saveRDS(
 )
 
 gDNA.parse.info <- parse_info(gDNA.orig)
-saveRDS(gDNA.parse.info, "Step5_gDNA.parse.info.rds")
+saveRDS(
+  gDNA.parse.info, 
+  file.path(args[2], "Expand_Result","Step5_gDNA.parse.info.rds")
+)
 
 del.parse.info <- readRDS(file.path(args[2], "Expand_Result", "Step5_del.parse.info.rds"))
 NP_exp.parse.info <- readRDS(file.path(args[2], "Expand_Result", "Step5_NP_exp.parse.info.rds"))
@@ -801,7 +801,6 @@ gDNA.parse.info <- readRDS(file.path(args[2], "Expand_Result", "Step5_gDNA.parse
 
 library(plyr) #go back with plyr
 if (T) {
-  ## del first ####
   del.failed.idx <- is.na(del.parse.info$candidate_mnv_variants) &
     is.na(del.parse.info$candidate_snv_variants) &
     is.na(del.parse.info$coordinates.gDNA)
@@ -831,7 +830,6 @@ if (T) {
     unnest(candidate_variants) %>%
     as.data.frame()
   
-  # NP_exp ####
   NP_exp.failed.idx <- is.na(NP_exp.parse.info$candidate_mnv_variants) &
     is.na(NP_exp.parse.info$candidate_snv_variants) &
     is.na(NP_exp.parse.info$coordinates.gDNA)
@@ -867,8 +865,6 @@ if (T) {
     is.na(gDNA.parse.info$coordinates.gDNA)
   gDNA.failed <- gDNA.parse.info[gDNA.failed.idx, ]
   gDNA.filt <- gDNA.parse.info[!gDNA.failed.idx, ]
-  # table(gDNA.failed$candidate_codons)
-  
   
   gDNA.gDNA <- gDNA.filt[, c(
     "ID",
