@@ -10,10 +10,10 @@ from predict_new.confidence import *
 import sys
 
 # read in precalulated model
-model = joblib.load("predict_new/hg19/final_model_wo_bg_val.job")
+model = joblib.load("model_inputs/default/final_model.job")
 
 # read in features to use
-features = list(pd.read_csv("predict_new/hg19/features.csv"))
+features = list(pd.read_csv("model_inputs/default/features.csv"))
 
 # predict with Linhua's code
 out = rank_patient(model, sys.argv[1] + ".matrix.txt", features, train_causals=None)
