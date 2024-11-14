@@ -1,4 +1,4 @@
-from bin import create_lime_explainer, create_lime_json, create_shap_json
+from .bin import create_lime_explainer, create_lime_json, create_shap_json
 
 import joblib
 import pandas as pd
@@ -29,30 +29,43 @@ class ModelInterpreter:
         self.variant_ids = None
         self.feature_names = None
 
-    def load_model(self, model_path: str) -> None:
+    def set_model(self, model) -> None:
         """
-        Load the model and extract feature names
+        Accept a pre-loaded model directly and extract its feature names.
         """
         try:
-            self.model = joblib.load(model_path)
-            
-            # Extract feature names used during training
-            if isinstance(self.model, (RandomForestClassifier, RandomForestRegressor)):
+            # Check the model type and extract feature names
+            if isinstance(model, (RandomForestClassifier, RandomForestRegressor)):
                 self.model_type = "random_forest"
-                self.task_type = "classification" if isinstance(self.model, RandomForestClassifier) else "regression"
-                self.model_features = list(self.model.feature_names_in_)
-            elif isinstance(self.model, xgb.XGBModel):
+                self.task_type = "classification" if isinstance(model, RandomForestClassifier) else "regression"
+                self.model_features = list(model.feature_names_in_)
+            elif isinstance(model, xgb.XGBModel):
                 self.model_type = "xgboost"
-                self.task_type = "classification" if self.model.objective.startswith('binary:') else "regression"
-                self.model_features = list(self.model.get_booster().feature_names)
+                self.task_type = "classification" if model.objective.startswith('binary:') else "regression"
+                self.model_features = list(model.get_booster().feature_names)
             else:
-                raise ValueError(f"Unsupported model type: {type(self.model)}")
+                raise ValueError(f"Unsupported model type: {type(model)}")
             
-            logger.info(f"Loaded model with {len(self.model_features)} features")
+            self.model = model
+            self.is_model_loaded = True
+            logger.info(f"Model set successfully with {len(self.model_features)} features")
             logger.info(f"Model features: {self.model_features}")
             
-            self.is_model_loaded = True
+        except Exception as e:
+            logger.error(f"Error setting model: {str(e)}")
+            raise
+        
+    def load_model(self, model_path: str) -> None:
+        """
+        Load a model from a file using joblib.
+        """
+        try:
+            # Load the model from a file
+            loaded_model = joblib.load(model_path)
             
+            # Delegate to set_model to extract features and set properties
+            self.set_model(loaded_model)
+        
         except Exception as e:
             logger.error(f"Error loading model: {str(e)}")
             raise
@@ -125,6 +138,16 @@ class ModelInterpreter:
                 
             self.shap_values = self.shap_explainer(df)
             logger.info("SHAP values calculated successfully")
+            
+            # Conditionally adjust SHAP values for RandomForestClassifier
+            if self.model_type == "random_forest" and self.task_type == "classification":
+                # Extract SHAP values for the positive class
+                self.shap_values.values = self.shap_values.values[:, :, 1]
+                logger.info("Extracted SHAP values for positive class (class 1)")
+
+            # Set variant_ids and feature_names if not already set
+            self.variant_ids = list(df.index)
+            self.feature_names = list(df.columns)
 
         except Exception as e:
             logger.error(f"Error calculating SHAP values: {str(e)}")

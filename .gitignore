@@ -9,6 +9,7 @@ test_data/
 test_ref/
 test_output/
 **/.ipynb_checkpoints/
+*.ipynb
 
 # Nextflow Related
 .nextflow*
@@ -22,3 +23,7 @@ params.yaml
 # Ignore R history and session files
 .Rhistory
 .RData
+
+# Remove some files from model interpreter
+*/model_interpreter/results
+*/model_interpreter/templates

@@ -567,54 +567,27 @@ process MERGE_SCORES_BY_CHROMOSOME {
 
 process PREDICTION {
     publishDir "${params.outdir}/${params.run_id}/prediction/", mode: "copy"
-
+    
     input:
     path merged_matrix  
     path merged_compressed_scores  
-
     path ref_predict_new_dir
     path ref_model_inputs_dir
-
+    
     output:
     path "conf_4Model/*.csv"
     path "conf_4Model/integrated/*.csv"
-
+    path "lime_outputs"
+    path "shap_outputs"
+    
     script:
     """
     mkdir final_matrix_expanded
     mkdir conf_4Model
-
+    
     run_final.py ${params.run_id}
     merge_rm.py ${params.run_id}
     extraModel_main.py -id ${params.run_id}
-    """
-}
-
-process MODEL_INTERPRETABILITY {
-    publishDir "${params.outdir}/${params.run_id}/model_interpretability/", mode: "copy"
-    
-    input:
-    path feature_matrix  // Now this will be each CSV file that needs interpretation
-    path model_file     // The model file
-    
-    output:
-    path "${feature_matrix.baseName}/shap_outputs/shap_values.json", emit: shap_results
-    path "${feature_matrix.baseName}/lime_outputs/lime_values.json", emit: lime_results
-    
-    script:
-    """
-    mkdir -p "${feature_matrix.baseName}/shap_outputs" "${feature_matrix.baseName}/lime_outputs" "${feature_matrix.baseName}/outputs"
-    
-    echo "Analyzing predictions using feature matrix: ${feature_matrix}"
-    echo "Using model: ${model_file}"
-    
-    python ${projectDir}/bin/model_interpreter/main.py \
-        --model-path ${model_file} \
-        --input-path ${feature_matrix} \
-        --output-path ${feature_matrix.baseName}/outputs/values.json
-        
-    mv ${feature_matrix.baseName}/outputs/*_shap.json ${feature_matrix.baseName}/shap_outputs/
-    mv ${feature_matrix.baseName}/outputs/*_lime.json ${feature_matrix.baseName}/lime_outputs/
     """
 }
 
@@ -746,17 +719,11 @@ workflow {
     )
 
     // Run Prediction on the final merged output
+    // Includes Model interpretability step to predict - keep it all together in one place since model already loaded?
     PREDICTION(
         MERGE_SCORES_BY_CHROMOSOME.out.merged_matrix,
         MERGE_SCORES_BY_CHROMOSOME.out.merged_compressed_scores,
         file(params.ref_predict_new_dir),
         file(params.ref_model_inputs_dir)
     )
-
-    // Add Model Interpretability step - now with file paths from original
-    MODEL_INTERPRETABILITY(
-        PREDICTION.out.flatten().filter(~/.*\.csv$/),  // Get ALL CSV files
-        file("${params.ref_predict_new_dir}/hg19/final_model_wo_bg_val.job")
-    )
-
 }

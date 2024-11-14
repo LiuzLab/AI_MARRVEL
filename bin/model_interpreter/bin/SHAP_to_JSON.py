@@ -11,20 +11,28 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
 from utils.numpy_to_python import convert_numpy_to_python
 
-def create_shap_json(variant_ids, feature_names, shap_values, output_file = "./results/shap_values.json"):
+def create_shap_json(variant_ids, feature_names, shap_values, output_file="./results/shap_values.json"):
     """ 
-    Create JSON File from shap values generated from shap.TreeExplainer
-    Example Usage where processed_df is feature matrix:
-        variant_ids = list(processed_df.index)
-        feature_names = list(processed_df.columns)
-        json_output = create_shap_json(variant_ids, feature_names, shap_values)
+    Create JSON file from SHAP values.
     """
+    if not variant_ids or not feature_names:
+        raise ValueError("variant_ids or feature_names cannot be None")
+
     json_data = []
-    
+
+    # Determine if base_values is an array and extract the relevant value for binary classification
+    is_multiclass = isinstance(shap_values.base_values[0], (list, np.ndarray))
+
     for idx in range(len(shap_values.values)):
+        # Handle the case where base_values is an array (e.g., binary classification)
+        if is_multiclass:
+            base_value = float(shap_values.base_values[idx][1])  # Use the base value for class 1
+        else:
+            base_value = float(shap_values.base_values[idx])
+
         entry = {
             "variant_id": variant_ids[idx],
-            "base_value": float(shap_values.base_values[idx]),
+            "base_value": base_value,
             "model_output_score": {},
             "feature_values": {}
         }
