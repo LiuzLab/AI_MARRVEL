@@ -571,7 +571,6 @@ process PREDICTION {
     input:
     path merged_matrix  
     path merged_compressed_scores  
-    path ref_predict_new_dir
     path ref_model_inputs_dir
     
     output:
@@ -723,7 +722,6 @@ workflow {
     PREDICTION(
         MERGE_SCORES_BY_CHROMOSOME.out.merged_matrix,
         MERGE_SCORES_BY_CHROMOSOME.out.merged_compressed_scores,
-        file(params.ref_predict_new_dir),
         file(params.ref_model_inputs_dir)
     )
 }
