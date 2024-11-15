@@ -1,14 +1,9 @@
-import joblib
-import pandas as pd
-import numpy as np
-import shap
-from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
-import xgboost as xgb
-import json
-
 import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
+
+import numpy as np
+import json
 from utils.numpy_to_python import convert_numpy_to_python
 
 def create_shap_json(variant_ids, feature_names, shap_values, output_file="./results/shap_values.json"):

@@ -719,7 +719,7 @@ workflow {
     )
 
     // Run Prediction on the final merged output
-    // Includes Model interpretability step to predict - keep it all together in one place since model already loaded?
+    // Includes Model interpretability step to predict
     PREDICTION(
         MERGE_SCORES_BY_CHROMOSOME.out.merged_matrix,
         MERGE_SCORES_BY_CHROMOSOME.out.merged_compressed_scores,

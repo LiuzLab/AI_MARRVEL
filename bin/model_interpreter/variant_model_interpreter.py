@@ -1,17 +1,13 @@
-from .bin import create_lime_explainer, create_lime_json, create_shap_json
+from typing import List, Optional, Dict, Any
+import json
+import logging
 
 import joblib
 import pandas as pd
-import numpy as np
 import shap
-from lime import lime_tabular
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 import xgboost as xgb
-from typing import Dict
-import logging
-import json
-from typing import List, Optional, Union, Dict, Any
-
+from .bin import create_lime_explainer, create_lime_json, create_shap_json
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -211,3 +207,4 @@ class ModelInterpreter:
             explainer=self.lime_explainer,
             output_file=output_file
         )
+        
