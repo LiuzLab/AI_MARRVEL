@@ -11,6 +11,7 @@ from multiprocessing import Pool
 from tqdm import tqdm
 from scipy.stats import rankdata
 from extraModel.integrate_output import *
+from model_interpreter.variant_model_interpreter import ModelInterpreter
 
 parser = argparse.ArgumentParser()
 
@@ -45,6 +46,33 @@ print(f"### All models, features, reference panels loaded.")
 
 print(f"### Start generating recessive matrix and running predictions.")
 
+def run_model_interpretation(model, data_df, features, output_prefix, run_id, model_type):
+    """Run SHAP and LIME analysis for a specific model"""
+    interpreter = ModelInterpreter()
+    print(interpreter, model)
+    interpreter.set_model(model)  # Set the already loaded model
+    
+    # Prepare data (use only the features used by this model)
+    model_data = data_df.loc[:, features]
+    
+    # Calculate SHAP values
+    interpreter.calculate_shap_values(model_data)
+   
+    print(model_data.index[0:9])
+    interpreter.variant_ids = list(model_data.index)
+    print(model_data.columns[0:9])
+    interpreter.feature_names = list(model_data.columns)
+    
+    print(interpreter.model_type)    
+    print(interpreter.shap_values.base_values)
+    # Create output directories if they don't exist
+    os.makedirs("shap_outputs", exist_ok=True)
+    interpreter.run_shap_analysis(output_file=f"shap_outputs/{run_id}_{model_type}_shap_values.json")
+    
+    os.makedirs("lime_outputs", exist_ok=True)
+    interpreter.run_lime_analysis(model_data, output_file=f"lime_outputs/{run_id}_{model_type}_lime_values.json")
+
+    
 
 def assign_ranking(df):
     pred_df = df.copy()
@@ -78,6 +106,16 @@ def AIM(data_folder, sample_id):
         df_pred = df_pred.sort_values("confidence", ascending=False)
         df_pred = assign_ranking(df_pred)
         df_pred.to_csv(f"{out_folder}/{sample_id}_{mn}_predictions.csv")
+        
+        # Run model interpretation
+        run_model_interpretation(
+            model=model_dict[mn]["model"],
+            data_df=df_pred,
+            features=model_dict[mn]["features"],
+            output_prefix=mn,
+            run_id=sample_id,
+            model_type = mn
+        )
 
     print(f"### Start processing recessive data and make predictions.")
 
@@ -109,6 +147,16 @@ def AIM(data_folder, sample_id):
             df_pred = df_pred.sort_values("confidence", ascending=False, kind="stable")
             df_pred = assign_ranking(df_pred)
             df_pred.to_csv(f"{out_folder}/{sample_id}_{mn}_predictions.csv")
+            
+            # Run model interpretation
+            run_model_interpretation(
+                model=model_dict[mn]["model"],
+                data_df=df_pred,
+                features=model_dict[mn]["features"],
+                output_prefix=mn,
+                run_id=sample_id,
+                model_type = mn
+            )
     else:
         # AIM found no recessive variant pair
         pass
