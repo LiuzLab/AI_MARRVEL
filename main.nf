@@ -576,7 +576,6 @@ process PREDICTION {
     output:
     path "conf_4Model/*.csv"
     path "conf_4Model/integrated/*.csv"
-    path "lime_outputs"
     path "shap_outputs"
     
     script:
