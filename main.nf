@@ -74,6 +74,19 @@ showUsage()
 showVersion()
 validateInputParams()
 
+process VALIDATE_VCF {
+    container 'quay.io/biocontainers/vcftools:0.1.16--pl5321hdcf5f25_11'
+
+    input:
+    path vcf
+
+    output:
+    path "$vcf", emit: vcf
+
+    """
+    vcf-validator $vcf
+    """
+}
 
 // Process to handle the VCF file
 process NORMALIZE_VCF {
@@ -654,7 +667,8 @@ workflow PHRANK_SCORING {
 }
 
 workflow {
-    NORMALIZE_VCF(params.input_vcf)
+    VALIDATE_VCF(params.input_vcf)
+    NORMALIZE_VCF(VALIDATE_VCF.out.vcf)
     BUILD_REFERENCE_INDEX()
 
     VCF_PRE_PROCESS(
