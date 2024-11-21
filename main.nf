@@ -742,7 +742,6 @@ workflow {
         file(params.ref_merge_expand_dir)
     )
 
-
     MERGE_SCORES_BY_CHROMOSOME(
         PHRANK_SCORING.out,
         ANNOTATE_TIER.out.tier.collect(),
