@@ -364,6 +364,8 @@ process GENESYM_TO_PHRANK {
 
 
 process HPO_SIM {
+    container 'zhandongliulab/aim-lite-r'
+
     input:
     path hpo
     path omim_hgmd_phen
@@ -514,28 +516,43 @@ process ANNOTATE_BY_MODULES {
     """
 }
 
-process JOIN_TIER_PHRANK {
+process ANNOTATE_TIER {
+    container 'zhandongliulab/aim-lite-r'
     tag "${scores.simpleName}"
 
     input:
     path scores
     path phrank
-
     path ref_annot_dir
     path ref_var_tier_dir
-    path ref_merge_expand_dir
 
     output:
-    path "${scores.simpleName}_scores.txt.gz", emit: compressed_scores
     path "${scores.simpleName}_Tier.v2.tsv", emit: tier
 
     script:
     """
     mv $scores scores.csv
     VarTierDiseaseDBFalse.R ${params.ref_ver}
+    mv Tier.v2.tsv ${scores.simpleName}_Tier.v2.tsv
+    """
+}
+
+process JOIN_PHRANK {
+    tag "${scores.simpleName}"
+
+    input:
+    path scores
+    path phrank
+    path ref_merge_expand_dir
+
+    output:
+    path "${scores.simpleName}_scores.txt.gz", emit: compressed_scores
+
+    script:
+    """
+    mv $scores scores.csv
     generate_new_matrix_2.py ${params.run_id} ${params.ref_ver}
     mv scores.txt.gz  ${scores.simpleName}_scores.txt.gz
-    mv Tier.v2.tsv ${scores.simpleName}_Tier.v2.tsv
     """
 }
 
@@ -712,19 +729,23 @@ workflow {
         NORMALIZE_VCF.out.vcf,
     )
 
-    JOIN_TIER_PHRANK (
+    ANNOTATE_TIER (
         ANNOTATE_BY_MODULES.out.scores,
         PHRANK_SCORING.out,
-
         file(params.ref_annot_dir),
         file(params.ref_var_tier_dir),
+    )
+
+    JOIN_PHRANK (
+        ANNOTATE_BY_MODULES.out.scores,
+        PHRANK_SCORING.out,
         file(params.ref_merge_expand_dir)
     )
 
     MERGE_SCORES_BY_CHROMOSOME(
         PHRANK_SCORING.out,
-        JOIN_TIER_PHRANK.out.tier.collect(),
-        JOIN_TIER_PHRANK.out.compressed_scores.collect(),
+        ANNOTATE_TIER.out.tier.collect(),
+        JOIN_PHRANK.out.compressed_scores.collect(),
         file(params.ref_annot_dir),
         file(params.ref_mod5_diffusion_dir),
         file(params.ref_merge_expand_dir)
