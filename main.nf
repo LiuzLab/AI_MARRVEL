@@ -364,7 +364,7 @@ process GENESYM_TO_PHRANK {
 
 
 process HPO_SIM {
-    container 'aim-lite-r'
+    container 'zhandongliulab/aim-lite-r'
 
     input:
     path hpo
@@ -517,7 +517,7 @@ process ANNOTATE_BY_MODULES {
 }
 
 process ANNOTATE_TIER {
-    container 'aim-lite-r'
+    container 'zhandongliulab/aim-lite-r'
     tag "${scores.simpleName}"
 
     input:
