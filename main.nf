@@ -101,12 +101,34 @@ process NORMALIZE_VCF {
     elif echo "\${INPUT_VCF_TYPE}" | grep -q 'ASCII text'; then
         echo "Plain VCF file detected, compressing and indexing."
         bgzip -c $vcf > input.vcf.gz
-    else
+    else {
         echo "The file $vcf does not exist or is not a recognized format."
         exit 1
     fi
 
     tabix -p vcf input.vcf.gz
+    """
+}
+
+process NORMALIZE_TRIO_VCF {
+    input:
+    path vcf
+
+    output:
+    path "input.vcf.gz", emit: vcf
+    path "input.vcf.gz.tbi", emit: tbi
+
+    when:
+    params.mode == "trio"
+
+    script:
+    """
+    bcftools norm --multiallelics -both -Oz -o input.tmp.vcf.gz $vcf
+    tabix input.tmp.vcf.gz
+
+    bcftools norm --rm-dup none -Oz -o input.vcf.gz input.tmp.vcf.gz
+    tabix input.vcf.gz
+    rm -f input.tmp.vcf.gz input.tmp.vcf.gz.tbi
     """
 }
 
@@ -651,7 +673,13 @@ workflow PHRANK_SCORING {
 }
 
 workflow {
-    NORMALIZE_VCF(params.input_vcf)
+    
+    if (params.mode == "trio") {
+        NORMALIZE_TRIO_VCF(params.input_vcf)
+    } else {
+        NORMALIZE_VCF(params.input_vcf)
+    }
+
     BUILD_REFERENCE_INDEX()
 
     VCF_PRE_PROCESS(
