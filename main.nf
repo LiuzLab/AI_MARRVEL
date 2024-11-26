@@ -59,8 +59,8 @@ def validateInputParams() {
 
     // Additional checks for trio mode
     if (params.mode == "trio") {
-        if (!params.pedigree || !(params.pedigree.endsWith(".ped") || params.pedigree.endsWith(".txt"))) {
-            println("Error: '--pedigree' must be provided in trio mode and should be a pedigree file (.ped or .txt).")
+        if (!params.input_ped || !(params.input_ped.endsWith(".ped") || params.input_ped.endsWith(".txt"))) {
+            println("Error: '--input_ped' must be provided in trio mode and should be a pedigree file (.ped or .txt).")
             exit 1
         }
     }
