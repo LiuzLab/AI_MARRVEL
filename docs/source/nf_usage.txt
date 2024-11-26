@@ -20,7 +20,9 @@ Args:
   --ref_ver                 Reference genome version [hg38 or hg19] (default: hg19)
   --bed_filter              Path to a BED file to perform an analysis only for regions of interest (optional)
   --exome_filter            Enable exonic filter. Addition will filter out variants outside of exonic region  (default: false)
-
+  --mode                    Specify the analysis mode [singleton or tri] (default: singleton)
+  --input_pedigree          Path to the pedgree file for trio mode
+  
 Metadata Flags:
   --help                    Display the usage information.
   --version                 Display the version of the AI Marrvel pipeline.
