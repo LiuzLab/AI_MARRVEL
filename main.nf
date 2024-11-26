@@ -26,48 +26,45 @@ def showVersion() {
 }
 
 def validateInputParams() {
-    def checkPathParamMap = [
-        "input_vcf": params.input_vcf,
-        "input_hpo": params.input_hpo,
-        "ref_dir"  : params.ref_dir,
-        "ref_ver"  : params.ref_ver,
-    ]
+    // Validate input_vcf
+    if (!params.input_vcf || !(params.input_vcf.endsWith(".vcf") || params.input_vcf.endsWith(".vcf.gz"))) {
+        println("Error: '--input_vcf' value '${params.input_vcf}' should be a VCF file (.vcf or .vcf.gz).")
+        exit 1
+    }
 
-    checkPathParamMap.each { paramName, paramValue ->
-        if (paramValue) {
-            // Check if the file exists
-            if(!(paramName == "ref_ver")) {
-                def fileObj = file(paramValue, checkIfExists: true)
-                //  println("Check file: '--${paramName}' value '${paramValue}' ")
+    // Validate input_hpo
+    if (!params.input_hpo || !(params.input_hpo.endsWith(".hpo") || params.input_hpo.endsWith(".txt"))) {
+        println("Error: '--input_hpo' value '${params.input_hpo}' should be an HPO file (.hpo) or (.txt).")
+        exit 1
+    }
 
-                // Check the file type based on the parameter name
-                if (paramName == "input_vcf" && !(paramValue.endsWith(".vcf") || paramValue.endsWith(".vcf.gz"))) {
-                    println("Error: '--${paramName}' value '${paramValue}' should be a VCF file (.vcf) or (.vcf.gz)")
-                    println("To see usage and available parameters run `nextflow run main.nf --help`")
-                    exit 1
-                } else if (paramName == "input_hpo" && !(paramValue.endsWith(".hpo") || paramValue.endsWith(".txt"))) {
-                    println("Error: '--${paramName}' value '${paramValue}' should be an HPO file (.hpo) or (.txt)")
-                    println("To see usage and available parameters run `nextflow run main.nf --help`")
-                    exit 1
-                } else if (paramName == "ref_dir" && !fileObj.isDirectory()) {
-                    println("Error: '--${paramName}' value '${paramValue}' should be an directory.")
-                    println("To see usage and available parameters run `nextflow run main.nf --help`")
-                    exit 1
-                }
-            }
+    // Validate ref_dir
+    if (!params.ref_dir || !file(params.ref_dir).isDirectory()) {
+        println("Error: '--ref_dir' value '${params.ref_dir}' should be a directory.")
+        exit 1
+    }
 
-            if (paramName == "ref_ver" && !(paramValue.equals("hg19") || paramValue.equals("hg38")) ) { 
-                println("Error: '--${paramName}' value ${paramValue} should be either set to 'hg19' or 'hg38'.")
-                println("To see usage and available parameters run `nextflow run main.nf --help`")
-                exit 1
-            }
+    // Validate ref_ver
+    if (!params.ref_ver || !(params.ref_ver in ["hg19", "hg38"])) {
+        println("Error: '--ref_ver' value '${params.ref_ver}' should be either 'hg19' or 'hg38'.")
+        exit 1
+    }
 
-        } else {
-            println("Input parameter '${paramName}' not specified or is null!")
-            println("To see usage and available parameters run `nextflow run main.nf --help`")
+    // Validate mode (singleton or trio)
+    def validModes = ["singleton", "trio"]
+    if (!params.mode || !(params.mode in validModes)) {
+        println("Error: '--mode' value '${params.mode}' should be one of: ${validModes.join(', ')}.")
+        exit 1
+    }
+
+    // Additional checks for trio mode
+    if (params.mode == "trio") {
+        if (!params.pedigree || !(params.pedigree.endsWith(".ped") || params.pedigree.endsWith(".txt"))) {
+            println("Error: '--pedigree' must be provided in trio mode and should be a pedigree file (.ped or .txt).")
             exit 1
         }
     }
+    println("Input parameters validated successfully!")
 }
 
 showUsage()
