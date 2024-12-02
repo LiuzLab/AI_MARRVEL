@@ -1,7 +1,7 @@
 nextflow.enable.dsl = 2
 
 
-def showUsage() {
+def show_usage() {
     if (params.help) {
         def helpFile = file(params.usage_file)  // Specify your Markdown file path here
         if (helpFile.exists()) {
@@ -16,7 +16,7 @@ def showUsage() {
     }
 }
 
-def showVersion() {
+def show_version() {
     if (!params.version) {
         return
     }
@@ -25,7 +25,7 @@ def showVersion() {
     exit 0
 }
 
-def validateInputParams() {
+def validate_input_params() {
     // Validate input_vcf
     if (!params.input_vcf || !(params.input_vcf.endsWith(".vcf") || params.input_vcf.endsWith(".vcf.gz"))) {
         println("Error: '--input_vcf' value '${params.input_vcf}' should be a VCF file (.vcf or .vcf.gz).")
@@ -67,9 +67,10 @@ def validateInputParams() {
     println("Input parameters validated successfully!")
 }
 
-showUsage()
-showVersion()
-validateInputParams()
+ 
+show_usage()
+show_version()
+validate_input_params()
 
 
 // Process to handle the VCF file
