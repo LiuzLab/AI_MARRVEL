@@ -32,12 +32,12 @@ def validate_input_params() {
         exit 1
     }
 
+    println params.input_vcf
     // Validate input_hpo
     if (!params.input_hpo || !(params.input_hpo.endsWith(".hpo") || params.input_hpo.endsWith(".txt"))) {
         println("Error: '--input_hpo' value '${params.input_hpo}' should be an HPO file (.hpo) or (.txt).")
         exit 1
     }
-
     // Validate ref_dir
     if (!params.ref_dir || !file(params.ref_dir).isDirectory()) {
         println("Error: '--ref_dir' value '${params.ref_dir}' should be a directory.")
@@ -63,13 +63,15 @@ def validate_input_params() {
             println("Error: '--input_ped' must be provided in trio mode and should be a pedigree file (.ped or .txt).")
             exit 1
         }
+        params.input_ped = moduleDir.resolve(params.input_ped)
     }
+
     println("Input parameters validated successfully!")
 }
 
 def add_additional_params() {
 
-    def ref_dir = params.ref_dir
+    def ref_dir = file(params.ref_dir).toAbsolutePath()
     def ref_ver = params.ref_ver
     def ref_assembly = params.ref_assembly
     // for phrank
@@ -737,7 +739,7 @@ workflow PHRANK_SCORING {
 
 workflow {
     
-    NORMALIZE_VCF(params.input_vcf)
+    NORMALIZE_VCF(file(params.input_vcf).toAbsolutePath())
     BUILD_REFERENCE_INDEX()
 
     VCF_PRE_PROCESS(
@@ -764,7 +766,7 @@ workflow {
         file(params.vep_idx)
     )
 
-    HPO_SIM(params.input_hpo,
+    HPO_SIM(file(params.input_hpo).toAbsolutePath(),
             params.omim_hgmd_phen,
             params.omim_obo,
             params.omim_genemap2,
