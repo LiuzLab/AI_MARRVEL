@@ -67,10 +67,75 @@ def validate_input_params() {
     println("Input parameters validated successfully!")
 }
 
- 
+def add_additional_params() {
+
+    def ref_dir = params.ref_dir
+    def ref_ver = params.ref_ver
+    def ref_assembly = params.ref_assembly
+    // for phrank
+    params.phrank_dagfile = "${ref_dir}/phrank/${ref_ver}/child_to_parent.txt"
+    params.phrank_disease_annotation = "${ref_dir}/phrank/${ref_ver}/disease_to_pheno.txt"
+    params.phrank_gene_annotation = "${ref_dir}/phrank/${ref_ver}/gene_to_phenotype.txt"
+    params.phrank_disease_gene = "${ref_dir}/phrank/${ref_ver}/disease_to_gene.txt"
+
+    // OMIM and HPO
+    params.omim_hgmd_phen = "${ref_dir}/omim_annotate/${ref_ver}/HGMD_phen.tsv" 
+    params.omim_obo = "${ref_dir}/omim_annotate/hp.obo"
+    params.omim_genemap2 = "${ref_dir}/omim_annotate/${ref_ver}/genemap2_v2022.rds"
+    params.omim_pheno = "${ref_dir}/omim_annotate/${ref_ver}/HPO_OMIM.tsv"
+
+    // GNOMAD VCF
+    params.ref_gnomad_genome = "${ref_dir}/filter_vep/${ref_ver}/gnomad.${ref_ver}.blacklist.genomes.vcf.gz"
+    params.ref_gnomad_genome_idx = "${params.ref_gnomad_genome}.tbi"
+    params.ref_gnomad_exome = "${ref_dir}/filter_vep/${ref_ver}/gnomad.${ref_ver}.blacklist.exomes.vcf.gz"
+    params.ref_gnomad_exome_idx = "${params.ref_gnomad_exome}.tbi"
+
+    // VEP 
+    params.vep_dbnsfp_name = params.ref_ver == "hg19" ? "dbNSFP4.3a_grch37.gz" : "dbNSFP4.1a_grch38.gz"
+    params.vep_gnomad_name = params.ref_ver == "hg19" ? "gnomad.genomes.r2.1.sites.grch37_noVEP.vcf.gz" : "gnomad.genomes.GRCh38.v3.1.2.sites.vcf.gz"
+    params.vep_cadd_name = params.ref_ver == "hg19" ? "hg19_whole_genome_SNVs.tsv.gz" : "hg38_whole_genome_SNV.tsv.gz"
+
+    params.vep_dir_cache = "${ref_dir}/vep/${ref_ver}/"
+    params.vep_dir_plugins = "${ref_dir}/vep/${ref_ver}/Plugins/"
+    params.vep_custom_gnomad = "${ref_dir}/vep/${ref_ver}/${params.vep_gnomad_name}" 
+    params.vep_custom_clinvar = "${ref_dir}/vep/${ref_ver}/clinvar_20220730.vcf.gz"
+    params.vep_custom_hgmd = "${ref_dir}/vep/${ref_ver}/HGMD_Pro_2022.2_${ref_ver}.vcf.gz"
+    params.vep_plugin_revel = "${ref_dir}/vep/${ref_ver}/new_tabbed_revel_${ref_assembly}.tsv.gz" // changed for hg19
+    params.vep_plugin_spliceai_snv = "${ref_dir}/vep/${ref_ver}/spliceai_scores.masked.snv.${ref_ver}.vcf.gz"
+    params.vep_plugin_spliceai_indel = "${ref_dir}/vep/${ref_ver}/spliceai_scores.masked.indel.${ref_ver}.vcf.gz"
+    params.vep_plugin_cadd = "${ref_dir}/vep/${ref_ver}/${params.vep_cadd_name}" // changed for hg19
+    params.vep_plugin_dbnsfp = "${ref_dir}/vep/${ref_ver}/${params.vep_dbnsfp_name}"
+    params.vep_idx = "${ref_dir}/vep/${ref_ver}/*.tbi"
+
+    // for data dependency
+    params.chrmap = "${ref_dir}/bcf_annotate/chrmap.txt"
+
+    params.ref_loc = "${ref_dir}/phrank/${ref_ver}/${ref_assembly}_symbol_to_location.txt"
+    params.ref_to_sym = "${ref_dir}/phrank/${ref_ver}/ensembl_to_symbol.txt"
+    params.ref_sorted_sym = "${ref_dir}/phrank/${ref_ver}/gene_to_symbol_sorted.txt"
+
+    // FILTER BED
+    // EXONIC FILTER BED
+    params.ref_exonic_filter_bed = "${ref_dir}/filter_exonic/${ref_ver}.bed"
+    if (!params.bed_filter) {
+        params.ref_filter_bed = params.bed_filter
+    } else if (params.exome_filter) {
+        params.ref_filter_bed = params.ref_exonic_filter_bed
+    } else {
+        params.ref_filter_bed = null
+    }
+    params.ref_annot_dir = "${ref_dir}/annotate"
+    params.ref_var_tier_dir = "${ref_dir}/var_tier"
+    params.ref_merge_expand_dir = "${ref_dir}/merge_expand"
+    params.ref_mod5_diffusion_dir = "${ref_dir}/mod5_diffusion"
+    params.ref_predict_new_dir = "${ref_dir}/predict_new"
+    params.ref_model_inputs_dir = "${ref_dir}/model_inputs"
+}
+
 show_usage()
 show_version()
 validate_input_params()
+add_additional_params()
 
 
 // Process to handle the VCF file
@@ -635,7 +700,8 @@ workflow VCF_PRE_PROCESS {
     FILTER_BED(
         FILTER_MITO_AND_UNKOWN_CHR.out.vcf,
         FILTER_MITO_AND_UNKOWN_CHR.out.tbi,
-        moduleDir.resolve(params.ref_filter_bed),
+        params.get("ref_filter_bed",false) ? moduleDir.resolve(params.ref_filter_bed) : "",
+        
     )
     FILTER_PROBAND(
         FILTER_BED.out.vcf,
