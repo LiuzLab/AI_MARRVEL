@@ -30,6 +30,7 @@ def validateInputParams() {
         "input_hpo": params.input_hpo,
         "ref_dir"  : params.ref_dir,
         "ref_ver"  : params.ref_ver,
+        "outdir"   : params.outdir,
     ]
 
     checkPathParamMap.each { paramName, paramValue ->
