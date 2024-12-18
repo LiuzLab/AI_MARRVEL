@@ -27,52 +27,66 @@ def showVersion() {
 
 def validateInputParams() {
     def checkPathParamMap = [
-        "input_vcf": params.input_vcf,
         "input_hpo": params.input_hpo,
         "ref_dir"  : params.ref_dir,
         "ref_ver"  : params.ref_ver,
     ]
 
     checkPathParamMap.each { paramName, paramValue ->
-        if (paramValue) {
-            // Check if the file exists
-            if(!(paramName == "ref_ver")) {
-                def fileObj = file(paramValue, checkIfExists: true)
-                //  println("Check file: '--${paramName}' value '${paramValue}' ")
+        if (paramValue)
+            return
 
-                // Check the file type based on the parameter name
-                if (paramName == "input_vcf" && !(paramValue.endsWith(".vcf") || paramValue.endsWith(".vcf.gz"))) {
-                    println("Error: '--${paramName}' value '${paramValue}' should be a VCF file (.vcf) or (.vcf.gz)")
-                    println("To see usage and available parameters run `nextflow run main.nf --help`")
-                    exit 1
-                } else if (paramName == "input_hpo" && !(paramValue.endsWith(".hpo") || paramValue.endsWith(".txt"))) {
-                    println("Error: '--${paramName}' value '${paramValue}' should be an HPO file (.hpo) or (.txt)")
-                    println("To see usage and available parameters run `nextflow run main.nf --help`")
-                    exit 1
-                } else if (paramName == "ref_dir" && !fileObj.isDirectory()) {
-                    println("Error: '--${paramName}' value '${paramValue}' should be an directory.")
-                    println("To see usage and available parameters run `nextflow run main.nf --help`")
-                    exit 1
-                }
-            }
+        println("Input parameter '${paramName}' not specified or is null!")
+        println("To see usage and available parameters run `nextflow run main.nf --help`")
+        exit 1
+    }
 
-            if (paramName == "ref_ver" && !(paramValue.equals("hg19") || paramValue.equals("hg38")) ) { 
-                println("Error: '--${paramName}' value ${paramValue} should be either set to 'hg19' or 'hg38'.")
-                println("To see usage and available parameters run `nextflow run main.nf --help`")
-                exit 1
-            }
+    if (params.input_variant && params.input_vcf) {
+        println("Error: Cannot use '--input_variant' with --input_vcf'")
+        println("To see usage and available parameters run `nextflow run main.nf --help`")
+        exit 1
+    }
 
-        } else {
-            println("Input parameter '${paramName}' not specified or is null!")
-            println("To see usage and available parameters run `nextflow run main.nf --help`")
-            exit 1
-        }
+    if (params.input_vcf && !params.input_vcf.endsWith(".vcf") && !params.input_vcf.endsWith(".vcf.gz")) {
+        println("Error: '--input_vcf' value '${params.input_vcf}' should be a VCF file (.vcf) or (.vcf.gz)")
+        println("To see usage and available parameters run `nextflow run main.nf --help`")
+        exit 1
+    }
+
+    if (params.input_variant && params.input_variant.count('-') != 3) {
+        println("Error: '--input_variant' should be formated like 'X-47038564-T-C'")
+        println("To see usage and available parameters run `nextflow run main.nf --help`")
+        exit 1
+    }
+
+    if (!file(params.ref_dir).isDirectory()) {
+        println("Error: '--ref_dir' should be an directory.")
+        println("To see usage and available parameters run `nextflow run main.nf --help`")
+        exit 1
+    }
+
+    if (!params.ref_ver.equals("hg19") && !params.ref_ver.equals("hg38") ) {
+        println("Error: '--ref_ver' value ${params.ref_ver} should be either set to 'hg19' or 'hg38'.")
+        println("To see usage and available parameters run `nextflow run main.nf --help`")
+        exit 1
     }
 }
 
 showUsage()
 showVersion()
 validateInputParams()
+
+process GENERATE_INPUT_VCF {
+    input:
+    val id
+
+    output:
+    path "input.vcf", emit: vcf
+
+    """
+    generate_input_vcf.py $id
+    """
+}
 
 process VALIDATE_VCF {
     container 'quay.io/biocontainers/vcftools:0.1.16--pl5321hdcf5f25_11'
@@ -401,7 +415,7 @@ process FILTER_PROBAND {
     path ref_gnomad_exome_idx
 
     output:
-    path "${params.run_id}.filt.rmBL.vcf", emit: vcf
+    path "${params.run_id}.filt.rmBL.vcf.gz", emit: vcf
 
     script:
     """
@@ -420,6 +434,7 @@ process FILTER_PROBAND {
     isec_tmp1/0000.vcf.gz isec_tmp2/0000.vcf.gz
 
     mv isec_tmp3/0002.vcf ${params.run_id}.filt.rmBL.vcf
+    bgzip ${params.run_id}.filt.rmBL.vcf
     """
 
 }
@@ -435,13 +450,12 @@ process SPLIT_VCF_BY_CHROMOSOME {
     """
     # Get the list of chromosomes from the VCF file
 
-    bgzip ${vcf}
-    bcftools index ${vcf}.gz
+    bcftools index ${vcf}
 
-    bcftools query -f '%CHROM\n' ${vcf}.gz | sort | uniq > chrom_list.txt
+    bcftools query -f '%CHROM\n' ${vcf} | sort | uniq > chrom_list.txt
     # Split the VCF file by chromosome
     while read chrom; do
-        bcftools view -r \${chrom} ${vcf}.gz -Oz -o chr\${chrom}.vcf.gz
+        bcftools view -r \${chrom} ${vcf} -Oz -o chr\${chrom}.vcf.gz
     done < chrom_list.txt
     """
 }
@@ -673,7 +687,7 @@ workflow PHRANK_SCORING {
     VARIANTS_TO_ENSEMBL(VCF_TO_VARIANTS.out, params.ref_loc)
     ENSEMBL_TO_GENESYM(VARIANTS_TO_ENSEMBL.out, params.ref_to_sym, params.ref_sorted_sym)
     GENESYM_TO_PHRANK(ENSEMBL_TO_GENESYM.out,
-                    params.input_hpo,
+                    file(params.input_hpo),
                     params.phrank_dagfile,
                     params.phrank_disease_annotation,
                     params.phrank_gene_annotation,
@@ -684,19 +698,31 @@ workflow PHRANK_SCORING {
 }
 
 workflow {
-    VALIDATE_VCF(params.input_vcf)
+    if (params.input_vcf) {
+        input_vcf = file(params.input_vcf)
+    } else if (params.input_variant) {
+        GENERATE_INPUT_VCF(params.input_variant)
+        input_vcf = GENERATE_INPUT_VCF.out.vcf
+    }
+
+    VALIDATE_VCF(input_vcf)
     NORMALIZE_VCF(VALIDATE_VCF.out.vcf)
-    BUILD_REFERENCE_INDEX()
 
-    VCF_PRE_PROCESS(
-        NORMALIZE_VCF.out.vcf,
-        NORMALIZE_VCF.out.tbi,
-        BUILD_REFERENCE_INDEX.out.fasta,
-        BUILD_REFERENCE_INDEX.out.fasta_index,
-        BUILD_REFERENCE_INDEX.out.fasta_dict,
-    )
+    if (params.input_vcf) {
+        BUILD_REFERENCE_INDEX()
+        VCF_PRE_PROCESS(
+            NORMALIZE_VCF.out.vcf,
+            NORMALIZE_VCF.out.tbi,
+            BUILD_REFERENCE_INDEX.out.fasta,
+            BUILD_REFERENCE_INDEX.out.fasta_index,
+            BUILD_REFERENCE_INDEX.out.fasta_dict,
+        )
+        vcf = VCF_PRE_PROCESS.out.vcf
+    } else {
+        vcf = NORMALIZE_VCF.out.vcf
+    }
 
-    SPLIT_VCF_BY_CHROMOSOME(VCF_PRE_PROCESS.out.vcf)
+    SPLIT_VCF_BY_CHROMOSOME(vcf)
     ANNOTATE_BY_VEP(
         SPLIT_VCF_BY_CHROMOSOME.out.chr_vcfs.flatten(),
         params.vep_dir_cache,

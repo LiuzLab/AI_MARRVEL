@@ -10,13 +10,13 @@ def add_c_nc(score, ref):
     if ref == "hg38":
         clin_c = pd.read_csv("merge_expand/hg38/clin_c.tsv.gz", sep="\t")
         clin_nc = pd.read_csv("merge_expand/hg38/clin_nc.tsv.gz", sep="\t")
-        hgmd_nc = pd.read_csv("merge_expand/hg38/hgmd_nc.tsv.gz", sep="\t")
         hgmd_c = pd.read_csv("merge_expand/hg38/hgmd_c.tsv.gz", sep="\t")
+        hgmd_nc = pd.read_csv("merge_expand/hg38/hgmd_nc.tsv.gz", sep="\t")
     else:
         clin_c = pd.read_csv("merge_expand/hg19/clin_c.tsv.gz", sep="\t")
         clin_nc = pd.read_csv("merge_expand/hg19/clin_nc.tsv.gz", sep="\t")
-        hgmd_nc = pd.read_csv("merge_expand/hg19/hgmd_nc.tsv.gz", sep="\t")
         hgmd_c = pd.read_csv("merge_expand/hg19/hgmd_c.tsv.gz", sep="\t")
+        hgmd_nc = pd.read_csv("merge_expand/hg19/hgmd_nc.tsv.gz", sep="\t")
 
     a = score.pos.values
     ac = score.chrom.values
@@ -28,7 +28,7 @@ def add_c_nc(score, ref):
 
     i, j = np.where((a[:, None] >= bl) & (a[:, None] <= bh) & (ac[:, None] == bc))
 
-    cln = pd.concat(
+    clin = pd.concat(
         [
             temp.loc[i, :].reset_index(drop=True),
             clin_nc.loc[j, :].reset_index(drop=True),
@@ -38,7 +38,7 @@ def add_c_nc(score, ref):
 
     # Take into account When HGMD data base is empty
     if hgmd_nc.shape[0] == 0:
-        pass
+        hgmd = hgmd_nc
 
     else:
         # merge by region
@@ -58,12 +58,12 @@ def add_c_nc(score, ref):
             axis=1,
         )
 
-    merged = score.merge(cln, how="left", on="varId")
-    if hgmd_nc.shape[0] == 0:
-        merged["nc_HGMD_Exp"] = np.NaN
-        merged["nc_RANKSCORE"] = np.NaN
-    else:
-        merged = merged.merge(hgmd, how="left", on="varId")
+    merged = score.merge(
+        clin_c.rename(columns={'new_chr': 'chrom', 'new_pos': 'pos'}),
+        how="left",
+        on=["chrom", "pos", "ref", "alt"],
+    )
+    merged = merged.merge(clin, how="left", on="varId")
 
     if hgmd_c.shape[0] == 0:
         merged["c_HGMD_Exp"] = np.NaN
@@ -71,16 +71,15 @@ def add_c_nc(score, ref):
         merged["CLASS"] = np.NaN
     else:
         merged = merged.merge(
-            hgmd_c,
+            hgmd_c.rename(columns={'new_chr': 'chrom', 'new_pos': 'pos'}),
             how="left",
-            left_on=["chrom", "pos", "ref", "alt"],
-            right_on=["new_chr", "new_pos", "ref", "alt"],
+            on=["chrom", "pos", "ref", "alt"],
         )
-    merged = merged.merge(
-        clin_c,
-        how="left",
-        left_on=["chrom", "pos", "ref", "alt"],
-        right_on=["new_chr", "new_pos", "ref", "alt"],
-    )
+
+    if hgmd_nc.shape[0] == 0:
+        merged["nc_HGMD_Exp"] = np.NaN
+        merged["nc_RANKSCORE"] = np.NaN
+    else:
+        merged = merged.merge(hgmd, how="left", on="varId")
 
     return merged
