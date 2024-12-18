@@ -17,7 +17,6 @@ vcf_template = string.Template("""
 ##FORMAT=<ID=PL,Number=G,Type=Integer,Description="Normalized, Phred-scaled likelihoods for genotypes as defined in the VCF specification">
 ##FORMAT=<ID=SB,Number=4,Type=Integer,Description="Per-sample component statistics which comprise the Fisher's Exact Test to detect strand bias.">
 ##FILTER=<ID=PASS,Description="All filters passed">
-##reference=file:///staging/human/reference/b37/b37.fa.default/reference.bin
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	SAMPLE
 $chrom	$pos	.	$ref	$alt	.	.	.	GT:AD:DP:GQ:PL	0/1:7,5:12:99:142,0,214
 """.strip())
