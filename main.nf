@@ -245,9 +245,6 @@ process BUILD_REFERENCE_INDEX {
 
     script:
     """
-    export http_proxy=http://your.proxy.server:port
-    export https_proxy=http://your.proxy.server:port
-
     wget --quiet http://hgdownload.soe.ucsc.edu/goldenPath/${params.ref_ver}/bigZips/${params.ref_ver}.fa.gz
     gunzip ${params.ref_ver}.fa.gz
     sed 's/>chr/>/g' ${params.ref_ver}.fa > num_prefix_${params.ref_ver}.fa
