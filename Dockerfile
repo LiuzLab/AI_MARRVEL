@@ -9,7 +9,7 @@
 #FROM ubuntu:18.04
 FROM ensemblorg/ensembl-vep:release_104.3
 USER root
-ENV DEBIAN_FRONTEND noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
@@ -38,7 +38,7 @@ RUN pip3 install -r /opt/requirements.txt
 RUN pip3 install bgzip
 
 # Install bcftools
-RUN wget https://github.com/samtools/bcftools/releases/download/1.20/bcftools-1.20.tar.bz2
+RUN curl -OL https://github.com/samtools/bcftools/releases/download/1.20/bcftools-1.20.tar.bz2
 RUN mv bcftools-1.20.tar.bz2 /opt/bcftools-1.20.tar.bz2
 RUN tar -xf /opt/bcftools-1.20.tar.bz2 -C /opt/ && \
   rm /opt/bcftools-1.20.tar.bz2 && \
@@ -49,7 +49,7 @@ RUN tar -xf /opt/bcftools-1.20.tar.bz2 -C /opt/ && \
   rm -rf /opt/bcftools-1.20
 
 # Install bedtools
-RUN wget https://github.com/arq5x/bedtools2/releases/download/v2.30.0/bedtools.static.binary
+RUN curl -OL https://github.com/arq5x/bedtools2/releases/download/v2.30.0/bedtools.static.binary
 RUN mv bedtools.static.binary /run/bedtools
 RUN chmod a+x /run/bedtools
 
