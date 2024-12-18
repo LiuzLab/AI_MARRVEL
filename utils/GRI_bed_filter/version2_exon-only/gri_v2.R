@@ -1,6 +1,7 @@
-# BED region =  protein_coding genes
+# BED region =  all exons
 #             + HGMD mutations (50 flanking bp)
 #             + Cinvar mutations (50 flanking bp)
+#             + spliceAI data (50 flanking bp)
 #
 # gencode data:
 # https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_46/gencode.v46.basic.annotation.gtf.gz
@@ -12,6 +13,10 @@
 # Clinvar data:
 # https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/
 # https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh37/
+#
+# spliceAI data v1.3 is on ravenclaw server:
+# /mnt/ravenclaw_local/zhijiany/workdir/exome_filter
+
 
 library(VariantAnnotation)
 library(BSgenome.Hsapiens.UCSC.hg38)
@@ -21,9 +26,27 @@ library(dplyr)
 library(readr)
 library(data.table)
 
-# Function to generate GRI region based on genome version
-generate_gri_v1 <- function(genome_version = "hg38") {
+
+
+generate_gri_v2 <- function(genome_version = "hg38") {
   # data preparation --------------------------------------------------------
+  
+  ##construct splice data file name
+  snv <- paste0("snv.", genome_version, ".vcf")
+  indel <- paste0("indel.", genome_version, ".vcf")
+  columnnames = unlist(strsplit("CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO", "\t"))
+  
+  ##load spliceAI data
+  splice_snv <- read_table(snv,
+                           comment = "#",
+                           col_names = columnnames,
+                           col_types = "cncccccc")
+  
+  splice_indel <- read_table(indel,
+                             comment = "#",
+                             col_names = columnnames,
+                             col_types = "cncccccc")
+  
   
   ## hgmd local file name
   hgmd_file = paste0("HGMD_Pro_2022.2_", genome_version, ".vcf.gz")
@@ -37,21 +60,14 @@ generate_gri_v1 <- function(genome_version = "hg38") {
       data.frame(seqnames = names(size), chr_end = as.integer(size))[c(1:24), ]
     
     ##load gencode data
-    url <-
-      "https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_46/gencode.v46.basic.annotation.gtf.gz"
-    destfile <- "gencode.gtf.gz"
-    GET(url, write_disk(destfile, overwrite = TRUE))
-    gtf_data <- rtracklayer::import(destfile)
+    gtf_data <- rtracklayer::import("gencode.v46.basic.annotation.gtf")
     
     ##load hgmd data
     hgmd_data <- readVcf(hgmd_file, genome = "hg38")
     
     ##load clinvar data
-    url <-
-      "https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/clinvar.vcf.gz"
-    destfile <- "clinvar.vcf.gz"
-    GET(url, write_disk(destfile, overwrite = TRUE))
-    clinvar_data <- readVcf(destfile, genome = "hg38")
+    clinvar_data <- readVcf("clinvar.vcf.gz", genome = "hg38")
+    
     
   } else if (genome_version == "hg19") {
     ##load chr size
@@ -61,21 +77,13 @@ generate_gri_v1 <- function(genome_version = "hg38") {
       data.frame(seqnames = names(size), chr_end = as.integer(size))[c(1:24), ]
     
     ##load gencode data
-    url <-
-      "https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_46/GRCh37_mapping/gencode.v46lift37.basic.annotation.gtf.gz"
-    destfile <- "gencode.gtf.gz"
-    GET(url, write_disk(destfile, overwrite = TRUE))
-    gtf_data <- rtracklayer::import(destfile)
+    gtf_data <- rtracklayer::import("gencode.v46lift37.basic.annotation.gtf")
     
     ##load hgmd data
     hgmd_data <- readVcf(hgmd_file, genome = "hg19")
     
     ##load clinvar data
-    url <-
-      "https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh37/clinvar.vcf.gz"
-    destfile <- "clinvar.vcf.gz"
-    GET(url, write_disk(destfile, overwrite = TRUE))
-    clinvar_data <- readVcf(destfile, genome = "hg19")
+    clinvar_data <- readVcf("clinvar.vcf.gz", genome = "hg19")
   }
   
   
@@ -103,13 +111,13 @@ generate_gri_v1 <- function(genome_version = "hg38") {
   gtf_dt_size <-
     merge(gtf_dt, chr_size, by = "seqnames") # no MT chr
   
-  ## select protein coding genes
-  genes <-
-    gtf_dt_size[type == "gene" & gene_type == "protein_coding"]
+  ## select exon only
+  exons <-
+    gtf_dt_size[type == "exon"]
   
   ## extract gene location info and save into bed format
   ## add source column
-  bed_coding <- genes |>
+  bed_coding <- exons |>
     dplyr::select(
       chr = seqnames,
       start = start,
@@ -117,7 +125,7 @@ generate_gri_v1 <- function(genome_version = "hg38") {
       name = gene_name,
       strand = strand,
     ) |>
-    mutate(source = "GencodeV46.protein_coding")
+    mutate(source = "GencodeV46.exon")
   
   ## merge overlapped region
   gr <- GRanges(
@@ -127,7 +135,8 @@ generate_gri_v1 <- function(genome_version = "hg38") {
   
   merged_gr <- reduce(gr)
   bed_coding.dt <- as.data.table(merged_gr)
-  coverage_bed(bed_coding.dt)
+  coverage_bed(bed_coding.dt) #about 4% coverage
+  
   
   # 2. include hgmd 2022 variants -----------------------------------------
   
@@ -176,7 +185,7 @@ generate_gri_v1 <- function(genome_version = "hg38") {
   
   merged_gr <- reduce(gr)
   bed_gencode_hgmd.dt <- as.data.table(merged_gr)
-  coverage_bed(bed_gencode_hgmd.dt)
+  coverage_bed(bed_gencode_hgmd.dt) #about 4.16% coverage
   
   # 3. Include clinvar variants----------------------------------------
   
@@ -231,29 +240,61 @@ generate_gri_v1 <- function(genome_version = "hg38") {
   bed_gencode_hgmd_clinvar.dt <- as.data.table(merged_gr)
   
   ## check bed coverage
-  coverage_bed(bed_gencode_hgmd_clinvar.dt)
+  coverage_bed(bed_gencode_hgmd_clinvar.dt) #coverage about 4.22%
   
-  # convert start position from 1-based into 0-based format of bed file
-  bed_gencode_hgmd_clinvar.dt <- bed_gencode_hgmd_clinvar.dt |>
+  
+  
+  # 4. Include spliceAI data ----------------------------------------------------
+  #Format: ALLELE|SYMBOL|DS_AG|DS_AL|DS_DG|DS_DL|DP_AG|DP_AL|DP_DG|DP_DL">
+  
+  #merge snv and indel and add 50 flanking bp
+  splice <- rbind(splice_snv, splice_indel) |>
+    mutate(seqnames = paste0("chr", CHROM))
+  splice <- merge(splice, chr_size, by = "seqnames")
+  
+  splice_flank <- splice |>
+    mutate(
+      chr = seqnames,
+      start = ifelse(POS - 50 < 1, 1, POS - 50),
+      end = ifelse(POS + 50 > chr_end, chr_end, POS + 50),
+      source = "spliceAI_v1.3"
+    ) |>
+    dplyr::select(chr, start, end, source)
+  
+  ## merge and reduce
+  bed_gencode_hgmd_clinvar_splice <-
+    rbind(bed_gencode_hgmd_clinvar, splice_flank, fill = TRUE) |>
+    arrange(chr, start, end)
+  
+  gr <- GRanges(
+    seqnames = bed_gencode_hgmd_clinvar_splice$chr,
+    ranges = IRanges(start = bed_gencode_hgmd_clinvar_splice$start, end = bed_gencode_hgmd_clinvar_splice$end)
+  )
+  
+  merged_gr <- reduce(gr)
+  splice.dt <- as.data.table(merged_gr)
+  coverage_bed(splice.dt) #coverage is about (4.36% without 50bp flanks)  5.75%
+  
+  # convert start position from 1-based to 0-based of bed format ------------
+  splice.dt <- splice.dt |>
     mutate(start = pmax(0, start - 1))
   
-  bed_gencode_hgmd_clinvar <- bed_gencode_hgmd_clinvar |>
+  bed_gencode_hgmd_clinvar_splice <- bed_gencode_hgmd_clinvar_splice |>
     mutate(start = pmax(0, start - 1))
   
+  #save the file
   # write the bed file
-  file_name <- paste0("gene_only.", genome_version, ".bed")
-  write_tsv(bed_gencode_hgmd_clinvar.dt[, c(1:3)],
-            file = file_name,
-            col_names = FALSE)
+  file_name <- paste0("exon_only.", genome_version, ".bed")
+  write_tsv(splice.dt[, c(1:3)], file = file_name, col_names = FALSE)
   
   # save the initial bed files which are not reduced, which contains the source column to indicate where that region is from
-  file_name <- paste0("gene_only_source.", genome_version, ".bed")
-  write_tsv(bed_gencode_hgmd_clinvar,
+  file_name <- paste0("exon_only_source.", genome_version, ".bed")
+  write_tsv(bed_gencode_hgmd_clinvar_splice,
             file = file_name,
             col_names = FALSE)
   
 }
 
 # Apply generate_gri_geneonly function to generate bed files --------------
-generate_gri_v1("hg19")
-generate_gri_v1("hg38")
+generate_gri_v2("hg19")
+generate_gri_v2("hg38")
