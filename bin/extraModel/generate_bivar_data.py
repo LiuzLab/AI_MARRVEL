@@ -68,7 +68,7 @@ def process_sample(data_folder, sample_id, default_pred, labeling=False):
         ]
 
     # Remove all the duplicated variant pairs.
-    gene_var_pairs_df = pd.DataFrame(gene_var_pairs)
+    gene_var_pairs_df = pd.DataFrame(gene_var_pairs, columns=['geneEnsId', 'varId1', 'varId2'])
     # gene_var_pairs_df = gene_var_pairs_df.drop_duplicates(['varId1', 'varId2'])
 
     # Use only subset columns of features
@@ -129,5 +129,8 @@ def process_sample(data_folder, sample_id, default_pred, labeling=False):
 
     # Sort before saving
     recessive_feature_df = recessive_feature_df.sort_index()
+
+    if recessive_feature_df.shape[0] == 0:
+        return
 
     recessive_feature_df.to_csv(f"{recessive_folder}/{sample_id}.csv")

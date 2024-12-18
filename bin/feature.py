@@ -258,7 +258,7 @@ def main():
         print("input annoatated varFile:", args.varFile)
         t1 = time.time()
         varDf = pd.read_csv(
-            args.varFile, sep="\t", skiprows=numHeaderSkip, error_bad_lines=False
+            args.varFile, sep="\t", skiprows=numHeaderSkip,
         )
         # varDf=varDf[0:10]
         # #do this if need to have a small test

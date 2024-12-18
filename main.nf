@@ -21,58 +21,143 @@ def showVersion() {
         return
     }
 
-    println "1.0.0"
+    println "1.1.0"
     exit 0
 }
 
 def validateInputParams() {
     def checkPathParamMap = [
-        "input_vcf": params.input_vcf,
         "input_hpo": params.input_hpo,
         "ref_dir"  : params.ref_dir,
         "ref_ver"  : params.ref_ver,
+        "outdir"   : params.outdir,
     ]
 
     checkPathParamMap.each { paramName, paramValue ->
-        if (paramValue) {
-            // Check if the file exists
-            if(!(paramName == "ref_ver")) {
-                def fileObj = file(paramValue, checkIfExists: true)
-                //  println("Check file: '--${paramName}' value '${paramValue}' ")
+        if (paramValue)
+            return
 
-                // Check the file type based on the parameter name
-                if (paramName == "input_vcf" && !(paramValue.endsWith(".vcf") || paramValue.endsWith(".vcf.gz"))) {
-                    println("Error: '--${paramName}' value '${paramValue}' should be a VCF file (.vcf) or (.vcf.gz)")
-                    println("To see usage and available parameters run `nextflow run main.nf --help`")
-                    exit 1
-                } else if (paramName == "input_hpo" && !(paramValue.endsWith(".hpo") || paramValue.endsWith(".txt"))) {
-                    println("Error: '--${paramName}' value '${paramValue}' should be an HPO file (.hpo) or (.txt)")
-                    println("To see usage and available parameters run `nextflow run main.nf --help`")
-                    exit 1
-                } else if (paramName == "ref_dir" && !fileObj.isDirectory()) {
-                    println("Error: '--${paramName}' value '${paramValue}' should be an directory.")
-                    println("To see usage and available parameters run `nextflow run main.nf --help`")
-                    exit 1
-                }
-            }
-
-            if (paramName == "ref_ver" && !(paramValue.equals("hg19") || paramValue.equals("hg38")) ) { 
-                println("Error: '--${paramName}' value ${paramValue} should be either set to 'hg19' or 'hg38'.")
-                println("To see usage and available parameters run `nextflow run main.nf --help`")
-                exit 1
-            }
-
-        } else {
-            println("Input parameter '${paramName}' not specified or is null!")
-            println("To see usage and available parameters run `nextflow run main.nf --help`")
-            exit 1
-        }
+        println("Input parameter '${paramName}' not specified or is null!")
+        println("To see usage and available parameters run `nextflow run main.nf --help`")
+        exit 1
     }
+
+    if (params.input_variant && params.input_vcf) {
+        println("Error: Cannot use '--input_variant' with --input_vcf'")
+        println("To see usage and available parameters run `nextflow run main.nf --help`")
+        exit 1
+    }
+
+    if (params.input_vcf && !params.input_vcf.endsWith(".vcf") && !params.input_vcf.endsWith(".vcf.gz")) {
+        println("Error: '--input_vcf' value '${params.input_vcf}' should be a VCF file (.vcf) or (.vcf.gz)")
+        println("To see usage and available parameters run `nextflow run main.nf --help`")
+        exit 1
+    }
+
+    if (params.input_variant && params.input_variant.count('-') != 3) {
+        println("Error: '--input_variant' should be formated like 'X-47038564-T-C'")
+        println("To see usage and available parameters run `nextflow run main.nf --help`")
+        exit 1
+    }
+
+    if (!file(params.ref_dir).isDirectory()) {
+        println("Error: '--ref_dir' should be an directory.")
+        println("To see usage and available parameters run `nextflow run main.nf --help`")
+        exit 1
+    }
+
+    if (!params.ref_ver.equals("hg19") && !params.ref_ver.equals("hg38") ) {
+        println("Error: '--ref_ver' value ${params.ref_ver} should be either set to 'hg19' or 'hg38'.")
+        println("To see usage and available parameters run `nextflow run main.nf --help`")
+        exit 1
+    }
+}
+
+def addDependentParams() {
+    params.ref_assembly = params.ref_ver == "hg19" ? "grch37" : "grch38"
+
+    // for data dependency
+    params.chrmap = "${params.ref_dir}/bcf_annotate/chrmap.txt"
+
+    params.ref_loc = "${params.ref_dir}/phrank/${params.ref_ver}/${params.ref_assembly}_symbol_to_location.txt"
+    params.ref_to_sym = "${params.ref_dir}/phrank/${params.ref_ver}/ensembl_to_symbol.txt"
+    params.ref_sorted_sym = "${params.ref_dir}/phrank/${params.ref_ver}/gene_to_symbol_sorted.txt"
+
+    // FILTER BED
+    // EXONIC FILTER BED
+    params.ref_exonic_filter_bed = "${params.ref_dir}/filter_exonic/${params.ref_ver}.bed"
+    if (params.bed_filter) {
+        params.ref_filter_bed = params.bed_filter
+    } else if (params.exome_filter) {
+        params.ref_filter_bed = params.ref_exonic_filter_bed
+    } else {
+        params.ref_filter_bed = "/dev/null"
+    }
+
+    // for phrank
+    params.phrank_dagfile = "${params.ref_dir}/phrank/${params.ref_ver}/child_to_parent.txt"
+    params.phrank_disease_annotation = "${params.ref_dir}/phrank/${params.ref_ver}/disease_to_pheno.txt"
+    params.phrank_gene_annotation = "${params.ref_dir}/phrank/${params.ref_ver}/gene_to_phenotype.txt"
+    params.phrank_disease_gene = "${params.ref_dir}/phrank/${params.ref_ver}/disease_to_gene.txt"
+
+    // OMIM and HPO
+    params.omim_hgmd_phen = "${params.ref_dir}/omim_annotate/${params.ref_ver}/HGMD_phen.tsv" 
+    params.omim_obo = "${params.ref_dir}/omim_annotate/hp.obo"
+    params.omim_genemap2 = "${params.ref_dir}/omim_annotate/${params.ref_ver}/genemap2_v2022.rds"
+    params.omim_pheno = "${params.ref_dir}/omim_annotate/${params.ref_ver}/HPO_OMIM.tsv"
+
+    // GNOMAD VCF
+    params.ref_gnomad_genome = "${params.ref_dir}/filter_vep/${params.ref_ver}/gnomad.${params.ref_ver}.blacklist.genomes.vcf.gz"
+    params.ref_gnomad_genome_idx = "${params.ref_gnomad_genome}.tbi"
+    params.ref_gnomad_exome = "${params.ref_dir}/filter_vep/${params.ref_ver}/gnomad.${params.ref_ver}.blacklist.exomes.vcf.gz"
+    params.ref_gnomad_exome_idx = "${params.ref_gnomad_exome}.tbi"
+
+    // VEP 
+    params.vep_dbnsfp_name = params.ref_ver == "hg19" ? "dbNSFP4.3a_grch37.gz" : "dbNSFP4.1a_grch38.gz"
+    params.vep_gnomad_name = params.ref_ver == "hg19" ? "gnomad.genomes.r2.1.sites.grch37_noVEP.vcf.gz" : "gnomad.genomes.GRCh38.v3.1.2.sites.vcf.bgz"
+    params.vep_cadd_name = params.ref_ver == "hg19" ? "hg19_whole_genome_SNVs.tsv.gz" : "hg38_whole_genome_SNV.tsv.gz"
+
+    params.vep_dir_cache = "${params.ref_dir}/vep/${params.ref_ver}/"
+    params.vep_dir_plugins = "${params.ref_dir}/vep/${params.ref_ver}/Plugins/"
+    params.vep_custom_gnomad = "${params.ref_dir}/vep/${params.ref_ver}/${params.vep_gnomad_name}" 
+    params.vep_custom_clinvar = "${params.ref_dir}/vep/${params.ref_ver}/clinvar_20220730.vcf.gz"
+    params.vep_custom_hgmd = "${params.ref_dir}/vep/${params.ref_ver}/HGMD_Pro_2022.2_${params.ref_ver}.vcf.gz"
+    params.vep_plugin_revel = "${params.ref_dir}/vep/${params.ref_ver}/new_tabbed_revel_${params.ref_assembly}.tsv.gz" // changed for hg19
+    params.vep_plugin_spliceai_snv = "${params.ref_dir}/vep/${params.ref_ver}/spliceai_scores.masked.snv.${params.ref_ver}.vcf.gz"
+    params.vep_plugin_spliceai_indel = "${params.ref_dir}/vep/${params.ref_ver}/spliceai_scores.masked.indel.${params.ref_ver}.vcf.gz"
+    params.vep_plugin_cadd = "${params.ref_dir}/vep/${params.ref_ver}/${params.vep_cadd_name}" // changed for hg19
+    params.vep_plugin_dbnsfp = "${params.ref_dir}/vep/${params.ref_ver}/${params.vep_dbnsfp_name}"
+    params.vep_idx = "${params.ref_dir}/vep/${params.ref_ver}/*.tbi"
+
+    params.ref_annot_dir = "${params.ref_dir}/annotate"
+    params.ref_var_tier_dir = "${params.ref_dir}/var_tier"
+    params.ref_merge_expand_dir = "${params.ref_dir}/merge_expand"
+    params.ref_mod5_diffusion_dir = "${params.ref_dir}/mod5_diffusion"
+    params.ref_predict_new_dir = "${params.ref_dir}/predict_new"
+    params.ref_model_inputs_dir = "${params.ref_dir}/model_inputs"
+
+    // Documentation
+    params.usage_file = "${projectDir}/docs/source/nf_usage.txt"
+    params.script_chunking = "${projectDir}/scripts/split_chunks.py"
+    params.script_annot = "${projectDir}/scripts/annotation/*.py"
 }
 
 showUsage()
 showVersion()
 validateInputParams()
+addDependentParams()
+
+process GENERATE_INPUT_VCF {
+    input:
+    val id
+
+    output:
+    path "input.vcf", emit: vcf
+
+    """
+    generate_input_vcf.py $id
+    """
+}
 
 process VALIDATE_VCF {
     container 'quay.io/biocontainers/vcftools:0.1.16--pl5321hdcf5f25_11'
@@ -160,6 +245,9 @@ process BUILD_REFERENCE_INDEX {
 
     script:
     """
+    export http_proxy=http://your.proxy.server:port
+    export https_proxy=http://your.proxy.server:port
+
     wget --quiet http://hgdownload.soe.ucsc.edu/goldenPath/${params.ref_ver}/bigZips/${params.ref_ver}.fa.gz
     gunzip ${params.ref_ver}.fa.gz
     sed 's/>chr/>/g' ${params.ref_ver}.fa > num_prefix_${params.ref_ver}.fa
@@ -401,7 +489,7 @@ process FILTER_PROBAND {
     path ref_gnomad_exome_idx
 
     output:
-    path "${params.run_id}.filt.rmBL.vcf", emit: vcf
+    path "${params.run_id}.filt.rmBL.vcf.gz", emit: vcf
 
     script:
     """
@@ -420,6 +508,7 @@ process FILTER_PROBAND {
     isec_tmp1/0000.vcf.gz isec_tmp2/0000.vcf.gz
 
     mv isec_tmp3/0002.vcf ${params.run_id}.filt.rmBL.vcf
+    bgzip ${params.run_id}.filt.rmBL.vcf
     """
 
 }
@@ -435,13 +524,12 @@ process SPLIT_VCF_BY_CHROMOSOME {
     """
     # Get the list of chromosomes from the VCF file
 
-    bgzip ${vcf}
-    bcftools index ${vcf}.gz
+    bcftools index ${vcf}
 
-    bcftools query -f '%CHROM\n' ${vcf}.gz | sort | uniq > chrom_list.txt
+    bcftools query -f '%CHROM\n' ${vcf} | sort | uniq > chrom_list.txt
     # Split the VCF file by chromosome
     while read chrom; do
-        bcftools view -r \${chrom} ${vcf}.gz -Oz -o chr\${chrom}.vcf.gz
+        bcftools view -r \${chrom} ${vcf} -Oz -o chr\${chrom}.vcf.gz
     done < chrom_list.txt
     """
 }
@@ -673,7 +761,7 @@ workflow PHRANK_SCORING {
     VARIANTS_TO_ENSEMBL(VCF_TO_VARIANTS.out, params.ref_loc)
     ENSEMBL_TO_GENESYM(VARIANTS_TO_ENSEMBL.out, params.ref_to_sym, params.ref_sorted_sym)
     GENESYM_TO_PHRANK(ENSEMBL_TO_GENESYM.out,
-                    params.input_hpo,
+                    file(params.input_hpo),
                     params.phrank_dagfile,
                     params.phrank_disease_annotation,
                     params.phrank_gene_annotation,
@@ -684,19 +772,31 @@ workflow PHRANK_SCORING {
 }
 
 workflow {
-    VALIDATE_VCF(params.input_vcf)
+    if (params.input_vcf) {
+        input_vcf = file(params.input_vcf)
+    } else if (params.input_variant) {
+        GENERATE_INPUT_VCF(params.input_variant)
+        input_vcf = GENERATE_INPUT_VCF.out.vcf
+    }
+
+    VALIDATE_VCF(input_vcf)
     NORMALIZE_VCF(VALIDATE_VCF.out.vcf)
-    BUILD_REFERENCE_INDEX()
 
-    VCF_PRE_PROCESS(
-        NORMALIZE_VCF.out.vcf,
-        NORMALIZE_VCF.out.tbi,
-        BUILD_REFERENCE_INDEX.out.fasta,
-        BUILD_REFERENCE_INDEX.out.fasta_index,
-        BUILD_REFERENCE_INDEX.out.fasta_dict,
-    )
+    if (params.input_vcf) {
+        BUILD_REFERENCE_INDEX()
+        VCF_PRE_PROCESS(
+            NORMALIZE_VCF.out.vcf,
+            NORMALIZE_VCF.out.tbi,
+            BUILD_REFERENCE_INDEX.out.fasta,
+            BUILD_REFERENCE_INDEX.out.fasta_index,
+            BUILD_REFERENCE_INDEX.out.fasta_dict,
+        )
+        vcf = VCF_PRE_PROCESS.out.vcf
+    } else {
+        vcf = NORMALIZE_VCF.out.vcf
+    }
 
-    SPLIT_VCF_BY_CHROMOSOME(VCF_PRE_PROCESS.out.vcf)
+    SPLIT_VCF_BY_CHROMOSOME(vcf)
     ANNOTATE_BY_VEP(
         SPLIT_VCF_BY_CHROMOSOME.out.chr_vcfs.flatten(),
         params.vep_dir_cache,
