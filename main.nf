@@ -447,14 +447,54 @@ process GENESYM_TO_PHRANK {
     """
 }
 
-
-process HPO_SIM {
+process CACHE_OMIM_OBO {
     container 'zhandongliulab/aim-lite-r'
+    storeDir "${params.outdir}/general/hp_obo/"
+    input:
+    path obo
+
+    output:
+    path "hp_obo.rds", emit: obo
+
+    script:
+    """
+    #!/usr/bin/env Rscript
+    library(dplyr)
+    library(ontologyIndex)
+
+    hp_obo <- get_OBO($obo, propagate_relationships = c("is_a", "part_of"), extract_tags = "minimal")
+    saveRDS(hp_obo, file="hp_obo.rds")
+    """
+}
+
+process NORMALIZE_HPO {
+    tag "${vep.simpleName}"
 
     input:
+    path vep
     path hpo
+
+    output:
+    path "normalized_hpos.txt", emit: "hpo"
+
+    script:
+    """
+    if [[ -z \$(egrep 'HP:[0-9]{7}' $hpo) ]] ; then
+        echo "HP:0000001" > normalized_hpos.txt
+    else
+        cp $hpo normalized_hpos.txt
+    fi
+    """
+}
+process HPO_SIM_BY_HGMD_OMIM {
+    container 'zhandongliulab/aim-lite-r'
+    tag "${vep.simpleName}"
+
+    input:
+    path vep
+    path hpo
+    path cached_omim_obo
     path omim_hgmd_phen
-    path omim_obo
     path omim_genemap2
     path omim_pheno
 
@@ -464,11 +504,7 @@ process HPO_SIM {
 
     script:
     """
-    if [[ -z \$(egrep 'HP:[0-9]{7}' $hpo) ]] ; then
-        echo "HP:0000001" > $hpo
-    fi
-
-    phenoSim.R $hpo $omim_hgmd_phen $omim_obo $omim_genemap2 $omim_pheno \\
+    phenoSim.R $vep $hpo $cached_omim_obo $omim_hgmd_phen $omim_genemap2 $omim_pheno \\
         ${params.run_id}-cz ${params.run_id}-dx
     """
 
@@ -749,6 +785,28 @@ workflow VCF_PRE_PROCESS {
     vcf = FILTER_PROBAND.out.vcf
 }
 
+workflow HPO_SIM {
+    take:
+    vep
+    hpo
+
+    main:
+    CACHE_OMIM_OBO(params.omim_obo)
+    NORMALIZE_HPO(vep, hpo)
+    HPO_SIM_BY_HGMD_OMIM(
+        vep,
+        NORMALIZE_HPO.out.hpo,
+        CACHE_OMIM_OBO.out.obo,
+        params.omim_hgmd_phen,
+        params.omim_genemap2,
+        params.omim_pheno,
+    )
+
+    emit:
+    hgmd_sim = HPO_SIM_BY_HGMD_OMIM.out.hgmd_sim
+    omim_sim = HPO_SIM_BY_HGMD_OMIM.out.omim_sim
+}
+
 workflow PHRANK_SCORING {
     take:
     vcf
@@ -809,13 +867,12 @@ workflow {
         file(params.vep_idx)
     )
 
-    HPO_SIM(params.input_hpo,
-            params.omim_hgmd_phen,
-            params.omim_obo,
-            params.omim_genemap2,
-            params.omim_pheno)
+    HPO_SIM(
+        ANNOTATE_BY_VEP.out.vep_output,
+        file(params.input_hpo),
+    )
 
-    ANNOTATE_BY_MODULES (
+    ANNOTATE_BY_MODULES(
         ANNOTATE_BY_VEP.out.vep_output,
         HPO_SIM.out.hgmd_sim,
         HPO_SIM.out.omim_sim,
