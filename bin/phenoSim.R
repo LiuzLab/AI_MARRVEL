@@ -2,17 +2,17 @@
 rm(list = ls())
 library(ontologyIndex)
 library(ontologySimilarity)
+library(data.table)
 args <- commandArgs(trailingOnly = TRUE)
 
-PATIENT_HPO <- args[1]
-OMIM_HGMD <- args[2]
-OMIM_OBO <- args[3]
-OMIM_GENEMAP2 <- args[4]
-OMIM_PHENO <- args[5]
-OUTFILE_CZ_NAME <- args[6]
-OUTFILE_DX_NAME <- args[7]
-
-dat <- read.csv(OMIM_HGMD, sep = "\t")
+VEP <- args[1]
+PATIENT_HPO <- args[2]
+CACHED_OMIM_OBO <- args[3]
+OMIM_HGMD <- args[4]
+OMIM_GENEMAP2 <- args[5]
+OMIM_PHENO <- args[6]
+OUTFILE_CZ_NAME <- args[7]
+OUTFILE_DX_NAME <- args[8]
 
 library(dplyr)
 get_HPO_list <- function(df1) {
@@ -26,9 +26,22 @@ get_HPO_list <- function(df1) {
   return(df2)
 }
 
+# Read the file
+lines <- readLines(VEP)
+
+for (line in lines) {
+  if (startsWith(line, "#Uploaded_variation")) {
+    break
+  }
+}
+vep = read.table(VEP, sep="\t", fill=T)
+colnames(vep) = strsplit(line, "\t")[[1]]
+
+dat <- fread(OMIM_HGMD, sep = "\t")
+dat <- dat %>% filter(acc_num %in% unique(vep$hgmd) | gene_sym %in% unique(vep$SYMBOL))
 
 # Load HPO_obo
-HPO_obo <- get_OBO(OMIM_OBO, propagate_relationships = c("is_a", "part_of"), extract_tags = "minimal")
+HPO_obo <- readRDS(CACHED_OMIM_OBO)
 
 # set simi_thresh
 simi_thresh <- 0
@@ -41,8 +54,7 @@ if (dim(dat)[1] == 0) {
   colnames(dat2) <- col_names
 } else {
   dat <- dat[!is.na(dat$hpo_id), ]
-  dat2_ori <- get_HPO_list(dat)
-  dat2 <- dat2_ori
+  dat2 <- get_HPO_list(dat)
 
   # Load patient HPO
   HPO.orig <- read.table(PATIENT_HPO, sep = "\t", fill = T, header = F, stringsAsFactors = F)
