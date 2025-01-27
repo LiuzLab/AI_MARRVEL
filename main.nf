@@ -114,7 +114,7 @@ def addDependentParams() {
 
     // VEP 
     params.vep_dbnsfp_name = params.ref_ver == "hg19" ? "dbNSFP4.3a_grch37.gz" : "dbNSFP4.1a_grch38.gz"
-    params.vep_gnomad_name = params.ref_ver == "hg19" ? "gnomad.genomes.r2.1.sites.grch37_noVEP.vcf.gz" : "gnomad.genomes.GRCh38.v3.1.2.sites.vcf.bgz"
+    params.vep_gnomad_name = params.ref_ver == "hg19" ? "gnomad.genomes.r2.1.sites.grch37_noVEP.vcf.gz" : "gnomad.genomes.GRCh38.v3.1.2.sites.vcf.gz"
     params.vep_cadd_name = params.ref_ver == "hg19" ? "hg19_whole_genome_SNVs.tsv.gz" : "hg38_whole_genome_SNV.tsv.gz"
 
     params.vep_dir_cache = "${params.ref_dir}/vep/${params.ref_ver}/"
