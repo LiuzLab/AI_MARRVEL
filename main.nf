@@ -101,7 +101,7 @@ process NORMALIZE_VCF {
     elif echo "\${INPUT_VCF_TYPE}" | grep -q 'gzip compressed data'; then
         echo "GZIP format detected, converting to BGZF."
         gunzip -c $vcf | bgzip > input.vcf.gz
-    elif echo "\${INPUT_VCF_TYPE}" | grep -q 'ASCII text'; then
+    elif echo "\${INPUT_VCF_TYPE}" | grep -q -e 'ASCII text' -e 'Unicode text' -e 'Variant Call Format'; then
         echo "Plain VCF file detected, compressing and indexing."
         bgzip -c $vcf > input.vcf.gz
     else
