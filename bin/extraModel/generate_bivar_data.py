@@ -129,6 +129,8 @@ def process_sample(data_folder, sample_id, default_pred, labeling=False):
 
     # Sort before saving
     recessive_feature_df = recessive_feature_df.sort_index()
+    if recessive_feature_df.shape[0] == 0:
+        return
 
     if recessive_feature_df.shape[0] == 0:
         return
