@@ -192,7 +192,6 @@ process NORMALIZE_VCF {
         INPUT_VCF_TYPE="\$(file -b \${SYM_LINK})"
     fi
 
- 
     if echo "\${INPUT_VCF_TYPE}" | grep -q 'BGZF'; then
         echo "The file is in BGZF format, ready for tabix."
         cp $vcf input.vcf.gz
@@ -206,6 +205,23 @@ process NORMALIZE_VCF {
         echo "The file $vcf does not exist or is not a recognized format."
         exit 1
     fi
+
+    # Step 2: if mode is 'trio'
+    if [ "${params.mode}" == "trio" ]; then
+        echo "Mode is 'trio': Normalizing joint VCF file."
+        # Normalize to handle multiallelic rows
+        bcftools norm --multiallelics -both \
+                      -Oz -o normalized.tmp.vcf.gz \
+                      input.vcf.gz
+        tabix normalized.tmp.vcf.gz
+        # Remove duplicates
+        bcftools norm --rm-dup none \
+                      -Oz -o input.vcf.gz \
+                      normalized.tmp.vcf.gz
+    else
+        echo "Mode is 'singleton': Skipping normalization."
+    fi
+
 
     tabix -p vcf input.vcf.gz
     """
@@ -771,15 +787,9 @@ workflow PHRANK_SCORING {
 workflow {
     if (params.input_vcf) {
         input_vcf = file(params.input_vcf)
-    } else if (params.input_variant) {
-        GENERATE_INPUT_VCF(params.input_variant)
-        input_vcf = GENERATE_INPUT_VCF.out.vcf
-    }
 
-    VALIDATE_VCF(input_vcf)
-    NORMALIZE_VCF(VALIDATE_VCF.out.vcf)
-
-    if (params.input_vcf) {
+        VALIDATE_VCF(input_vcf)
+        NORMALIZE_VCF(VALIDATE_VCF.out.vcf)
         BUILD_REFERENCE_INDEX()
         VCF_PRE_PROCESS(
             NORMALIZE_VCF.out.vcf,
@@ -789,7 +799,12 @@ workflow {
             BUILD_REFERENCE_INDEX.out.fasta_dict,
         )
         vcf = VCF_PRE_PROCESS.out.vcf
-    } else {
+    } else if (params.input_variant) {
+        GENERATE_INPUT_VCF(params.input_variant)
+        input_vcf = GENERATE_INPUT_VCF.out.vcf
+
+        VALIDATE_VCF(input_vcf)
+        NORMALIZE_VCF(VALIDATE_VCF.out.vcf)
         vcf = NORMALIZE_VCF.out.vcf
     }
 
