@@ -190,7 +190,7 @@ process FILTER_UNPASSED {
     # Annotate with new IDs based on CHROM, POS, REF, ALT
     bcftools annotate --set-id +'%CHROM\\_%POS\\_%REF\\_%FIRST_ALT' ${params.run_id}-annot -Oz -o ${params.run_id}-add-id.vcf.gz
 
-    #run quality filters 
+    #run quality filters
     bcftools filter  ${params.run_id}-add-id.vcf.gz -i'FILTER == "PASS"' -Oz -o ${params.run_id}.filt.vcf.gz
 
     #check number of variants left
@@ -363,7 +363,7 @@ process FILTER_PROBAND {
 
 process SPLIT_VCF_BY_CHROMOSOME {
     input:
-    path vcf 
+    path vcf
 
     output:
     path "chr*.vcf.gz", emit: chr_vcfs
@@ -447,7 +447,7 @@ process ANNOTATE_BY_MODULES {
         -genomeRef ${params.ref_ver} \\
         -diseaseInh AD \\
         -modules curate,conserve
-    
+
         mv scores.csv ${vep.baseName}_scores.csv
     """
 }
@@ -533,12 +533,12 @@ process MERGE_SCORES_BY_CHROMOSOME {
 
 process PREDICTION {
     publishDir "${params.outdir}/${params.run_id}/prediction/", mode: "copy"
-    
+
     input:
-    path merged_matrix  
-    path merged_compressed_scores  
+    path merged_matrix
+    path merged_compressed_scores
     path ref_model_inputs_dir
-    
+
     output:
     path "conf_4Model/${params.run_id}_default_predictions.csv", emit: "default_predictions"
     path "conf_4Model/${params.run_id}_recessive_predictions.csv"
@@ -547,12 +547,12 @@ process PREDICTION {
     path "conf_4Model/integrated/*.csv"
     path "final_matrix_expanded/*.csv.gz"
     path "shap_outputs"
-    
+
     script:
     """
     mkdir final_matrix_expanded
     mkdir conf_4Model
-    
+
     run_final.py \
         $ref_model_inputs_dir/default/final_model.job \
         $ref_model_inputs_dir/default/features.csv \
