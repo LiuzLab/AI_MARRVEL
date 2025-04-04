@@ -21,7 +21,7 @@ def process_sample(data_folder, sample_id, default_pred, labeling=False):
         os.mkdir(tmp_folder)
 
     # read feature matrix for single var
-    feature_fn = f"{sample_id}.feature.csv"
+    feature_fn = f"{sample_id}.default_prediction.csv"
     # feature_df = []
     # for feature_fn in feature_fns:
     if "csv" in feature_fn:

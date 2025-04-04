@@ -557,11 +557,11 @@ process PREDICTION {
         $ref_model_inputs_dir/default/final_model.job \
         $ref_model_inputs_dir/default/features.csv \
         $merged_matrix \
-        ${params.run_id}.feature.csv
+        ${params.run_id}.default_prediction.csv
 
     # Generate final matrix expanded
     merge_rm.py \
-        ${params.run_id}.feature.csv \
+        ${params.run_id}.default_prediction.csv \
         $merged_compressed_scores \
         final_matrix_expanded/${params.run_id}.expanded.csv.gz
 

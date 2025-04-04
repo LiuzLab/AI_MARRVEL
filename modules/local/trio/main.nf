@@ -138,7 +138,7 @@ process PREDICTION_TRIO {
 
     output:
     path "*.trio.expanded.csv.gz"
-    path "*.trio.feature.csv"
+    path "*.trio.prediction.csv"
 
     script:
     """
@@ -154,11 +154,11 @@ process PREDICTION_TRIO {
         ./${params.run_id}.trio.NDG.csv
 
 
-    # Generate ${params.run_id}.trio.feature.csv
+    # Generate ${params.run_id}.trio.prediction.csv
     trio_merge_rm.py ${params.run_id}
 
     merge_rm.py \
-        ${params.run_id}.trio.feature.csv \
+        ${params.run_id}.trio.prediction.csv \
         $merged_compressed_scores \
         ${params.run_id}.trio.expanded.csv.gz
     """
