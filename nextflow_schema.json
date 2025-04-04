@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/LiuzLab/AI_MARRVEL//nextflow_schema.json",
+  "$id": "https://raw.githubusercontent.com/LiuzLab/AI_MARRVEL/main/nextflow_schema.json",
   "title": "LiuzLab/AI_MARRVEL pipeline parameters",
   "description": "AI-MARRVEL (AIM) is an AI system for rare genetic disease diagnosis.",
   "type": "object",
