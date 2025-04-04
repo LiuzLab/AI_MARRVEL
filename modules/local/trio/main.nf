@@ -129,7 +129,7 @@ process GENERATE_TRIO_FEATURES {
 }
 
 process PREDICTION_TRIO {
-    container "zhandongliulab/aim-lite:1.0"
+    container "zhandongliulab/aim-lite-oldpython"
     publishDir "${params.outdir}/${params.run_id}/prediction_trio", mode: 'copy'
 
     input:
