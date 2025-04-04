@@ -10,7 +10,10 @@
     <img src="https://img.shields.io/badge/AI_MARRVEL-v1.0.1-blue.svg"/>
   </a>
   <a href='https://ai-marrvel.readthedocs.io/en/latest/?badge=latest'>
-      <img src='https://readthedocs.org/projects/ai-marrvel/badge/?version=latest' alt='Documentation Status' />
+    <img src='https://readthedocs.org/projects/ai-marrvel/badge/?version=latest' alt='Documentation Status' />
+  </a>
+  <a href='https://www.nextflow.io/'>
+    <img src='https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A523.10.1-23aa62.svg' alt='Nextflow' />
   </a>
 </p>
 
