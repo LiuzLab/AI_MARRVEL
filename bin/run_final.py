@@ -9,14 +9,19 @@ import joblib
 from predict_new.confidence import *
 import sys
 
+jobfile_path = sys.argv[1]
+featurenames_path = sys.argv[2]
+matrix_path = sys.argv[3]
+output_path = sys.argv[4]
+
 # read in precalulated model
-model = joblib.load("model_inputs/default/final_model.job")
+model = joblib.load(jobfile_path)
 
 # read in features to use
-features = list(pd.read_csv("model_inputs/default/features.csv"))
+features = list(pd.read_csv(featurenames_path))
 
 # predict with Linhua's code
-out = rank_patient(model, sys.argv[1] + ".matrix.txt", features, train_causals=None)
+out = rank_patient(model, matrix_path, features, train_causals=None)
 
 # write out
-out.to_csv(sys.argv[1] + ".csv")
+out.to_csv(output_path)

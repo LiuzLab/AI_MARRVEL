@@ -83,7 +83,7 @@ def assign_ranking(df):
 
 
 def AIM(data_folder, sample_id):
-    feature_fn = f"{sample_id}.csv"
+    feature_fn = f"{sample_id}.feature.csv"
 
     if not os.path.exists(feature_fn):
         print(f"{feature_fn} does not exist.")
