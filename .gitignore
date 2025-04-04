@@ -16,8 +16,9 @@ test_output/
 .nextflow/
 work/
 out/
-trace-*txt
-report-*html
+trace-*.txt
+report-*.html
+timeline-*.html
 params.yaml
 
 # Ignore R history and session files
