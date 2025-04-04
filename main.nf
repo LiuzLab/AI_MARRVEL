@@ -1,7 +1,9 @@
 nextflow.enable.dsl = 2
 
+include { validateParameters } from 'plugin/nf-schema'
+
 include {
-    showUsage; showVersion; validateInputParams; addDependentParams
+    showVersion; addDependentParams
 } from "./modules/local/utils"
 
 include {
@@ -16,9 +18,8 @@ include {
     VCF_PRE_PROCESS; GENERATE_SINGLETON_FEATURES; PREDICTION
 } from "./subworkflows/local/singleton"
 
-showUsage()
 showVersion()
-validateInputParams()
+validateParameters()
 addDependentParams(params)
 
 workflow {
