@@ -35,7 +35,13 @@ workflow {
         )
         vcf = VCF_PRE_PROCESS_TRIO.out.vcf
     } else if (params.input_vcf) {
-        VCF_PRE_PROCESS(file(params.input_vcf))
+        BUILD_REFERENCE_INDEX()
+        VCF_PRE_PROCESS(
+            file(params.input_vcf),
+            BUILD_REFERENCE_INDEX.out.fasta,
+            BUILD_REFERENCE_INDEX.out.fasta_index,
+            BUILD_REFERENCE_INDEX.out.fasta_dict,
+        )
         vcf = VCF_PRE_PROCESS.out.vcf
     } else if (params.input_variant) {
         GENERATE_INPUT_VCF(params.input_variant)

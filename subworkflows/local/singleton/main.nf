@@ -3,7 +3,7 @@ include {
 } from "../../../modules/local/utils"
 
 include {
-    VALIDATE_VCF; NORMALIZE_VCF; BUILD_REFERENCE_INDEX; GENERATE_INPUT_VCF;
+    VALIDATE_VCF; NORMALIZE_VCF; GENERATE_INPUT_VCF;
     VCF_TO_VARIANTS; VARIANTS_TO_ENSEMBL; ENSEMBL_TO_GENESYM; GENESYM_TO_PHRANK;
     CONVERT_GVCF; FILTER_UNPASSED; FILTER_MITO_AND_UNKOWN_CHR; FILTER_BED; FILTER_PROBAND;
     SPLIT_VCF_BY_CHROMOSOME; ANNOTATE_BY_VEP; HPO_SIM; ANNOTATE_BY_MODULES;
@@ -16,19 +16,17 @@ addDependentParams(params)
 workflow VCF_PRE_PROCESS {
     take:
     input_vcf
+    fasta
+    fasta_index
+    fasta_dict
 
     main:
-    BUILD_REFERENCE_INDEX()
-
     VALIDATE_VCF(input_vcf)
     NORMALIZE_VCF(VALIDATE_VCF.out.vcf)
 
     CONVERT_GVCF(
         NORMALIZE_VCF.out.vcf,
         NORMALIZE_VCF.out.tbi,
-        BUILD_REFERENCE_INDEX.out.fasta,
-        BUILD_REFERENCE_INDEX.out.fasta_index,
-        BUILD_REFERENCE_INDEX.out.fasta_dict,
         params.chrmap
     )
     FILTER_UNPASSED(
