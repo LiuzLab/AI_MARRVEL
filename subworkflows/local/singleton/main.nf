@@ -27,6 +27,9 @@ workflow VCF_PRE_PROCESS {
     CONVERT_GVCF(
         NORMALIZE_VCF.out.vcf,
         NORMALIZE_VCF.out.tbi,
+        fasta,
+        fasta_index,
+        fasta_dict,
         params.chrmap
     )
     FILTER_UNPASSED(
