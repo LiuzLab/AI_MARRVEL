@@ -14,22 +14,20 @@
   </a>
 </p>
 
-**AI-MARRVEL (AIM)** is an AI system for rare genetic disease diagnosis.  
+**AI-MARRVEL (AIM)** is an AI system for rare genetic disease diagnosis.
 
-It takes as input patient VCF and phenotype (formatted with HPO) to predict the causal variant(s).    
-In making prediction, it takes variant annotation from [MARRVEL](https://marrvel.org/) database and more, 
-and generates **prediction score** + **confidence score** as output.  
-
+It takes as input patient VCF and phenotype (formatted with HPO) to predict the causal variant(s).
+In making prediction, it takes variant annotation from [MARRVEL](https://marrvel.org/) database and more,
+and generates **prediction score** + **confidence score** as output.
 
 You can use AI-MARRVEL from our [website](https://ai.marrvel.org/) or follow the [documentation](https://aimarrvel.readthedocs.io/en/main/) to run locally.
-  
 
 :new: Our paper is now published in [NEJM AI](https://ai.nejm.org/doi/full/10.1056/AIoa2300009)!
-  
 
 ## Quick Start
 
 ### Install Required Data Dependencies
+
 AIM utilizes various databases for variant annotation, all of which have been compiled and are available for download. We use AWS S3 for data access, and the data can be downloaded by following these steps:
 
 1. **Install the AWS CLI**: Follow the instructions provided in the [AWS CLI Installation Guide](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html).
@@ -37,16 +35,17 @@ AIM utilizes various databases for variant annotation, all of which have been co
    ```bash
    $ cd <desired/folder/path>
    ```
-3. Use the following command to sync the S3 bucket to your local directory:  
-    ```bash
-    $ aws s3 sync s3://aim-data-dependencies-2.0-public . --no-sign-request
-    ```
+3. Use the following command to sync the S3 bucket to your local directory:
+   ```bash
+   $ aws s3 sync s3://aim-data-dependencies-2.0-public . --no-sign-request
+   ```
 
 ### Get the software
 
 [![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A523.10.1-23aa62.svg)](https://www.nextflow.io/)
 
 AIM is released as a Nextflow pipeline for easy distribution. To get it:
+
 ```bash
 $ git clone -b nextflow_conversion https://github.com/LiuzLab/AI_MARRVEL
 $ cd AI_MARRVEL
@@ -54,6 +53,7 @@ $ nextflow run main.nf --version
 ```
 
 ### Run with your sample
+
 ```bash
 $ nextflow run main.nf  --ref_dir <PATH_TO_REFERENCE_DIRECTORY>
                   --input_vcf <PATH_TO_INPUT_VCF_FILE>
@@ -66,9 +66,11 @@ $ nextflow run main.nf  --ref_dir <PATH_TO_REFERENCE_DIRECTORY>
 ```
 
 Alternatively, the pipeline can be executed with a parameter file (yaml)
+
 ```bash
 $ nextflow run main.nf -params-file params.yaml
 ```
+
 NOTE: You need to create `params.yaml` by copying [params.yaml.example](params.yaml.example) file and follow the instruction.
 
 For more information on usage and parameters which are open for modification, please use `--help` option as shown below.
@@ -77,13 +79,13 @@ For more information on usage and parameters which are open for modification, pl
 $ nextflow run main.nf --help
 ```
 
-
 ## License
+
 AI-MARRVEL is licensed under GPL-3.0. You are welcomed to use it for research purpose.  
 For business purpose, please contact us for licensing.
 
-
 ## Disclaimer
+
 - Some of the data and software included in the distribution may be subject to third-party constraints. Users of the data and software are solely responsible for establishing the nature of and complying with any such restrictions.
 - AI-MARRVEL provides this data and software in good faith, but make no warranty, express or implied, nor assume any legal liability or responsibility for any purpose for which they are used.
 
