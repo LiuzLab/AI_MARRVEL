@@ -12,9 +12,6 @@
   <a href='https://ai-marrvel.readthedocs.io/en/latest/?badge=latest'>
     <img src='https://readthedocs.org/projects/ai-marrvel/badge/?version=latest' alt='Documentation Status' />
   </a>
-  <a href='https://www.nextflow.io/'>
-    <img src='https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A523.10.1-23aa62.svg' alt='Nextflow' />
-  </a>
 </p>
 
 **AI-MARRVEL (AIM)** is an AI system for rare genetic disease diagnosis.  
@@ -46,6 +43,9 @@ AIM utilizes various databases for variant annotation, all of which have been co
     ```
 
 ### Get the software
+
+[![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A523.10.1-23aa62.svg)](https://www.nextflow.io/)
+
 AIM is released as a Nextflow pipeline for easy distribution. To get it:
 ```bash
 $ git clone -b nextflow_conversion https://github.com/LiuzLab/AI_MARRVEL

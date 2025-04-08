@@ -5,6 +5,65 @@
   "description": "AI-MARRVEL (AIM) is an AI system for rare genetic disease diagnosis.",
   "type": "object",
   "$defs": {
+    "input": {
+      "title": "Input",
+      "type": "object",
+      "description": "",
+      "default": "",
+      "properties": {
+        "input_vcf": {
+          "type": "string",
+          "description": "Path to input VCF file.",
+          "pattern": "^\\S+\\.vcf(.gz)?$",
+          "format": "file-path"
+        },
+        "input_variant": {
+          "type": "string",
+          "description": "Input variant in the format 'chrom-pos-ref-alt', e.g., '1-123456-A-T'.",
+          "pattern": "^(\\S+)-(\\S+)-(\\S+)-(\\S+)$"
+        },
+        "input_hpo": {
+          "type": "string",
+          "description": "Path to input HPO file.",
+          "format": "file-path"
+        },
+        "input_ped": {
+          "type": "string",
+          "description": "Path to the pedgree file for trio mode",
+          "format": "file-path"
+        },
+        "outdir": {
+          "type": "string",
+          "default": "./out",
+          "description": "Output directory."
+        },
+        "ref_dir": {
+          "type": "string",
+          "description": "Path to aim pipeline dependencies directory.",
+          "format": "directory-path"
+        },
+        "run_id": {
+          "type": "string",
+          "default": "run1",
+          "description": "Unique identifier for this run."
+        },
+        "ref_ver": {
+          "type": "string",
+          "default": "hg19",
+          "enum": ["hg19", "hg38"],
+          "description": "Reference genome version"
+        },
+        "bed_filter": {
+          "type": "string",
+          "description": "Path to a BED file to perform an analysis only for regions of interest"
+        },
+        "exome_filter": {
+          "type": "boolean",
+          "description": "Enable exonic filter. Addition will filter out variants outside of exonic region"
+        }
+      },
+      "required": ["outdir", "ref_dir", "run_id", "ref_ver"]
+    },
     "generic_options": {
       "title": "Generic options",
       "type": "object",
@@ -23,59 +82,10 @@
   },
   "allOf": [
     {
+      "$ref": "#/$defs/input"
+    },
+    {
       "$ref": "#/$defs/generic_options"
     }
-  ],
-  "properties": {
-    "input_vcf": {
-      "type": "string",
-      "description": "Path to input VCF file.",
-      "pattern": "^\\S+\\.vcf(.gz)?$",
-      "format": "file-path"
-    },
-    "input_variant": {
-      "type": "string",
-      "pattern": "^(\\S+)-(\\S+)-(\\S+)-(\\S+)$"
-    },
-    "input_ped": {
-      "type": "string",
-      "description": "Path to the pedgree file for trio mode",
-      "format": "file-path"
-    },
-    "input_hpo": {
-      "type": "string",
-      "description": "Path to input HPO file.",
-      "format": "file-path"
-    },
-    "outdir": {
-      "type": "string",
-      "default": "./out",
-      "description": "Output directory."
-    },
-    "run_id": {
-      "type": "string",
-      "default": "run1",
-      "description": "Unique identifier for this run."
-    },
-    "ref_ver": {
-      "type": "string",
-      "default": "hg19",
-      "enum": ["hg19", "hg38"],
-      "description": "Reference genome version"
-    },
-    "ref_dir": {
-      "type": "string",
-      "description": "Path to aim pipeline dependencies directory.",
-      "format": "directory-path"
-    },
-    "bed_filter": {
-      "type": "string",
-      "description": "Path to a BED file to perform an analysis only for regions of interest"
-    },
-    "exome_filter": {
-      "type": "boolean",
-      "description": "Enable exonic filter. Addition will filter out variants outside of exonic region"
-    }
-  },
-  "required": ["outdir", "run_id", "ref_ver", "ref_dir"]
+  ]
 }
