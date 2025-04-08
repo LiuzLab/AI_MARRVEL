@@ -25,7 +25,7 @@ params.yaml
 .Rhistory
 .RData
 
-# Remove some files from model interpreter
+# Ignore some files from model interpreter
 */model_interpreter/results
 */model_interpreter/templates
 */model_interpreter/main.nf
