@@ -7,7 +7,7 @@ include {
 } from "./modules/local/utils"
 
 include {
-    BUILD_REFERENCE_INDEX
+    BUILD_REFERENCE_INDEX; GENERATE_INPUT_VCF; NORMALIZE_VCF
 } from "./modules/local/singleton"
 
 include {
@@ -46,7 +46,8 @@ workflow {
         vcf = VCF_PRE_PROCESS.out.vcf
     } else if (params.input_variant) {
         GENERATE_INPUT_VCF(params.input_variant)
-        vcf = GENERATE_INPUT_VCF.out.vcf
+        NORMALIZE_VCF(GENERATE_INPUT_VCF.out.vcf)
+        vcf = NORMALIZE_VCF.out.vcf
     }
 
     GENERATE_SINGLETON_FEATURES(vcf, hpo)
