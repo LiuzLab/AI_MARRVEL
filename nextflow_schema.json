@@ -20,7 +20,7 @@
         "input_variant": {
           "type": "string",
           "description": "Input variant in the format 'chrom-pos-ref-alt', e.g., '1-123456-A-T'.",
-          "pattern": "^(\\S+)-(\\S+)-(\\S+)-(\\S+)$"
+          "pattern": "^(\\S+)_(\\S+)_(\\S+)_(\\S+)$"
         },
         "input_hpo": {
           "type": "string",
