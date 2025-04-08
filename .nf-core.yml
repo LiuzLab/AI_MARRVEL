@@ -39,7 +39,6 @@ lint:
     - docs/images/nf-core-AI_MARRVEL_logo_dark.png
     - docs/output.md
     - docs/README.md
-    - docs/README.md
     - docs/usage.md
     - ro-crate-metadata.json
 
