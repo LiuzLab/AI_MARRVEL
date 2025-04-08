@@ -3,11 +3,12 @@ name: nf-core linting
 on:
   push:
     branches:
-      - main
-      - nf_core
+      # - main
+      - "**"
   pull_request:
     branches:
       - main
+      - develop
 
 jobs:
   pre-commit:
