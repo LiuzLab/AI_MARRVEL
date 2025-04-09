@@ -10,7 +10,7 @@ import shutil
 
 def process_sample(data_folder, sample_id, default_pred, labeling=False):
     if labeling:
-        raise 'The below code was not tested with real data with labeling=True'
+        raise NotImplementedError('The below code was not tested with real data with labeling=True')
 
     recessive_folder = f"{data_folder}/recessive_matrix/"
     if not os.path.exists(recessive_folder):
@@ -21,7 +21,7 @@ def process_sample(data_folder, sample_id, default_pred, labeling=False):
         os.mkdir(tmp_folder)
 
     # read feature matrix for single var
-    feature_fn = f"{sample_id}.csv"
+    feature_fn = f"{sample_id}.default_prediction.csv"
     # feature_df = []
     # for feature_fn in feature_fns:
     if "csv" in feature_fn:
