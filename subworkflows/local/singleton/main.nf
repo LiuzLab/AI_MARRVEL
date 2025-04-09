@@ -66,7 +66,7 @@ workflow PHRANK_SCORING {
     main:
     VCF_TO_VARIANTS(vcf)
     VARIANTS_TO_ENSEMBL(VCF_TO_VARIANTS.out, params.ref_loc)
-    ENSEMBL_TO_GENESYM(VARIANTS_TO_ENSEMBL.out, params.ref_to_sym, params.ref_sorted_sym)
+    ENSEMBL_TO_GENESYM(VARIANTS_TO_ENSEMBL.out, params.ref_to_sym)
     GENESYM_TO_PHRANK(ENSEMBL_TO_GENESYM.out,
                     file(params.input_hpo),
                     params.phrank_dagfile,

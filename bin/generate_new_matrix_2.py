@@ -20,7 +20,6 @@ def main():
     ### get original coordinates ###
     merged["varId"] = merged["varId"].apply(lambda x: x.split("_E")[0])
 
-    path_phrank = sys.argv[1] + ".phrank.txt"    
     phr = pd.read_csv(path_phrank, sep="\t", names=["ENSG", "phrank"])
     merged = merged.merge(phr, left_on="geneEnsId", right_on="ENSG", how="left")
 

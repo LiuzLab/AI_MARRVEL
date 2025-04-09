@@ -79,7 +79,6 @@ def addDependentParams(params) {
 
     params.ref_loc = "${params.ref_dir}/phrank/${params.ref_ver}/${params.ref_assembly}_symbol_to_location.txt"
     params.ref_to_sym = "${params.ref_dir}/phrank/${params.ref_ver}/ensembl_to_symbol.txt"
-    params.ref_sorted_sym = "${params.ref_dir}/phrank/${params.ref_ver}/gene_to_symbol_sorted.txt"
 
     // FILTER BED
     // EXONIC FILTER BED

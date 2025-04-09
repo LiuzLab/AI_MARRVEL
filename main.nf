@@ -33,7 +33,13 @@ workflow {
             BUILD_REFERENCE_INDEX.out.fasta_dict,
             params.chrmap,
         )
-        vcf = VCF_PRE_PROCESS_TRIO.out.vcf
+        VCF_PRE_PROCESS(
+            VCF_PRE_PROCESS_TRIO.out.vcf,
+            BUILD_REFERENCE_INDEX.out.fasta,
+            BUILD_REFERENCE_INDEX.out.fasta_index,
+            BUILD_REFERENCE_INDEX.out.fasta_dict,
+        )
+        vcf = VCF_PRE_PROCESS.out.vcf
     } else if (params.input_vcf) {
         BUILD_REFERENCE_INDEX()
         VCF_PRE_PROCESS(
