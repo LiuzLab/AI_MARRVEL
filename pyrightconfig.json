@@ -1,12 +1,10 @@
 {
-    "include": [
-      "bin"
-    ],
-  
-    "defineConstant": {
-      "DEBUG": true
-    },
-  
-    "reportMissingImports": "error",
-    "reportMissingTypeStubs": false,
+  "include": ["bin"],
+
+  "defineConstant": {
+    "DEBUG": true
+  },
+
+  "reportMissingImports": "error",
+  "reportMissingTypeStubs": false
 }

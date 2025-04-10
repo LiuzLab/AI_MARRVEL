@@ -18,11 +18,11 @@ vcf_template = string.Template("""
 ##FORMAT=<ID=SB,Number=4,Type=Integer,Description="Per-sample component statistics which comprise the Fisher's Exact Test to detect strand bias.">
 ##FILTER=<ID=PASS,Description="All filters passed">
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	SAMPLE
-$chrom	$pos	.	$ref	$alt	.	.	.	GT:AD:DP:GQ:PL	0/1:7,5:12:99:142,0,214
+$chrom	$pos	${chrom}_${pos}_${ref}_${alt}	$ref	$alt	.	.	.	GT:AD:DP:GQ:PL	0/1:7,5:12:99:142,0,214
 """.strip())
 
 def main(variant):
-    chrom, pos, ref, alt = variant.split("-")
+    chrom, pos, ref, alt = variant.split("_")
     with open("input.vcf", "w", encoding="ascii") as text_file:
         text_file.write(vcf_template.substitute(
             chrom=chrom,

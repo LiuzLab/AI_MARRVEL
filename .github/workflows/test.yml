@@ -20,7 +20,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-
       - name: Install jq
         run: sudo apt-get install jq
 
@@ -80,7 +79,6 @@ jobs:
         run: |
           aws sqs delete-queue --queue-url ${{ steps.step_queue.outputs.queue_url }}
           echo "Queue deleted: ${{ steps.step_queue.outputs.queue_url }}"
-
 
       - name: Close Pull Request on Failure
         if: ${{ failure() }} && github.event_name == 'pull_request'

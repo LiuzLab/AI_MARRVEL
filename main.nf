@@ -1,11 +1,13 @@
 nextflow.enable.dsl = 2
 
+include { validateParameters } from 'plugin/nf-schema'
+
 include {
-    showUsage; showVersion; validateInputParams; addDependentParams
+    showVersion; addDependentParams
 } from "./modules/local/utils"
 
 include {
-    BUILD_REFERENCE_INDEX
+    BUILD_REFERENCE_INDEX; GENERATE_INPUT_VCF; NORMALIZE_VCF
 } from "./modules/local/singleton"
 
 include {
@@ -16,9 +18,8 @@ include {
     VCF_PRE_PROCESS; GENERATE_SINGLETON_FEATURES; PREDICTION
 } from "./subworkflows/local/singleton"
 
-showUsage()
 showVersion()
-validateInputParams()
+validateParameters()
 addDependentParams(params)
 
 workflow {
@@ -51,7 +52,8 @@ workflow {
         vcf = VCF_PRE_PROCESS.out.vcf
     } else if (params.input_variant) {
         GENERATE_INPUT_VCF(params.input_variant)
-        vcf = GENERATE_INPUT_VCF.out.vcf
+        NORMALIZE_VCF(GENERATE_INPUT_VCF.out.vcf)
+        vcf = NORMALIZE_VCF.out.vcf
     }
 
     GENERATE_SINGLETON_FEATURES(vcf, hpo)

@@ -1,74 +1,10 @@
-
-def showUsage() {
-    if (params.help) {
-        def helpFile = file(params.usage_file)  // Specify your Markdown file path here
-        if (helpFile.exists()) {
-            println helpFile.text
-        } else {
-            println """
-            Sorry something went wrong, usage file not found!
-            Please vist our website for more info : https://ai-marrvel.readthedocs.io/en/latest/
-            """
-        }
-        exit 0
-    }
-}
-
 def showVersion() {
     if (!params.version) {
         return
     }
 
-    println "1.1.0"
+    println workflow.manifest.version
     exit 0
-}
-
-def validateInputParams() {
-    def checkPathParamMap = [
-        "input_hpo": params.input_hpo,
-        "ref_dir"  : params.ref_dir,
-        "ref_ver"  : params.ref_ver,
-        "outdir"   : params.outdir,
-    ]
-
-    checkPathParamMap.each { paramName, paramValue ->
-        if (paramValue)
-            return
-
-        println("Input parameter '${paramName}' not specified or is null!")
-        println("To see usage and available parameters run `nextflow run main.nf --help`")
-        exit 1
-    }
-
-    if (params.input_variant && params.input_vcf) {
-        println("Error: Cannot use '--input_variant' with --input_vcf'")
-        println("To see usage and available parameters run `nextflow run main.nf --help`")
-        exit 1
-    }
-
-    if (params.input_vcf && !params.input_vcf.endsWith(".vcf") && !params.input_vcf.endsWith(".vcf.gz")) {
-        println("Error: '--input_vcf' value '${params.input_vcf}' should be a VCF file (.vcf) or (.vcf.gz)")
-        println("To see usage and available parameters run `nextflow run main.nf --help`")
-        exit 1
-    }
-
-    if (params.input_variant && params.input_variant.count('-') != 3) {
-        println("Error: '--input_variant' should be formated like 'X-47038564-T-C'")
-        println("To see usage and available parameters run `nextflow run main.nf --help`")
-        exit 1
-    }
-
-    if (!file(params.ref_dir).isDirectory()) {
-        println("Error: '--ref_dir' should be an directory.")
-        println("To see usage and available parameters run `nextflow run main.nf --help`")
-        exit 1
-    }
-
-    if (!params.ref_ver.equals("hg19") && !params.ref_ver.equals("hg38") ) {
-        println("Error: '--ref_ver' value ${params.ref_ver} should be either set to 'hg19' or 'hg38'.")
-        println("To see usage and available parameters run `nextflow run main.nf --help`")
-        exit 1
-    }
 }
 
 def addDependentParams(params) {
