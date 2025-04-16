@@ -24,7 +24,7 @@ def addDependentParams(params) {
     } else if (params.exome_filter) {
         params.ref_filter_bed = params.ref_exonic_filter_bed
     } else {
-        params.ref_filter_bed = "/dev/null"
+        params.ref_filter_bed = moduleDir.resolve("./assets/NO_FILE")
     }
 
     // for phrank
