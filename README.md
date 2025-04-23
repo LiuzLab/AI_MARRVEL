@@ -45,7 +45,7 @@ AIM utilizes various databases for variant annotation, all of which have been co
 ### Get the software
 AIM is released as a Nextflow pipeline for easy distribution. To get it:
 ```bash
-$ git clone -b nextflow_conversion https://github.com/LiuzLab/AI_MARRVEL
+$ git clone https://github.com/LiuzLab/AI_MARRVEL
 $ cd AI_MARRVEL
 $ nextflow run main.nf --version
 ```
