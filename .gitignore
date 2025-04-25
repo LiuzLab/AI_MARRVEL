@@ -14,8 +14,8 @@ test_output/
 # Nextflow Related
 .nextflow*
 .nextflow/
-work/
-out/
+work*/
+out*/
 trace-*.txt
 report-*.html
 timeline-*.html
