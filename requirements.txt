@@ -1,7 +1,7 @@
 pandas==1.4.3
 phrank
 scipy
-xgboost
+xgboost<=2.1.4
 tqdm
 matplotlib
 requests

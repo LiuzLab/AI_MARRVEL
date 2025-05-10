@@ -4,11 +4,11 @@ import string
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument("variant", type=str)
+parser.add_argument("variants_file", type=str)
 
 args = parser.parse_args()
 
-vcf_template = string.Template("""
+vcf_header = """
 ##fileformat=VCFv4.2
 ##FORMAT=<ID=AD,Number=.,Type=Integer,Description="Allelic depths for the ref and alt alleles in the order listed">
 ##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Approximate read depth (reads with MQ=255 or with bad mates are filtered)">
@@ -18,18 +18,30 @@ vcf_template = string.Template("""
 ##FORMAT=<ID=SB,Number=4,Type=Integer,Description="Per-sample component statistics which comprise the Fisher's Exact Test to detect strand bias.">
 ##FILTER=<ID=PASS,Description="All filters passed">
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	SAMPLE
+""".strip()
+
+vcf_row_template = string.Template("""
 $chrom	$pos	${chrom}_${pos}_${ref}_${alt}	$ref	$alt	.	.	.	GT:AD:DP:GQ:PL	0/1:7,5:12:99:142,0,214
 """.strip())
 
-def main(variant):
-    chrom, pos, ref, alt = variant.split("_")
-    with open("input.vcf", "w", encoding="ascii") as text_file:
-        text_file.write(vcf_template.substitute(
+def main(variants_file):
+    with open(variants_file, "r") as f:
+        variants = [line.strip() for line in f if line.strip()]
+
+    vcf_rows = []
+    for variant in variants:
+        chrom, pos, ref, alt = variant.split("_")
+        vcf_row = vcf_row_template.substitute(
             chrom=chrom,
             pos=pos,
             ref=ref,
             alt=alt,
-        ))
+        )
+        vcf_rows.append(vcf_row)
+
+    with open("input.vcf", "w", encoding="ascii") as text_file:
+        text_file.write(vcf_header + "\n")
+        text_file.write("\n".join(vcf_rows))
 
 if __name__ == "__main__":
     main(**vars(args))
