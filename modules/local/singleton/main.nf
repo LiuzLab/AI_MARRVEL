@@ -48,7 +48,7 @@ process VALIDATE_VCF {
     path "$vcf", emit: vcf
 
     """
-    # vcf-validator $vcf
+    vcf-validator $vcf
     """
 }
 
