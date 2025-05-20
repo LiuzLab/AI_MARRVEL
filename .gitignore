@@ -1,10 +1,9 @@
 # General
 **/__pycache__
+**/.DS_Store
+.vscode/
 bcftools-1.9.tar.bz2
 run/bedtools
-.vscode/
-.DS_Store
-*/.DS_Store
 test_data/
 test_ref/
 test_output/
@@ -14,8 +13,9 @@ test_output/
 # Nextflow Related
 .nextflow*
 .nextflow/
-work/
-out/
+work*/
+out*/
+store*/
 trace-*.txt
 report-*.html
 timeline-*.html

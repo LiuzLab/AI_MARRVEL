@@ -37,6 +37,11 @@
           "default": "./out",
           "description": "Output directory."
         },
+        "storedir": {
+          "type": "string",
+          "default": "./store",
+          "description": "Output directory."
+        },
         "ref_dir": {
           "type": "string",
           "description": "Path to aim pipeline dependencies directory.",
