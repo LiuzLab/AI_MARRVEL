@@ -87,7 +87,7 @@ process FILTER_BED {
 
 process BUILD_REFERENCE_INDEX {
     container "broadinstitute/gatk"
-    storeDir "${params.outdir}/general/reference_index/"
+    storeDir "${params.storedir}/general/reference_index/"
 
     output:
     path "final_${params.ref_ver}.fa", emit: fasta

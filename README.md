@@ -59,6 +59,7 @@ $ nextflow run main.nf  --ref_dir <PATH_TO_REFERENCE_DIRECTORY>
                   --input_vcf <PATH_TO_INPUT_VCF_FILE>
                   --input_hpo <PATH_TO_INPUT_HPO_FILE>
                   --outdir <PATH_TO_OUTPUT_DIRECTORY>
+                  --storedir <PATH_TO_STORE_DIRECTORY>
                   --bed_filter <PATH_TO_BED_FILE> # Optional
                   --run_id [Sample Id] # Optional, default: 1
                   --ref_ver [Reference genome: hg19/hg38] # Optional, default: hg19
