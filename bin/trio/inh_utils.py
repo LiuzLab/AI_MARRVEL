@@ -24,13 +24,13 @@ def matchID_in_inheritance(score_file, singleton_rank, inheritance_file, mode='t
     inh_df['varid'] = inh_df['varid'].str.replace('^chr', '', regex=True)
 
     
-    score_df_2 = score_df.loc[:,['varId','varId_dash','geneEnsId']].copy()
+    score_df_2 = score_df.loc[:,['varId','geneEnsId']].copy()
     score_df_2['varId'] = score_df_2['varId'].str.split('_').str[0] + '_'+\
                           score_df_2['varId'].str.split('_').str[1] + '_'+\
                           score_df_2['varId'].str.split('_').str[2] + '_'+\
                           score_df_2['varId'].str.split('_').str[3]
     score_df_2 = score_df_2.loc[~score_df_2.duplicated()]
-    score_df_2 = score_df_2.groupby(by='varId', as_index=False).agg({'geneEnsId' : ','.join, 'varId_dash' : 'first'})  
+    score_df_2 = score_df_2.groupby(by='varId', as_index=False).agg({'geneEnsId' : ','.join})  
     score_df_2['geneEnsId'] = score_df_2['geneEnsId'].str.replace('-','').str.rstrip(',')
     n_rows = score_df_2.shape[0]
     n_varid = len(np.unique(score_df_2['varId']))
@@ -40,17 +40,16 @@ def matchID_in_inheritance(score_file, singleton_rank, inheritance_file, mode='t
     score_df_2.index = score_df_2['varId']
     
     inh_df = inh_df.loc[inh_df['varid'].isin(score_df_2['varId'])].copy()
-    inh_df['varId_dash'] = score_df_2.loc[inh_df['varid'], 'varId_dash'].tolist()
     inh_df['geneEnsId'] = score_df_2.loc[inh_df['varid'], 'geneEnsId'].tolist()
 
-    assert np.all(inh_df['varId_dash'].isin(rank_df.index))
+    assert np.all(inh_df['varid'].isin(rank_df.index))
 
 
     if mode == 'test':
         return inh_df
 
     else:
-        if np.all(rank_df.loc[rank_df['is_causal']==1].index.isin(inh_df['varId_dash'])):
+        if np.all(rank_df.loc[rank_df['is_causal']==1].index.isin(inh_df['varid'])):
             return inh_df
         else:
             sys.exit('%s: not all causal variants in inheritance file!'%(ID))
@@ -69,7 +68,7 @@ def matrix_inh(inh_df, rank_file):
     rank_df.columns = features_name
 
     # Load in inheritance file
-    inh_df.index = inh_df['varId_dash']
+    inh_df.index = inh_df['varid']
     # feature engineering
     inh_df.loc[inh_df['GATK']=='Inherited','GATK'] = 0
     inh_df.loc[inh_df['GATK']=='loConfDeNovo','GATK'] = 1
@@ -132,7 +131,7 @@ def matrix_inh(inh_df, rank_file):
     rank_df['Gene_vars_Unknown'] = rank_df_new['Gene_vars_Unknown']
 
     rank_df['No.Risk.Var'] = rank_df['No.Var.H'] + rank_df['No.Var.M']
-    rank_df['chrom'] = rank_df.index.str.split('-').str[0]
+    rank_df['chrom'] = rank_df.index.str.split('_').str[0]
     rank_df['chrom'] = rank_df['chrom'].astype(int)
 
     rank_df['Homozygous_Recessive'] = ((rank_df['zyg']==2) & (rank_df['chrom']!=23)).astype(int)

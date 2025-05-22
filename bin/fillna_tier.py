@@ -21,6 +21,7 @@ def getValFromStr(valStr: str, select: str = "min"):
 
 def feature_engineering(score_file, tier_file):
     variable_name = [
+        "varId",
         "varId_dash",
         "hgmdSymptomScore",
         "omimSymMatchFlag",
@@ -102,10 +103,11 @@ def feature_engineering(score_file, tier_file):
     patient = score_file.copy()
 
     patient = patient[variable_name]
+    patient["varId"] = patient["varId"].str.split("_-").str[0] # integenic_variant
     patient = patient.fillna("-")
     indel_index = [
-        len(i.split("-")[-1]) != 1 or len(i.split("-")[-2]) != 1
-        for i in patient["varId_dash"].to_list()
+        len(i.split("_")[-1]) != 1 or len(i.split("_")[-2]) != 1
+        for i in patient["varId"].to_list()
     ]
 
     patient.loc[patient["phrank"] == "-", "phrank"] = 0
@@ -921,7 +923,7 @@ def feature_engineering(score_file, tier_file):
             "ESP6500_EA_AF",
         ],
     ]
-    patient = patient.groupby(["varId_dash"], sort=False)[variable_name[1:]].max()
+    patient = patient.groupby(["varId"], sort=False)[variable_name[1:]].max()
     patient.loc[
         :,
         [
@@ -969,6 +971,8 @@ def feature_engineering(score_file, tier_file):
     tier.loc[:, ["TierAD", "TierAR", "TierAR.adj"]] = -tier.loc[
         :, ["TierAD", "TierAR", "TierAR.adj"]
     ]
+    tier["Uploaded_variation"] = tier["Uploaded_variation"].str.split('_E').str[0]
+
     tier = tier.groupby(["Uploaded_variation"], sort=False)[tier_vars].max()
     tier.loc[:, ["TierAD", "TierAR", "TierAR.adj"]] = -tier.loc[
         :, ["TierAD", "TierAR", "TierAR.adj"]

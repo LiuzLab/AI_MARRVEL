@@ -7,7 +7,7 @@ include {
 } from "./modules/local/utils"
 
 include {
-    BUILD_REFERENCE_INDEX; PHENOPACKET_TO_VARIANTS_AND_HPOS; GENERATE_INPUT_VCF; GENERATE_INPUT_VARIANTS
+    BUILD_REFERENCE_INDEX; BUILD_REFERENCE_INDEX as BUILD_REFERENCE_INDEX_TRIO; PHENOPACKET_TO_VARIANTS_AND_HPOS; GENERATE_INPUT_VCF; GENERATE_INPUT_VARIANTS
 } from "./modules/local/singleton"
 
 include {
@@ -40,13 +40,13 @@ workflow {
         vcf = GENERATE_INPUT_VCF.out.vcf
         hpo = params.input_hpo
     } else if (params.input_ped && params.input_vcf) {
-        BUILD_REFERENCE_INDEX()
+        BUILD_REFERENCE_INDEX_TRIO()
         VCF_PRE_PROCESS_TRIO(
             file(params.input_vcf),
             file(params.input_ped),
-            BUILD_REFERENCE_INDEX.out.fasta,
-            BUILD_REFERENCE_INDEX.out.fasta_index,
-            BUILD_REFERENCE_INDEX.out.fasta_dict,
+            BUILD_REFERENCE_INDEX_TRIO.out.fasta,
+            BUILD_REFERENCE_INDEX_TRIO.out.fasta_index,
+            BUILD_REFERENCE_INDEX_TRIO.out.fasta_dict,
             params.chrmap,
         )
         vcf = VCF_PRE_PROCESS_TRIO.out.vcf

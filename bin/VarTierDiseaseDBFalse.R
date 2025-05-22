@@ -4,6 +4,7 @@ library(tidyr)
 library(readr)
 library(tibble)
 library(dplyr)
+library(stringr)
 library(data.table)
 # set adj.k value to adjust Tier
 adj.k <- 1.05
@@ -22,7 +23,7 @@ genemap2.Inh.F <- readr::read_tsv(omim_inheritance)
 
 # load the input ####
 anno.columns <- c(
-  "varId_dash",
+  "varId",
   "zyg",
   "geneSymbol",
   "geneEnsId",
@@ -39,6 +40,8 @@ anno.columns <- c(
 
 anno.orig <- readr::read_csv(in.f) 
 anno <- anno.orig[, anno.columns]
+anno <- anno %>% mutate(varId = str_split(varId, "_-", simplify = TRUE)[, 1])  # intergenic_variant
+anno <- anno %>% mutate(varId = str_split(varId, "_E", simplify = TRUE)[, 1])  # transcript
 
 # rename the col
 colnames(anno) <- c(
