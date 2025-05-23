@@ -17,10 +17,25 @@ process VCF_PRE_PROCESS_TRIO {
     script:
     """
     # Extract proband, maternal, and paternal id from ped file, sample IDs in ped should be the same as in the vcf file
-    lastrow=\$(tail -n 1 $ped)
-    SAMPLE_P=\$(echo "\$lastrow" | awk '{print \$2}')
-    SAMPLE_F=\$(echo "\$lastrow" | awk '{print \$3}')
-    SAMPLE_M=\$(echo "\$lastrow" | awk '{print \$4}')
+
+    # 1) Make sure there are exactly 3 non-empty lines
+    row_count=\$(awk 'NF' "$ped" | wc -l)
+    if [ "\$row_count" -ne 3 ]; then
+        echo "ERROR: Expected 3 rows in '$ped' (found \$row_count)" >&2
+        exit 1
+    fi
+
+    # 2) Find the proband row (both parent fields != 0)
+    #    PED format: 1.FAMID 2.INDIV 3.PID 4.MID 5.SEX 6.PHENOTYPE
+    proband_line=\$(awk '\$3 != "0" && \$4 != "0" { print; exit }' "$ped")
+    if [ -z "\$proband_line" ]; then
+        echo "ERROR: No row with both paternal (field 3) and maternal (field 4) IDs found" >&2
+        exit 1
+    fi
+
+    # 3) Parse out the IDs
+    #    We only care about fields 2,3,4 here.
+    read -r _ SAMPLE_P SAMPLE_F SAMPLE_M _ <<< "\$proband_line"
 
     echo "Normalize joint VCF file, split multiallelics rows"
     bcftools norm --multiallelics -both \
