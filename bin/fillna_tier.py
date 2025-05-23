@@ -971,7 +971,6 @@ def feature_engineering(score_file, tier_file):
     tier.loc[:, ["TierAD", "TierAR", "TierAR.adj"]] = -tier.loc[
         :, ["TierAD", "TierAR", "TierAR.adj"]
     ]
-    tier["Uploaded_variation"] = tier["Uploaded_variation"].str.split('_E').str[0]
 
     tier = tier.groupby(["Uploaded_variation"], sort=False)[tier_vars].max()
     tier.loc[:, ["TierAD", "TierAR", "TierAR.adj"]] = -tier.loc[
