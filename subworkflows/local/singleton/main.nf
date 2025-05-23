@@ -62,13 +62,14 @@ workflow VCF_PRE_PROCESS {
 workflow PHRANK_SCORING {
     take:
     vcf
+    hpo
 
     main:
     VCF_TO_VARIANTS(vcf)
     VARIANTS_TO_ENSEMBL(VCF_TO_VARIANTS.out, params.ref_loc)
     ENSEMBL_TO_GENESYM(VARIANTS_TO_ENSEMBL.out, params.ref_to_sym)
     GENESYM_TO_PHRANK(ENSEMBL_TO_GENESYM.out,
-                    file(params.input_hpo),
+                    hpo,
                     params.phrank_dagfile,
                     params.phrank_disease_annotation,
                     params.phrank_gene_annotation,
@@ -112,7 +113,7 @@ workflow GENERATE_SINGLETON_FEATURES {
         file(params.ref_annot_dir)
     )
 
-    PHRANK_SCORING(vcf)
+    PHRANK_SCORING(vcf, hpo)
     ANNOTATE_TIER (
         ANNOTATE_BY_MODULES.out.scores,
         PHRANK_SCORING.out,
@@ -133,6 +134,7 @@ workflow GENERATE_SINGLETON_FEATURES {
         file(params.ref_mod5_diffusion_dir),
         file(params.ref_merge_expand_dir)
     )
+
     emit:
     merged_matrix = MERGE_SCORES_BY_CHROMOSOME.out.merged_matrix
     merged_compressed_scores = MERGE_SCORES_BY_CHROMOSOME.out.merged_compressed_scores

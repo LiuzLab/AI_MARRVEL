@@ -16,6 +16,7 @@ test_output/
 .nextflow/
 work*/
 out*/
+dag-*.html
 trace-*.txt
 report-*.html
 timeline-*.html

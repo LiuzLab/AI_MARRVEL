@@ -7,7 +7,7 @@ include {
 } from "./modules/local/utils"
 
 include {
-    BUILD_REFERENCE_INDEX; GENERATE_INPUT_VCF; NORMALIZE_VCF
+    BUILD_REFERENCE_INDEX; PHENOPACKET_TO_VARIANTS_AND_HPOS; GENERATE_INPUT_VCF; GENERATE_INPUT_VARIANTS
 } from "./modules/local/singleton"
 
 include {
@@ -23,8 +23,23 @@ validateParameters()
 addDependentParams(params)
 
 workflow {
-    hpo = params.input_hpo
-    if (params.input_ped) {
+    skip_preprocess_vcf_flag = false
+
+    if (params.input_phenopacket) {
+        skip_preprocess_vcf_flag = true
+
+        PHENOPACKET_TO_VARIANTS_AND_HPOS(params.input_phenopacket)
+        GENERATE_INPUT_VCF(PHENOPACKET_TO_VARIANTS_AND_HPOS.out.variants)
+        vcf = GENERATE_INPUT_VCF.out.vcf
+        hpo = PHENOPACKET_TO_VARIANTS_AND_HPOS.out.hpo
+    } else if (params.input_variant) {
+        skip_preprocess_vcf_flag = true
+
+        GENERATE_INPUT_VARIANTS(params.input_variant)
+        GENERATE_INPUT_VCF(GENERATE_INPUT_VARIANTS.out.variants)
+        vcf = GENERATE_INPUT_VCF.out.vcf
+        hpo = params.input_hpo
+    } else if (params.input_ped && params.input_vcf) {
         BUILD_REFERENCE_INDEX()
         VCF_PRE_PROCESS_TRIO(
             file(params.input_vcf),
@@ -34,26 +49,28 @@ workflow {
             BUILD_REFERENCE_INDEX.out.fasta_dict,
             params.chrmap,
         )
-        VCF_PRE_PROCESS(
-            VCF_PRE_PROCESS_TRIO.out.vcf,
-            BUILD_REFERENCE_INDEX.out.fasta,
-            BUILD_REFERENCE_INDEX.out.fasta_index,
-            BUILD_REFERENCE_INDEX.out.fasta_dict,
-        )
-        vcf = VCF_PRE_PROCESS.out.vcf
+        vcf = VCF_PRE_PROCESS_TRIO.out.vcf
+        hpo = params.input_hpo
     } else if (params.input_vcf) {
+        vcf = file(params.input_vcf)
+        hpo = params.input_hpo
+    } else {
+        error "No input VCF or phenopacket or variant provided."
+    }
+
+    if (!hpo) {
+        hpo = file(moduleDir.resolve("./assets/NO_FILE"))
+    }
+
+    if (!skip_preprocess_vcf_flag) {
         BUILD_REFERENCE_INDEX()
         VCF_PRE_PROCESS(
-            file(params.input_vcf),
+            vcf,
             BUILD_REFERENCE_INDEX.out.fasta,
             BUILD_REFERENCE_INDEX.out.fasta_index,
             BUILD_REFERENCE_INDEX.out.fasta_dict,
         )
         vcf = VCF_PRE_PROCESS.out.vcf
-    } else if (params.input_variant) {
-        GENERATE_INPUT_VCF(params.input_variant)
-        NORMALIZE_VCF(GENERATE_INPUT_VCF.out.vcf)
-        vcf = NORMALIZE_VCF.out.vcf
     }
 
     GENERATE_SINGLETON_FEATURES(vcf, hpo)

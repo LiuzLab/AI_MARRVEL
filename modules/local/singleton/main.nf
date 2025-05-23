@@ -1,13 +1,40 @@
+process PHENOPACKET_TO_VARIANTS_AND_HPOS {
+    input:
+    path phenopacket_json
+
+    output:
+    path "${params.run_id}.variants.txt", emit: variants
+    path "${params.run_id}.hpos.txt", emit: hpo
+
+    """
+    jq -r '.phenotypicFeatures[] | select(.excluded != true) | .type.id' $phenopacket_json > ${params.run_id}.hpos.txt
+    jq -r '.interpretations[].diagnosis.genomicInterpretations[].variantInterpretation.variationDescriptor.vcfRecord | "\\(.chrom | sub("^chr";""))_\\(.pos)_\\(.ref)_\\(.alt)"' $phenopacket_json > ${params.run_id}.variants.unsorted.txt
+    sort -t'_' -k1,1V -k2,2n -k3,3 -k4,4 ${params.run_id}.variants.unsorted.txt > ${params.run_id}.variants.txt
+    """
+}
+
+process GENERATE_INPUT_VARIANTS {
+    input:
+    val input_variant
+
+    output:
+    path "${params.run_id}.variants.txt", emit: variants
+
+    """
+    echo $input_variant > ${params.run_id}.variants.txt
+    """
+}
 
 process GENERATE_INPUT_VCF {
     input:
-    val id
+    val variants
 
     output:
-    path "input.vcf", emit: vcf
+    path "input.vcf.gz", emit: vcf
 
     """
-    generate_input_vcf.py $id
+    generate_input_vcf.py $variants
+    bgzip input.vcf
     """
 }
 
@@ -385,6 +412,7 @@ process SPLIT_VCF_BY_CHROMOSOME {
 }
 
 process ANNOTATE_BY_VEP {
+    container 'ensemblorg/ensembl-vep:release_104.3'
     tag "${vcf.simpleName}"
     publishDir "${params.outdir}/${params.run_id}/vep/", mode: "copy"
 
