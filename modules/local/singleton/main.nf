@@ -1,3 +1,20 @@
+import groovy.json.JsonOutput
+
+process GENERATE_MANIFEST_JSON {
+    publishDir "${params.outdir}/${params.run_id}/manifest/", mode: 'copy'
+
+    output:
+    path "manifest.json"
+
+    script:
+    
+    """
+cat <<EOF >> manifest.json
+${JsonOutput.prettyPrint(JsonOutput.toJson(workflow.manifest))}
+EOF
+    """
+}
+
 process PHENOPACKET_TO_VARIANTS_AND_HPOS {
     input:
     path phenopacket_json
