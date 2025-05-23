@@ -17,6 +17,12 @@
           "pattern": "^\\S+\\.vcf(.gz)?$",
           "format": "file-path"
         },
+        "input_phenopacket": {
+          "type": "string",
+          "description": "Path to input phenopacket JSON file.",
+          "pattern": "^\\S+\\.json?$",
+          "format": "file-path"
+        },
         "input_variant": {
           "type": "string",
           "description": "Input variant in the format 'chrom-pos-ref-alt', e.g., '1-123456-A-T'.",

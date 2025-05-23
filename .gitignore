@@ -16,6 +16,7 @@ test_output/
 work*/
 out*/
 store*/
+dag-*.html
 trace-*.txt
 report-*.html
 timeline-*.html
