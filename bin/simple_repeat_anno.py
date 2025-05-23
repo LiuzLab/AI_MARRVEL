@@ -9,11 +9,11 @@ def simple_repeat_anno(sample_id, feature_file, sp_bed_file):
     sample = feature_file
     sample_bed = pd.DataFrame(
         {
-            "chr": sample.index.str.split("-").str[0],
-            "start": sample.index.str.split("-").str[1],
-            "end": sample.index.str.split("-").str[1],
-            "ref": sample.index.str.split("-").str[2],
-            "alt": sample.index.str.split("-").str[3],
+            "chr": sample.varId_dash.str.split("-").str[0],
+            "start": sample.varId_dash.str.split("-").str[1],
+            "end": sample.varId_dash.str.split("-").str[1],
+            "ref": sample.varId_dash.str.split("-").str[2],
+            "alt": sample.varId_dash.str.split("-").str[3],
         }
     )
     sample_bed.to_csv("%s.bed" % (sample_id), index=False, header=False, sep="\t")
@@ -37,7 +37,8 @@ def simple_repeat_anno(sample_id, feature_file, sp_bed_file):
             + "-"
             + sample_sp[4].astype(str)
         )
-        sample["simple_repeat"] = sample.index.isin(
+        # NOTE(JL): This takes O(n^2) time complexity
+        sample["simple_repeat"] = sample.varId_dash.isin(
             sample_sp["var_dash"].to_numpy()
         ).astype(int)
 

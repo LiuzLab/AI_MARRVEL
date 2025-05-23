@@ -332,7 +332,7 @@ process HPO_SIM {
     container 'zhandongliulab/aim-lite-r'
 
     input:
-    path hpo
+    path hpo, name: "input_hpo.txt"
     path omim_hgmd_phen
     path omim_obo
     path omim_genemap2
@@ -344,11 +344,12 @@ process HPO_SIM {
 
     script:
     """
+    cp $hpo hpo.txt
     if [[ -z \$(egrep 'HP:[0-9]{7}' $hpo) ]] ; then
-        echo "HP:0000001" > $hpo
+        echo "HP:0000001" > hpo.txt
     fi
 
-    phenoSim.R $hpo $omim_hgmd_phen $omim_obo $omim_genemap2 $omim_pheno \\
+    phenoSim.R hpo.txt $omim_hgmd_phen $omim_obo $omim_genemap2 $omim_pheno \\
         ${params.run_id}-cz ${params.run_id}-dx
     """
 

@@ -32,6 +32,7 @@ annot = annot[
 
 # get original coordinates
 annot["varId"] = annot["varId"].apply(lambda x: x.split("_E")[0])
+annot["varId"] = annot["varId"].apply(lambda x: x.split("_-")[0])
 
 # rename for final output
 annot = annot.rename(
@@ -39,7 +40,7 @@ annot = annot.rename(
 )
 
 # merge
-test = df.merge(annot, right_on="varId_dash", left_on="Unnamed: 0", how="left")
+test = df.merge(annot, right_on="origId", left_on="Unnamed: 0", how="left")
 
 test.to_csv(
     output_path,

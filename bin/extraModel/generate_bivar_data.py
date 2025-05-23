@@ -94,8 +94,8 @@ def process_sample(data_folder, sample_id, default_pred, labeling=False):
 
     # Calculate variant distance
     recessive_feature_df['var_dist'] = (
-        recessive_feature_df.varId1.str.split('-').apply(lambda x: x[1]).astype(float)
-        - recessive_feature_df.varId2.str.split('-').apply(lambda x: x[1]).astype(float)
+        recessive_feature_df.varId1.str.split('_').apply(lambda x: x[1]).astype(float)
+        - recessive_feature_df.varId2.str.split('_').apply(lambda x: x[1]).astype(float)
     ).abs()
 
     # Calculate label
@@ -113,7 +113,7 @@ def process_sample(data_folder, sample_id, default_pred, labeling=False):
         )
 
     # Create pair id as the legacy did
-    recessive_feature_df = recessive_feature_df.set_index(recessive_feature_df.varId1 + '_' + recessive_feature_df.varId2)
+    recessive_feature_df = recessive_feature_df.set_index(recessive_feature_df.varId1 + '-' + recessive_feature_df.varId2)
 
     # Drop the intermediate columns
     recessive_feature_df = recessive_feature_df.drop(
