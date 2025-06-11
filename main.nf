@@ -7,7 +7,7 @@ include {
 } from "./modules/local/utils"
 
 include {
-    BUILD_REFERENCE_INDEX; BUILD_REFERENCE_INDEX as BUILD_REFERENCE_INDEX_TRIO; PHENOPACKET_TO_VARIANTS_AND_HPOS; GENERATE_INPUT_VCF; GENERATE_INPUT_VARIANTS
+    GENERATE_MANIFEST_JSON; BUILD_REFERENCE_INDEX; BUILD_REFERENCE_INDEX as BUILD_REFERENCE_INDEX_TRIO; PHENOPACKET_TO_VARIANTS_AND_HPOS; GENERATE_INPUT_VCF; GENERATE_INPUT_VARIANTS
 } from "./modules/local/singleton"
 
 include {
@@ -25,6 +25,7 @@ addDependentParams(params)
 workflow {
     skip_preprocess_vcf_flag = false
 
+    GENERATE_MANIFEST_JSON()
     if (params.input_phenopacket) {
         skip_preprocess_vcf_flag = true
 
