@@ -260,6 +260,10 @@ def main():
         varDf = pd.read_csv(
             args.varFile, sep="\t", skiprows=numHeaderSkip,
         )
+
+        # Ignore Low Impact Trascripts.
+        varDf = varDf.groupby("#Uploaded_variation", group_keys=False).apply(lambda g: g[g.IMPACT.isin(["HIGH", "MODERATE"])] if g.IMPACT.isin(["HIGH", "MODERATE"]).any() else g).reset_index(drop=True)
+
         # varDf=varDf[0:10]
         # #do this if need to have a small test
         print("shape:", varDf.shape)
