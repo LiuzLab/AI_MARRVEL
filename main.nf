@@ -25,7 +25,7 @@ addDependentParams(params)
 workflow {
     skip_preprocess_vcf_flag = false
 
-    GENERATE_MANIFEST_JSON()
+    GENERATE_MANIFEST_JSON(params.ref_dir)
     if (params.input_phenopacket) {
         skip_preprocess_vcf_flag = true
 
