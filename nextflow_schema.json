@@ -55,7 +55,7 @@
         },
         "run_id": {
           "type": "string",
-          "default": "run1",
+          "default": "1",
           "description": "Unique identifier for this run."
         },
         "ref_ver": {
