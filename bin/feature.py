@@ -88,6 +88,9 @@ def main():
     parser.add_argument(
         "-genomeRef", "--genomeRef", help="Proivde genome ref: hg19, hg38"
     )
+    parser.add_argument(
+        "-enableLIT", "--enableLIT", help="Boolean flag to ignore/enable low impact transcripts"
+    )
     args = parser.parse_args()
     # check the user args
     checkUserArgs(args)
@@ -96,6 +99,7 @@ def main():
     print("modules:", args.modules)
     moduleList = args.modules.split(",")
     print("modules list:", moduleList)
+    print("low impact transcripts enabled: ", args.enableLIT)
 
     # start time
     start_time = time.time()
@@ -260,9 +264,10 @@ def main():
         varDf = pd.read_csv(
             args.varFile, sep="\t", skiprows=numHeaderSkip,
         )
-
-        # Ignore Low Impact Trascripts.
-        varDf = varDf.groupby("#Uploaded_variation", group_keys=False).apply(lambda g: g[g.IMPACT.isin(["HIGH", "MODERATE"])] if g.IMPACT.isin(["HIGH", "MODERATE"]).any() else g).reset_index(drop=True)
+        
+        # Ignore Low Impact Transcripts (LIT).
+        if str(args.enableLIT).lower() == 'true':
+            varDf = varDf.groupby("#Uploaded_variation", group_keys=False).apply(lambda g: g[g.IMPACT.isin(["HIGH", "MODERATE"])] if g.IMPACT.isin(["HIGH", "MODERATE"]).any() else g).reset_index(drop=True)
 
         # varDf=varDf[0:10]
         # #do this if need to have a small test

@@ -477,7 +477,8 @@ process ANNOTATE_BY_MODULES {
         -patientFileType one \\
         -genomeRef ${params.ref_ver} \\
         -diseaseInh AD \\
-        -modules curate,conserve
+        -modules curate,conserve \\
+        -enableLIT ${params.impact_filter}
 
         mv scores.csv ${vep.baseName}_scores.csv
     """
