@@ -500,16 +500,17 @@ process ANNOTATE_BY_MODULES {
     script:
     """
     feature.py \\
-        -patientHPOsimiOMIM $omim_sim \\
-        -patientHPOsimiHGMD $hgmd_sim \\
-        -varFile ${vep} \\
+        ${params.impact_filter ? "-enableLIT" : ""} \\
+        -diseaseInh AD \\
+        -modules curate,conserve \\
         -inFileType vepAnnotTab \\
         -patientFileType one \\
-        -genomeRef ${params.ref_ver} \\
-        -diseaseInh AD \\
-        -modules curate,conserve
+        -patientHPOsimiOMIM ${omim_sim} \\
+        -patientHPOsimiHGMD ${hgmd_sim} \\
+        -varFile ${vep} \\
+        -genomeRef ${params.ref_ver}
 
-        mv scores.csv ${vep.baseName}_scores.csv
+    mv scores.csv ${vep.baseName}_scores.csv
     """
 }
 

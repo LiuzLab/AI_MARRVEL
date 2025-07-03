@@ -71,6 +71,10 @@
         "exome_filter": {
           "type": "boolean",
           "description": "Enable exonic filter. Addition will filter out variants outside of exonic region"
+        },
+        "impact_filter": {
+          "type": "boolean",
+          "description": "Enable low impact. Addition will enable low impact transcripts."
         }
       },
       "required": ["outdir", "ref_dir", "run_id", "ref_ver"]
