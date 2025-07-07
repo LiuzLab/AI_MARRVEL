@@ -606,7 +606,6 @@ process PREDICTION {
     path "conf_4Model/${params.run_id}_recessive_predictions.csv", optional: true
     path "conf_4Model/${params.run_id}_nd_predictions.csv", optional: true
     path "conf_4Model/${params.run_id}_nd_recessive_predictions.csv", optional: true
-    path "conf_4Model/integrated/*.csv"
     path "final_matrix_expanded/*.csv.gz"
     path "shap_outputs"
 

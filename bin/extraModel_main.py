@@ -157,13 +157,6 @@ def AIM(data_folder, sample_id):
     else:
         # AIM found no recessive variant pair
         pass
-
-    print(f"Integrating all information for sample {sample_id}...")
-    ######### Construction Paused here #########
-    integrated_df = integrate_output(out_folder, data_folder, sample_id)
-    if not os.path.exists(f"{out_folder}/integrated"):
-        os.mkdir(f"{out_folder}/integrated")
-    integrated_df.to_csv(f"{out_folder}/integrated/{sample_id}_integrated.csv")
     return
 
 
