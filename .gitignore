@@ -9,18 +9,19 @@ test_ref/
 test_output/
 **/.ipynb_checkpoints/
 *.ipynb
+.nfs*
 
 # Nextflow Related
-.nextflow*
-.nextflow/
-work*/
-out*/
-store*/
-dag-*.html
-trace-*.txt
-report-*.html
-timeline-*.html
-params.yaml
+/.nextflow*
+/.nextflow/
+/work*/
+/out*/
+/store*/
+/dag-*.html
+/trace-*.txt
+/report-*.html
+/timeline-*.html
+/params.yaml
 
 # Ignore R history and session files
 .Rhistory
