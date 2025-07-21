@@ -131,7 +131,7 @@ process FILTER_BED {
 
     script:
     """
-    if [ -f ${ref_filter_bed} ]; then
+    if [[ -s ${ref_filter_bed} ]]; then  # Check if the bed filter file is not empty. 
         awk '{gsub(/^chr/, ""); print}' ${ref_filter_bed} > bed
         bcftools filter --regions-file bed ${vcf} -Oz -o "${params.run_id}.recode.vcf.gz"
         tabix -p vcf "${params.run_id}.recode.vcf.gz"
@@ -139,26 +139,6 @@ process FILTER_BED {
         cp ${vcf} "${params.run_id}.recode.vcf.gz"
         cp ${tbi} "${params.run_id}.recode.vcf.gz.tbi"
     fi
-    """
-}
-
-process BUILD_REFERENCE_INDEX {
-    container "broadinstitute/gatk"
-    storeDir "${params.storedir}/general/reference_index/"
-
-    output:
-    path "final_${params.ref_ver}.fa", emit: fasta
-    path "final_${params.ref_ver}.fa.fai", emit: fasta_index
-    path "final_${params.ref_ver}.dict", emit: fasta_dict
-
-    script:
-    """
-    wget --quiet http://hgdownload.soe.ucsc.edu/goldenPath/${params.ref_ver}/bigZips/${params.ref_ver}.fa.gz
-    gunzip ${params.ref_ver}.fa.gz
-    sed 's/>chr/>/g' ${params.ref_ver}.fa > num_prefix_${params.ref_ver}.fa
-    samtools faidx num_prefix_${params.ref_ver}.fa 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 X Y M > final_${params.ref_ver}.fa
-    samtools faidx final_${params.ref_ver}.fa
-    gatk CreateSequenceDictionary -R final_${params.ref_ver}.fa
     """
 }
 
@@ -303,14 +283,14 @@ process VCF_TO_VARIANTS {
 process VARIANTS_TO_ENSEMBL {
     input:
     path var
-    path ref
+    path ref_loc
 
     output:
     path "${params.run_id}-ensmbl.txt"
 
     script:
     """
-    location_to_gene.py $var $ref | \\
+    location_to_gene.py $var $ref_loc | \\
      sed 's/:/\\t/g' | sed 's/X\\t/23\\t/g' | sed 's/Y\\t/24\\t/g' | \\
      sed 's/MT\\t/25\\t/g' > ${params.run_id}-ensmbl.txt
     """
