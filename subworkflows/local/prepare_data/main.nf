@@ -2,6 +2,7 @@ include {
     RESTRUCTURE_LOCAL_DATA_EXCEPT_VEP;
     RESTRUCTURE_LOCAL_DATA_ONLY_VEP;
     STORE_S3_BUCKET_DATA_EXCEPT_VEP;
+    STORE_S3_BUCKET_DATA_ONLY_VEP;
     SPLIT_DATA;
     BUILD_REFERENCE_INDEX;
 } from "../../../modules/local/prepare_data"
@@ -17,7 +18,8 @@ workflow PREPARE_DATA {
         data_only_vep = RESTRUCTURE_LOCAL_DATA_ONLY_VEP(file(params.ref_dir))
     } else {
         error "Not Implemented"
-        data_except_vep = STORE_S3_BUCKET_DATA_EXCEPT_VEP()
+        // data_except_vep = STORE_S3_BUCKET_DATA_EXCEPT_VEP()
+        // data_only_vep = STORE_S3_BUCKET_DATA_ONLY_VEP()
     }
 
     (
