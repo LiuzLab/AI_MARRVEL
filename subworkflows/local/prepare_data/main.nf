@@ -24,13 +24,17 @@ workflow PREPARE_DATA {
 
     (
         chrmap_file,
-        ref_filter_bed,
+        ensembl_to_location_file,
+        ensembl_to_symbol_file,
+        ref_filter_bed_file,
+
         ref_annot_dir,
         ref_var_tier_dir,
         ref_merge_expand_dir,
         ref_mod5_diffusion_dir,
         ref_predict_new_dir,
         ref_model_inputs_dir,
+
         phrank_tuple,
         omim_tuple,
         gnomad_tuple,
@@ -46,7 +50,10 @@ workflow PREPARE_DATA {
 
     emit:
     data = chrmap_file.map{["chrmap_file", it]}.concat(
-        ref_filter_bed.map{["ref_filter_bed", it]},
+        ensembl_to_location_file.map{["ensembl_to_location_file", it]},
+        ensembl_to_symbol_file.map{["ensembl_to_symbol_file", it]},
+        ref_filter_bed_file.map{["ref_filter_bed_file", it]},
+
         ref_annot_dir.map{["ref_annot_dir", it]},
         ref_var_tier_dir.map{["ref_var_tier_dir", it]},
         ref_merge_expand_dir.map{["ref_merge_expand_dir", it]},

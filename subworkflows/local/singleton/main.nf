@@ -13,7 +13,7 @@ workflow VCF_PRE_PROCESS {
 
     main:
     chrmap_file = data.map { it.chrmap_file }
-    ref_filter_bed = data.map { it.ref_filter_bed }
+    ref_filter_bed_file = data.map { it.ref_filter_bed_file }
     fasta_tuple = data.map { it.fasta_tuple }
     gnomad_tuple = data.map { it.gnomad_tuple }
 
@@ -23,9 +23,7 @@ workflow VCF_PRE_PROCESS {
     CONVERT_GVCF(
         NORMALIZE_VCF.out.vcf,
         NORMALIZE_VCF.out.tbi,
-        fasta_tuple.map { it[0] },
-        fasta_tuple.map { it[1] },
-        fasta_tuple.map { it[2] },
+        fasta_tuple,
         chrmap_file
     )
     FILTER_UNPASSED(
@@ -40,15 +38,12 @@ workflow VCF_PRE_PROCESS {
     FILTER_BED(
         FILTER_MITO_AND_UNKOWN_CHR.out.vcf,
         FILTER_MITO_AND_UNKOWN_CHR.out.tbi,
-        ref_filter_bed,
+        ref_filter_bed_file,
     )
     FILTER_PROBAND(
         FILTER_BED.out.vcf,
         FILTER_BED.out.tbi,
-        gnomad_tuple.map { it[0] },
-        gnomad_tuple.map { it[1] },
-        gnomad_tuple.map { it[2] },
-        gnomad_tuple.map { it[3] },
+        gnomad_tuple,
     )
 
     emit:
@@ -62,23 +57,22 @@ workflow PHRANK_SCORING {
     data
 
     main:
+    ensembl_to_location_file = data.map { it.ensembl_to_location_file }
+    ensembl_to_symbol_file = data.map { it.ensembl_to_symbol_file }
     phrank_tuple = data.map { it.phrank_tuple }
     VCF_TO_VARIANTS(vcf)
     VARIANTS_TO_ENSEMBL(
         VCF_TO_VARIANTS.out,
-        phrank_tuple.map { it[0] },
+        ensembl_to_location_file,
     )
     ENSEMBL_TO_GENESYM(
         VARIANTS_TO_ENSEMBL.out,
-        phrank_tuple.map { it[1] },
+        ensembl_to_symbol_file,
     )
     GENESYM_TO_PHRANK(
         ENSEMBL_TO_GENESYM.out,
         hpo,
-        phrank_tuple.map { it[2] },
-        phrank_tuple.map { it[3] },
-        phrank_tuple.map { it[4] },
-        phrank_tuple.map { it[5] },
+        phrank_tuple,
     )
 
     emit:
@@ -107,10 +101,7 @@ workflow GENERATE_SINGLETON_FEATURES {
 
     HPO_SIM(
         hpo,
-        omim_tuple.map { it[0] },
-        omim_tuple.map { it[1] },
-        omim_tuple.map { it[2] },
-        omim_tuple.map { it[3] },
+        omim_tuple,
     )
     ANNOTATE_BY_MODULES (
         ANNOTATE_BY_VEP.out.vep_output,

@@ -123,7 +123,7 @@ process FILTER_BED {
     input:
     path vcf
     path tbi
-    path ref_filter_bed
+    path ref_filter_bed_file
 
     output:
     path "${params.run_id}.recode.vcf.gz", emit: vcf
@@ -131,8 +131,8 @@ process FILTER_BED {
 
     script:
     """
-    if [[ -s ${ref_filter_bed} ]]; then  # Check if the bed filter file is not empty. 
-        awk '{gsub(/^chr/, ""); print}' ${ref_filter_bed} > bed
+    if [[ -s ${ref_filter_bed_file} ]]; then  # Check if the bed filter file is not empty.
+        awk '{gsub(/^chr/, ""); print}' ${ref_filter_bed_file} > bed
         bcftools filter --regions-file bed ${vcf} -Oz -o "${params.run_id}.recode.vcf.gz"
         tabix -p vcf "${params.run_id}.recode.vcf.gz"
     else
@@ -148,9 +148,11 @@ process CONVERT_GVCF {
     input:
     path vcf
     path tbi
-    path fasta
-    path fasta_index
-    path fasta_dict
+    tuple(
+        path(fasta),
+        path(fasta_index),
+        path(fasta_dict),
+    )
     path chrmap_file
 
     output:
@@ -283,14 +285,14 @@ process VCF_TO_VARIANTS {
 process VARIANTS_TO_ENSEMBL {
     input:
     path var
-    path ref_loc
+    path ensembl_to_location_file
 
     output:
     path "${params.run_id}-ensmbl.txt"
 
     script:
     """
-    location_to_gene.py $var $ref_loc | \\
+    location_to_gene.py $var $ensembl_to_location_file | \\
      sed 's/:/\\t/g' | sed 's/X\\t/23\\t/g' | sed 's/Y\\t/24\\t/g' | \\
      sed 's/MT\\t/25\\t/g' > ${params.run_id}-ensmbl.txt
     """
@@ -300,7 +302,7 @@ process VARIANTS_TO_ENSEMBL {
 process ENSEMBL_TO_GENESYM {
     input:
     path ensmbl
-    path ref_to_sym
+    path ensembl_to_symbol_file
 
     output:
     path "${params.run_id}-gene.txt", emit: gene
@@ -308,10 +310,10 @@ process ENSEMBL_TO_GENESYM {
     script:
     """
     # Generate sorted gene to symbol file
-    sort -t \$'\t' -k2,2 $ref_to_sym > sorted_ref_to_sym.txt
+    sort -t \$'\t' -k2,2 $ensembl_to_symbol_file > sorted_snsembl_to_symbol.txt
 
-    cat $ensmbl | sort -k5,5 | join -1 5 -2 1 - $ref_to_sym  | sed 's/ /\\t/g' | cut -f2- > genesym.txt
-    cat genesym.txt | cut -f5 | sort -u | join -t\$'\\t' -1 1 -2 2 - sorted_ref_to_sym.txt | cut -f2 | sort -u > ${params.run_id}-gene.txt
+    cat $ensmbl | sort -k5,5 | join -1 5 -2 1 - $ensembl_to_symbol_file  | sed 's/ /\\t/g' | cut -f2- > genesym.txt
+    cat genesym.txt | cut -f5 | sort -u | join -t\$'\\t' -1 1 -2 2 - sorted_snsembl_to_symbol.txt | cut -f2 | sort -u > ${params.run_id}-gene.txt
     """
 }
 
@@ -322,10 +324,12 @@ process GENESYM_TO_PHRANK {
     input:
     path gene
     path hpo
-    path dagfile
-    path disease_annotation
-    path gene_annotation
-    path disease_gene
+    tuple(
+        path(dagfile),
+        path(disease_annotation),
+        path(gene_annotation),
+        path(disease_gene),
+    )
 
     output:
     path "${params.run_id}.phrank.txt", emit: phrank
@@ -343,10 +347,12 @@ process HPO_SIM {
 
     input:
     path hpo, name: "input.hpos.txt"
-    path omim_hgmd_phen
-    path omim_obo
-    path omim_genemap2
-    path omim_pheno
+    tuple(
+        path(omim_hgmd_phen),
+        path(omim_obo),
+        path(omim_genemap2),
+        path(omim_pheno),
+    )
 
     output:
     path "${params.run_id}-cz", emit: hgmd_sim
@@ -371,10 +377,12 @@ process FILTER_PROBAND {
     input:
     path vcf
     path tbi
-    path ref_gnomad_genome
-    path ref_gnomad_genome_idx
-    path ref_gnomad_exome
-    path ref_gnomad_exome_idx
+    tuple(
+        path(ref_gnomad_genome),
+        path(ref_gnomad_genome_idx),
+        path(ref_gnomad_exome),
+        path(ref_gnomad_exome_idx),
+    )
 
     output:
     path "${params.run_id}.filt.rmBL.vcf.gz", emit: vcf
