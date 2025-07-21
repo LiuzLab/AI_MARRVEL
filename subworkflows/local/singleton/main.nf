@@ -102,17 +102,7 @@ workflow GENERATE_SINGLETON_FEATURES {
     SPLIT_VCF_BY_CHROMOSOME(vcf)
     ANNOTATE_BY_VEP(
         SPLIT_VCF_BY_CHROMOSOME.out.chr_vcfs.flatten(),
-        vep_tuple.map { it[0] },
-        vep_tuple.map { it[1] },
-        vep_tuple.map { it[2] },
-        vep_tuple.map { it[3] },
-        vep_tuple.map { it[4] },
-        vep_tuple.map { it[5] },
-        vep_tuple.map { it[6] },
-        vep_tuple.map { it[7] },
-        vep_tuple.map { it[8] },
-        vep_tuple.map { it[9] },
-        vep_tuple.map { it[10] },
+        vep_tuple,
     )
 
     HPO_SIM(

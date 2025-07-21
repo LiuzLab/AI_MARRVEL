@@ -429,17 +429,19 @@ process ANNOTATE_BY_VEP {
 
     input:
     path vcf
-    path vep_dir_cache
-    path vep_dir_plugins
-    path vep_custom_gnomad
-    path vep_custom_clinvar
-    path vep_custom_hgmd
-    path vep_plugin_revel
-    path vep_plugin_spliceai_snv
-    path vep_plugin_spliceai_indel
-    path vep_plugin_cadd
-    path vep_plugin_dbnsfp
-    path vep_idx
+    tuple(
+        path(vep_dir_cache),
+        path(vep_dir_plugins),
+        path(vep_custom_gnomad),
+        path(vep_custom_clinvar),
+        path(vep_custom_hgmd),
+        path(vep_plugin_revel),
+        path(vep_plugin_spliceai_snv),
+        path(vep_plugin_spliceai_indel),
+        path(vep_plugin_cadd),
+        path(vep_plugin_dbnsfp),
+        path(vep_idx),
+    )
 
     output:
     path "${vcf.baseName}-vep.txt", emit: vep_output
