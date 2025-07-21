@@ -34,7 +34,7 @@ workflow {
     (vcf, hpo) = HANDLE_INPUT()
 
     if (params.input_ped) {
-        VCF_PRE_PROCESS_TRIO(
+        vcf = VCF_PRE_PROCESS_TRIO(
             vcf,
             file(params.input_ped),
             fasta_tuple.map { it[0] },
@@ -42,15 +42,13 @@ workflow {
             fasta_tuple.map { it[2] },
             chrmap_file,
         )
-        vcf = VCF_PRE_PROCESS_TRIO.out.vcf
     }
 
     if (!params.input_variant && !params.input_phenopacket) {
-        VCF_PRE_PROCESS(
+        vcf = VCF_PRE_PROCESS(
             vcf,
             data,
         )
-        vcf = VCF_PRE_PROCESS.out.vcf
     }
 
     GENERATE_SINGLETON_FEATURES(vcf, hpo, data)
