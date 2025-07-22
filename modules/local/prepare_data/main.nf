@@ -58,7 +58,9 @@ process SPLIT_DATA {
 
     output:
     path "data_except_vep/bcf_annotate/chrmap.txt", emit: chrmap_file
-    path "ref_filter.bed", emit: ref_filter_bed
+    path "ensembl_to_location.txt", emit: ensembl_to_location_file
+    path "data_except_vep/phrank/${params.ref_ver}/ensembl_to_symbol.txt", emit: ensembl_to_symbol_file
+    path "ref_filter.bed", emit: ref_filter_bed_file
 
     path "data_except_vep/annotate", emit: ref_annot_dir
     path "data_except_vep/var_tier", emit: ref_var_tier_dir
@@ -69,9 +71,6 @@ process SPLIT_DATA {
 
     // for phrank
     tuple(
-        path("ref_loc.txt"), // ref_loc
-        path("data_except_vep/phrank/${params.ref_ver}/ensembl_to_symbol.txt"), // ref_to_sym
-
         path("data_except_vep/phrank/${params.ref_ver}/child_to_parent.txt"), // dagfile
         path("data_except_vep/phrank/${params.ref_ver}/disease_to_pheno.txt"), // disease_annotation
         path("data_except_vep/phrank/${params.ref_ver}/gene_to_phenotype.txt"), // gene_annotation
@@ -118,7 +117,7 @@ process SPLIT_DATA {
     # tree .
 
     ref_assembly=\$( [ "${params.ref_ver}" = "hg19" ] && echo "grch37" || echo "grch38" )
-    ln -s data_except_vep/phrank/${params.ref_ver}/\${ref_assembly}_symbol_to_location.txt ./ref_loc.txt
+    ln -s data_except_vep/phrank/${params.ref_ver}/\${ref_assembly}_symbol_to_location.txt ./ensembl_to_location.txt
 
     if [[ -s "${bed_filter_file}" ]]; then # Check if the bed filter file is not empty. 
         ln -s "${bed_filter_file}" ref_filter.bed
