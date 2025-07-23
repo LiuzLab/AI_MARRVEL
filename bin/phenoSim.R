@@ -1,7 +1,13 @@
 #!/usr/bin/env Rscript
 rm(list = ls())
-library(ontologyIndex)
-library(ontologySimilarity)
+suppressPackageStartupMessages({
+  library(ontologyIndex)
+  library(ontologySimilarity)
+  library(dplyr)
+})
+
+# disable the dplyr “summarise() has grouped output” message
+options(dplyr.summarise.inform = FALSE)
 args <- commandArgs(trailingOnly = TRUE)
 
 PATIENT_HPO <- args[1]
@@ -14,7 +20,6 @@ OUTFILE_DX_NAME <- args[7]
 
 dat <- read.csv(OMIM_HGMD, sep = "\t")
 
-library(dplyr)
 get_HPO_list <- function(df1) {
   df2 <- df1 %>%
     dplyr::group_by(acc_num, phen_id, gene_sym) %>%
@@ -29,6 +34,11 @@ get_HPO_list <- function(df1) {
 
 # Load HPO_obo
 HPO_obo <- get_OBO(OMIM_OBO, propagate_relationships = c("is_a", "part_of"), extract_tags = "minimal")
+# Loading only headers
+HPO_obo_headers <- readLines(OMIM_OBO, n = 20)
+data_version <- sub(".*: +", "",
+                    grep("^data-version:", HPO_obo_headers, value = TRUE)
+)
 
 # set simi_thresh
 simi_thresh <- 0
@@ -50,8 +60,21 @@ if (dim(dat)[1] == 0) {
 
   # remove terms without a HPO ID
   HPO <- HPO[grepl("HP:", HPO)]
-  HPO <- list(HPO)
 
+  # checking for missing ontology terms
+  missing_ids <- setdiff(HPO, HPO_obo$id)
+  if (length(missing_ids) > 0) {
+    stop(
+      paste0(
+        "The following HPO IDs were not found in the ontology. ",
+        "Please fix/remove them and try again.\n",
+        "(Ontology data-version: ", data_version, ")\n",
+        paste0("\t", paste(missing_ids, collapse = "\n\t"))
+      )
+    )
+  }
+
+  HPO <- list(HPO)
   sim_mat <- get_asym_sim_grid(HPO, dat2$HPO_list, ontology = HPO_obo)
   dat2$Similarity_Score <- as.vector(sim_mat)
   dat2$HPO_list <- unlist(lapply(dat2$HPO_list, function(x) paste0(unlist(x), collapse = "|")))
