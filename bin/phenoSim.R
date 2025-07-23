@@ -8,6 +8,14 @@ suppressPackageStartupMessages({
 
 # disable the dplyr “summarise() has grouped output” message
 options(dplyr.summarise.inform = FALSE)
+suppressPackageStartupMessages({
+  library(ontologyIndex)
+  library(ontologySimilarity)
+  library(dplyr)
+})
+
+# disable the dplyr “summarise() has grouped output” message
+options(dplyr.summarise.inform = FALSE)
 args <- commandArgs(trailingOnly = TRUE)
 
 PATIENT_HPO <- args[1]
@@ -36,9 +44,9 @@ get_HPO_list <- function(df1) {
 HPO_obo <- get_OBO(OMIM_OBO, propagate_relationships = c("is_a", "part_of"), extract_tags = "minimal")
 # Loading only headers
 HPO_obo_headers <- readLines(OMIM_OBO, n = 20)
-data_version <- sub(".*: +", "",
-                    grep("^data-version:", HPO_obo_headers, value = TRUE)
-)
+
+line <- grep("^data-version:", HPO_obo_headers, value = TRUE)
+data_version <- sub("^data-version:\\s*(.*)$", "\\1", line)
 
 # set simi_thresh
 simi_thresh <- 0
@@ -63,14 +71,13 @@ if (dim(dat)[1] == 0) {
 
   # checking for missing ontology terms
   missing_ids <- setdiff(HPO, HPO_obo$id)
-  if (length(missing_ids) > 0) {
+  if (length(missing_ids)) {
     stop(
-      paste0(
-        "The following HPO IDs were not found in the ontology. ",
-        "Please fix/remove them and try again.\n",
-        "(Ontology data-version: ", data_version, ")\n",
-        paste0("\t", paste(missing_ids, collapse = "\n\t"))
-      )
+      "The following HPO IDs were not found in the ontology.\n",
+      "Please fix/remove them and try again.\n",
+      "(Ontology data-version: ", data_version, ")\n\t",
+      paste(missing_ids, collapse = "\n\t"),
+      call. = FALSE
     )
   }
 
