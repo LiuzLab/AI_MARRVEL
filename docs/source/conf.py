@@ -15,13 +15,13 @@
 # -- Project information -----------------------------------------------------
 
 project = 'AI-MARRVEL'
-copyright = "2024, Zhandong Liu's Lab at Baylor College of Medicine"
+copyright = "2025, Zhandong Liu's Lab at Baylor College of Medicine"
 author = 'Chaozhong Liu, Dongxue Mao'
 
 # The short X.Y version
-version = 'v1.0'
+version = 'v1.1'
 # The full version, including alpha/beta/rc tags
-release = '1.0.0'
+release = '1.1.0'
 
 
 # -- General configuration ---------------------------------------------------
