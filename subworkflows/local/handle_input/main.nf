@@ -23,7 +23,7 @@ workflow HANDLE_INPUT {
     }
 
     if (!hpo) {
-        hpo = file(moduleDir.resolve("./assets/NO_FILE"))
+        hpo = file(moduleDir.resolve("../../../assets/NO_FILE"))
     }
 
     emit:
