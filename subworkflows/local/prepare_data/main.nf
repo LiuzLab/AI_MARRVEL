@@ -42,7 +42,7 @@ workflow PREPARE_DATA {
     ) = SPLIT_DATA(
         data_except_vep,
         data_only_vep,
-        params.bed_filter ? file(params.bed_filter) : moduleDir.resolve("assets/NO_FILE"),
+        params.bed_filter ? file(params.bed_filter) : moduleDir.resolve("../../../assets/NO_FILE"),
         params.exome_filter,
     )
 

@@ -30,14 +30,15 @@ Running AIM
 Use following command-line to run AIM.
 
 .. code-block:: bash
-
-   nextflow run Liuzlab/AI_MARRVEL -r nextflow_conversion \
-                  --ref_dir <PATH_TO_REFERENCE_DIRECTORY> \
-                  --ref_ver [Reference genome: hg19/hg38] \
-                  --input_vcf <PATH_TO_INPUT_VCF_FILE> \
-                  --input_hpo <PATH_TO_INPUT_HPO_FILE> \
-                  --outdir <PATH_TO_OUTPUT_DIRECTORY> \
-                  --run_id [Sample Id] 
+   nextflow run /path/to/AI_MARRVEL/main.nf \\
+               -profile <debug/docker/singularity/> \\
+               --ref_dir /path/to/dependencies/ \\
+               --input_vcf /path/to/input.vcf \\
+               --input_hpo /path/to/input.hpos.txt \\
+               --outdir /path/to/output \\
+               --storedir /path/to/store \\
+               --run_id <Sample_ID> \\
+               --ref_ver <hg19/hg38>
 
 
 
@@ -60,7 +61,7 @@ AIM utilizes various databases for variant annotation, all of which have been co
 
 .. code-block:: bash
 
-      aws s3 sync s3://aim-data-dependencies-2.0-public . --no-sign-request
+      aws s3 sync s3://aim-data-dependencies-2.3-public . --no-sign-request
 
 
 .. warning::

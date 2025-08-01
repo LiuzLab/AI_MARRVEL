@@ -37,7 +37,7 @@ AIM utilizes various databases for variant annotation, all of which have been co
    ```
 3. Use the following command to sync the S3 bucket to your local directory:
    ```bash
-   $ aws s3 sync s3://aim-data-dependencies-2.0-public . --no-sign-request
+   $ aws s3 sync s3://aim-data-dependencies-2.3-public . --no-sign-request
    ```
 
 ### Get the software
@@ -47,7 +47,7 @@ AIM utilizes various databases for variant annotation, all of which have been co
 AIM is released as a Nextflow pipeline for easy distribution. To get it:
 
 ```bash
-$ git clone -b nextflow_conversion https://github.com/LiuzLab/AI_MARRVEL
+$ git clone https://github.com/LiuzLab/AI_MARRVEL
 $ cd AI_MARRVEL
 $ nextflow run main.nf --version
 ```
@@ -55,24 +55,16 @@ $ nextflow run main.nf --version
 ### Run with your sample
 
 ```bash
-$ nextflow run main.nf  --ref_dir <PATH_TO_REFERENCE_DIRECTORY>
-                  --input_vcf <PATH_TO_INPUT_VCF_FILE>
-                  --input_hpo <PATH_TO_INPUT_HPO_FILE>
-                  --outdir <PATH_TO_OUTPUT_DIRECTORY>
-                  --storedir <PATH_TO_STORE_DIRECTORY>
-                  --bed_filter <PATH_TO_BED_FILE> # Optional
-                  --run_id [Sample Id] # Optional, default: 1
-                  --ref_ver [Reference genome: hg19/hg38] # Optional, default: hg19
-                  --exome_filter # Optional
+nextflow run /path/to/AI_MARRVEL/main.nf \\
+          -profile <debug/docker/singularity/> \\
+          --ref_dir /path/to/dependencies/ \\
+          --input_vcf /path/to/input.vcf \\
+          --input_hpo /path/to/input.hpos.txt \\
+          --outdir /path/to/output \\
+          --storedir /path/to/store \\
+          --run_id <Sample_ID> \\
+          --ref_ver <hg19/hg38>
 ```
-
-Alternatively, the pipeline can be executed with a parameter file (yaml)
-
-```bash
-$ nextflow run main.nf -params-file params.yaml
-```
-
-NOTE: You need to create `params.yaml` by copying [params.yaml.example](params.yaml.example) file and follow the instruction.
 
 For more information on usage and parameters which are open for modification, please use `--help` option as shown below.
 

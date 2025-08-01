@@ -23,8 +23,6 @@ Following the execution of AIM, you will receive five output files, which are sa
       -  Prediction results from AIM Novel Disease Gene mode.
    *  -  \*_nd_recessive_predictions.csv
       -  Prediction results from AIM Novel Disease Gene + Recessive mode.
-   *  -  \*_integrated.csv
-      -  Combining all 4 prediction results.
 
 Output Explanation
 ======================
