@@ -2,11 +2,13 @@
 import pandas as pd
 import sys
 
-###merge score files with final rank matrix
+feature_path = sys.argv[1]
+annot_path = sys.argv[2]
+output_path = sys.argv[3]
 
-# read rank matrix and score file
-rm = pd.read_csv(sys.argv[1] + ".csv")
-annot = pd.read_csv("scores.txt.gz", sep="\t", compression="gzip")
+# read feature matrix and score file
+df = pd.read_csv(feature_path)
+annot = pd.read_csv(annot_path, sep="\t", compression="gzip")
 
 
 # get columns from score file
@@ -30,6 +32,7 @@ annot = annot[
 
 # get original coordinates
 annot["varId"] = annot["varId"].apply(lambda x: x.split("_E")[0])
+annot["varId"] = annot["varId"].apply(lambda x: x.split("_-")[0])
 
 # rename for final output
 annot = annot.rename(
@@ -37,10 +40,10 @@ annot = annot.rename(
 )
 
 # merge
-test = rm.merge(annot, right_on="varId_dash", left_on="Unnamed: 0", how="left")
+test = df.merge(annot, right_on="origId", left_on="Unnamed: 0", how="left")
 
 test.to_csv(
-    "final_matrix_expanded/" + sys.argv[1] + ".expanded.csv.gz",
+    output_path,
     index=False,
     compression="gzip",
 )

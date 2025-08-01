@@ -88,6 +88,13 @@ def main():
     parser.add_argument(
         "-genomeRef", "--genomeRef", help="Proivde genome ref: hg19, hg38"
     )
+    parser.add_argument(
+        "-enableLIT", "--enableLIT",
+        action="store_true",
+        default=False,
+        help="Enable low‑impact transcripts"
+    )
+
     args = parser.parse_args()
     # check the user args
     checkUserArgs(args)
@@ -96,6 +103,7 @@ def main():
     print("modules:", args.modules)
     moduleList = args.modules.split(",")
     print("modules list:", moduleList)
+    print("low impact transcripts enabled: ", args.enableLIT)
 
     # start time
     start_time = time.time()
@@ -257,28 +265,33 @@ def main():
                     break
         print("input annoatated varFile:", args.varFile)
         t1 = time.time()
-        varDf = pd.read_csv(
-            args.varFile, sep="\t", skiprows=numHeaderSkip, error_bad_lines=False
+        transcriptDf = pd.read_csv(
+            args.varFile, sep="\t", skiprows=numHeaderSkip,
         )
-        # varDf=varDf[0:10]
+        
+        # Ignore Low Impact Transcripts (LIT).
+        if args.enableLIT:
+            transcriptDf = transcriptDf.groupby("#Uploaded_variation", group_keys=False).apply(lambda g: g[g.IMPACT.isin(["HIGH", "MODERATE"])] if g.IMPACT.isin(["HIGH", "MODERATE"]).any() else g).reset_index(drop=True)
+
+        # transcriptDf=transcriptDf[0:10]
         # #do this if need to have a small test
-        print("shape:", varDf.shape)
+        print("shape:", transcriptDf.shape)
         t2 = time.time()
         inputReadTime = t2 - t1
-        inputNumRows = len(varDf.index)
+        inputNumRows = len(transcriptDf.index)
 
         # TODO: change with `.rename`
-        if "GERP++_RS" in varDf.columns:
+        if "GERP++_RS" in transcriptDf.columns:
             print("found GERP++RS")
-            varDf["GERPpp_RS"] = varDf["GERP++_RS"]
-        if "GERP++_NR" in varDf.columns:
+            transcriptDf["GERPpp_RS"] = transcriptDf["GERP++_RS"]
+        if "GERP++_NR" in transcriptDf.columns:
             print("found GERP++NR")
-            varDf["GERPpp_NR"] = varDf["GERP++_NR"]
+            transcriptDf["GERPpp_NR"] = transcriptDf["GERP++_NR"]
         # update column names which have - in it
-        if "fathmm-MKL_coding_score" in varDf.columns:
-            varDf["fathmm_MKL_coding_score"] = varDf["fathmm-MKL_coding_score"]
-        if "M-CAP_score" in varDf.columns:
-            varDf["M_CAP_score"] = varDf["M-CAP_score"]
+        if "fathmm-MKL_coding_score" in transcriptDf.columns:
+            transcriptDf["fathmm_MKL_coding_score"] = transcriptDf["fathmm-MKL_coding_score"]
+        if "M-CAP_score" in transcriptDf.columns:
+            transcriptDf["M_CAP_score"] = transcriptDf["M-CAP_score"]
 
         if "conserve" in moduleList:
             decipherSortedDf = decipherDf.set_index(['Chr', 'Start', 'Stop']).sort_index()
@@ -290,7 +303,7 @@ def main():
             hgmdHPOScoreAccSortedDf = hgmdHPOScoreDf.groupby('acc_num').first().sort_index()
 
         annotateInfoDf = getAnnotateInfoRows_3(
-            varDf,
+            transcriptDf,
             args.genomeRef,
             clinvarGeneDf,
             clinvarAlleleDf,

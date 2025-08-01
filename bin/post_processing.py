@@ -37,6 +37,7 @@ def main():
     iff = simple_repeat_anno(
         sys.argv[1], iff, f"merge_expand/{sys.argv[2]}/simpleRepeats.{sys.argv[2]}.bed"
     )
+    iff = iff.drop(columns=["varId_dash"])
 
     ### delete intermediate files ###
     # os.remove(sys.argv[1]+".bed")

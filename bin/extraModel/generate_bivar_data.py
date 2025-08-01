@@ -10,7 +10,7 @@ import shutil
 
 def process_sample(data_folder, sample_id, default_pred, labeling=False):
     if labeling:
-        raise 'The below code was not tested with real data with labeling=True'
+        raise NotImplementedError('The below code was not tested with real data with labeling=True')
 
     recessive_folder = f"{data_folder}/recessive_matrix/"
     if not os.path.exists(recessive_folder):
@@ -21,7 +21,7 @@ def process_sample(data_folder, sample_id, default_pred, labeling=False):
         os.mkdir(tmp_folder)
 
     # read feature matrix for single var
-    feature_fn = f"{sample_id}.csv"
+    feature_fn = f"{sample_id}.default_prediction.csv"
     # feature_df = []
     # for feature_fn in feature_fns:
     if "csv" in feature_fn:
@@ -68,7 +68,7 @@ def process_sample(data_folder, sample_id, default_pred, labeling=False):
         ]
 
     # Remove all the duplicated variant pairs.
-    gene_var_pairs_df = pd.DataFrame(gene_var_pairs)
+    gene_var_pairs_df = pd.DataFrame(gene_var_pairs, columns=['geneEnsId', 'varId1', 'varId2'])
     # gene_var_pairs_df = gene_var_pairs_df.drop_duplicates(['varId1', 'varId2'])
 
     # Use only subset columns of features
@@ -94,8 +94,8 @@ def process_sample(data_folder, sample_id, default_pred, labeling=False):
 
     # Calculate variant distance
     recessive_feature_df['var_dist'] = (
-        recessive_feature_df.varId1.str.split('-').apply(lambda x: x[1]).astype(float)
-        - recessive_feature_df.varId2.str.split('-').apply(lambda x: x[1]).astype(float)
+        recessive_feature_df.varId1.str.split('_').apply(lambda x: x[1]).astype(float)
+        - recessive_feature_df.varId2.str.split('_').apply(lambda x: x[1]).astype(float)
     ).abs()
 
     # Calculate label
@@ -113,7 +113,7 @@ def process_sample(data_folder, sample_id, default_pred, labeling=False):
         )
 
     # Create pair id as the legacy did
-    recessive_feature_df = recessive_feature_df.set_index(recessive_feature_df.varId1 + '_' + recessive_feature_df.varId2)
+    recessive_feature_df = recessive_feature_df.set_index(recessive_feature_df.varId1 + '-' + recessive_feature_df.varId2)
 
     # Drop the intermediate columns
     recessive_feature_df = recessive_feature_df.drop(
@@ -129,5 +129,8 @@ def process_sample(data_folder, sample_id, default_pred, labeling=False):
 
     # Sort before saving
     recessive_feature_df = recessive_feature_df.sort_index()
+
+    if recessive_feature_df.shape[0] == 0:
+        return
 
     recessive_feature_df.to_csv(f"{recessive_folder}/{sample_id}.csv")

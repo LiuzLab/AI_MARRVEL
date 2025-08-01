@@ -22,7 +22,7 @@ library(readr)
 library(data.table)
 
 # Function to generate GRI region based on genome version
-generate_gri_geneonly <- function(genome_version = "hg38") {
+generate_gri_v1 <- function(genome_version = "hg38") {
   # data preparation --------------------------------------------------------
   
   ## hgmd local file name
@@ -34,7 +34,7 @@ generate_gri_geneonly <- function(genome_version = "hg38") {
     hg38 <- BSgenome.Hsapiens.UCSC.hg38
     size <- seqlengths(hg38)
     chr_size <-
-      data.frame(seqnames = names(size), chr_end = as.integer(size))[c(1:24),]
+      data.frame(seqnames = names(size), chr_end = as.integer(size))[c(1:24), ]
     
     ##load gencode data
     url <-
@@ -58,7 +58,7 @@ generate_gri_geneonly <- function(genome_version = "hg38") {
     hg19 <- BSgenome.Hsapiens.UCSC.hg19
     size <- seqlengths(hg19)
     chr_size <-
-      data.frame(seqnames = names(size), chr_end = as.integer(size))[c(1:24),]
+      data.frame(seqnames = names(size), chr_end = as.integer(size))[c(1:24), ]
     
     ##load gencode data
     url <-
@@ -141,7 +141,7 @@ generate_gri_geneonly <- function(genome_version = "hg38") {
     mutate(source = "HGMD_2022")
   
   ## exclude "rejected variants" in HGMD database
-  hgmd_noR <- hgmd[-which(hgmd$CLASS == "R"),]
+  hgmd_noR <- hgmd[-which(hgmd$CLASS == "R"), ]
   hgmd_noR <- hgmd_noR |>
     dplyr::mutate(seqnames = paste0("chr", seqnames))
   
@@ -149,7 +149,7 @@ generate_gri_geneonly <- function(genome_version = "hg38") {
   hgmd_noR <- merge(hgmd_noR, chr_size, by = "seqnames")
   hgmd_noR_flank <- hgmd_noR |>
     dplyr::mutate(
-      final_start = ifelse(start > 50, start - 50, 0),
+      final_start = ifelse(start > 50, start - 50, 1),
       final_end = ifelse((end + 50) > chr_end, chr_end, end + 50),
       .after = seqnames
     )
@@ -201,7 +201,7 @@ generate_gri_geneonly <- function(genome_version = "hg38") {
   ## add flanking region
   clinvar_patho_flank <- clinvar_patho |>
     mutate(
-      final_start = ifelse(start > 50, start - 50, 0),
+      final_start = ifelse(start > 50, start - 50, 1),
       final_end = ifelse((end + 50) > chr_end, chr_end, end + 50),
       .after = seqnames
     )
@@ -233,6 +233,13 @@ generate_gri_geneonly <- function(genome_version = "hg38") {
   ## check bed coverage
   coverage_bed(bed_gencode_hgmd_clinvar.dt)
   
+  # convert start position from 1-based into 0-based format of bed file
+  bed_gencode_hgmd_clinvar.dt <- bed_gencode_hgmd_clinvar.dt |>
+    mutate(start = pmax(0, start - 1))
+  
+  bed_gencode_hgmd_clinvar <- bed_gencode_hgmd_clinvar |>
+    mutate(start = pmax(0, start - 1))
+  
   # write the bed file
   file_name <- paste0("gene_only.", genome_version, ".bed")
   write_tsv(bed_gencode_hgmd_clinvar.dt[, c(1:3)],
@@ -248,5 +255,5 @@ generate_gri_geneonly <- function(genome_version = "hg38") {
 }
 
 # Apply generate_gri_geneonly function to generate bed files --------------
-generate_gri_geneonly("hg19")
-generate_gri_geneonly("hg38")
+generate_gri_v1("hg19")
+generate_gri_v1("hg38")

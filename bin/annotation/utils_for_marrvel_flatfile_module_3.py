@@ -118,7 +118,7 @@ def getAnnotateInfoRow_3_1(row, genomeRef):
     varObj.ref = ref
     varObj.alt = alt
     varObj.varId_dash = "-".join([str(chrom), str(start), ref, alt])
-    # print('varId dash:', varObj.varId_dash)
+    # NOTE(JL): varId_dash should have been renamed. the start value is needed for simple_repeat
     varId = "_".join([str(chrom), str(pos), ref, alt, transcriptId])
     varObj.varId = varId
     if "ZYG" in row:

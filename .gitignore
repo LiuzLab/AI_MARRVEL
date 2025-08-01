@@ -1,23 +1,33 @@
 # General
 **/__pycache__
+**/.DS_Store
+.vscode/
 bcftools-1.9.tar.bz2
 run/bedtools
-.vscode/
-.DS_Store
-*/.DS_Store
 test_data/
 test_ref/
 test_output/
+**/.ipynb_checkpoints/
+*.ipynb
+.nfs*
 
 # Nextflow Related
-.nextflow*
-.nextflow/
-work/
-out/
-trace-*txt
-report-*html
-params.yaml
+/.nextflow*
+/.nextflow/
+/work*/
+/out*/
+/store*/
+/dag-*.html
+/trace-*.txt
+/report-*.html
+/timeline-*.html
+/params.yaml
 
 # Ignore R history and session files
 .Rhistory
 .RData
+
+# Ignore some files from model interpreter
+*/model_interpreter/results
+*/model_interpreter/templates
+*/model_interpreter/main.nf

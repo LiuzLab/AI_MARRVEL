@@ -148,7 +148,7 @@ def diffuseSample(ID, Anno_df, Phrank_folder):
     scores = stats.rankdata(score_ordered, "max") / len(score_ordered)
 
     m12_df["diffuse_Phrank_STRING"] = scores
-    m12_df = m12_df.drop_duplicates(subset=["varId_dash"])
-    m12_df = m12_df[["varId_dash", "diffuse_Phrank_STRING"]]
-    m12_df = m12_df.set_index("varId_dash", drop=True)
+    m12_df = m12_df.drop_duplicates(subset=["varId"])
+    m12_df = m12_df[["varId", "diffuse_Phrank_STRING"]]
+    m12_df = m12_df.set_index("varId", drop=True)
     return m12_df

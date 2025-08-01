@@ -1,9 +1,11 @@
 pandas==1.4.3
 phrank
 scipy
-xgboost
+xgboost<=2.1.4
 tqdm
 matplotlib
 requests
 tables
-scikit-learn==1.1.2
+shap
+lime
+scikit-learn>=1.3.0
