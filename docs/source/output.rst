@@ -7,7 +7,7 @@ AIM Output Details
 
 Output Files
 ========================
-Following the execution of AIM, you will receive five output files, which are saved to the designated output directory.
+Following the execution of AIM, you will receive four output files, which are saved to the designated output directory.
 
 .. list-table:: AIM output files
    :header-rows: 1
@@ -31,7 +31,6 @@ Each of the output files mentioned above, contains:
 - Variant ID
 - Annotation information (features)
 - Prediction results: score, rank, and confidence
-- Extra information about the variant (only in \*_integrated.csv)
 
 
 
@@ -50,23 +49,6 @@ Prediction Results
 
 ``confidence level``
    High / Medium / Low. We set confidence score cutoff based on precision and recall.
-
-
-
-
-Extra information
------------------------
-``geneSymbol``, ``geneEnsId``, ``rsId``
-   Variant and Gene ID
-
-``HGVSc``
-   Human Genome Variation Society's nomenclature for describing variants at the cDNA level.
-
-``HGVSp``
-   Human Genome Variation Society's nomenclature for describing variants at protein level.
-
-
-
 
 Variant Annotation / AIM Features
 -------------------------------------

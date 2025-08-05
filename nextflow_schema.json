@@ -46,7 +46,7 @@
         "storedir": {
           "type": "string",
           "default": "./store",
-          "description": "Output directory."
+          "description": "Path to a shared directory for intermediate files. Reusing this directory across runs skips regenerating common files and cuts runtime."
         },
         "ref_dir": {
           "type": "string",
