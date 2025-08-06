@@ -62,7 +62,7 @@
         },
         "run_id": {
           "type": "string",
-          "default": "1",
+          "default": "run1",
           "description": "Unique identifier for this run."
         },
         "ref_ver": {
@@ -82,6 +82,16 @@
         "impact_filter": {
           "type": "boolean",
           "description": "Enable low impact. Addition will enable low impact transcripts."
+        },
+        "skip_vcf_validation": {
+          "type": "boolean",
+          "description": "Skip VCF validation step. Used to speed up the pipeline when the input VCF is already validated.",
+          "hidden": true
+        },
+        "skip_prediction": {
+          "type": "boolean",
+          "description": "Skip the prediction step. Used to generate features only.",
+          "hidden": true
         }
       },
       "required": ["outdir", "ref_dir", "run_id", "ref_ver"]
