@@ -34,7 +34,7 @@ workflow {
     (vcf, hpo) = HANDLE_INPUT()
 
     if (params.input_ped) {
-        vcf = VCF_PRE_PROCESS_TRIO(
+        (vcf, inheritance) = VCF_PRE_PROCESS_TRIO(
             vcf,
             file(params.input_ped),
             fasta_tuple.map { it[0] },
@@ -62,7 +62,7 @@ workflow {
         GENERATE_TRIO_FEATURES(
             GENERATE_SINGLETON_FEATURES.out.merged_compressed_scores,
             PREDICTION.out.default_predictions,
-            VCF_PRE_PROCESS_TRIO.out.inheritance,
+            inheritance,
         )
         PREDICTION_TRIO(
             GENERATE_SINGLETON_FEATURES.out.merged_compressed_scores,
