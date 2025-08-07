@@ -1,54 +1,3 @@
-process RESTRUCTURE_LOCAL_DATA_EXCEPT_VEP {
-    input:
-    path local_data_path
-
-    output:
-    path "*"
-
-    """
-    find $local_data_path -follow -mindepth 1 -maxdepth 1 -not -name "vep" -exec ln -s {} . \\;
-    """
-}
-
-process RESTRUCTURE_LOCAL_DATA_ONLY_VEP {
-    input:
-    path local_data_path
-
-    output:
-    path "vep"
-
-    """
-    ln -s $local_data_path/vep .
-    """
-}
-
-process STORE_S3_BUCKET_DATA_EXCEPT_VEP {
-    tag "Takes 5 minutes to run"
-    storeDir "./${params.storedir}/s3_bucket_data_except_vep/${params.s3_bucket_data_name}"
-
-    output:
-    path "*"
-
-    """
-    aws s3 sync s3://${params.s3_bucket_data_name} . --exclude "vep/*"
-    """
-}
-
-process STORE_S3_BUCKET_DATA_ONLY_VEP {
-    storeDir "./${params.storedir}/s3_bucket_data_only_vep/v0"
-
-    input:
-    val s3_bucket_data_name
-
-    output:
-    path "vep"
-
-    // NOTE(JL): The path may be changed to s3://aim-data-dependencies-public-vep-v0 in future
-    """
-    aws s3 sync s3://$s3_bucket_data_name/vep ./vep
-    """
-}
-
 process SPLIT_DATA {
     input:
     path "data_except_vep/*"
@@ -145,28 +94,5 @@ process SPLIT_DATA {
     ln -s "./data_only_vep/vep/${params.ref_ver}/\${vep_dbnsfp_name}" .
     ln -s "./data_only_vep/vep/${params.ref_ver}/\${vep_revel_name}" .
 
-    """
-}
-
-process BUILD_REFERENCE_INDEX {
-    container "broadinstitute/gatk"
-    storeDir "${params.storedir}/general/reference_index/"
-
-    output:
-    tuple(
-        path("final_${params.ref_ver}.fa"),
-        path("final_${params.ref_ver}.fa.fai"),
-        path("final_${params.ref_ver}.dict"),
-        emit: fasta_tuple
-    )
-
-    script:
-    """
-    wget --quiet http://hgdownload.soe.ucsc.edu/goldenPath/${params.ref_ver}/bigZips/${params.ref_ver}.fa.gz
-    gunzip ${params.ref_ver}.fa.gz
-    sed 's/>chr/>/g' ${params.ref_ver}.fa > num_prefix_${params.ref_ver}.fa
-    samtools faidx num_prefix_${params.ref_ver}.fa 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 X Y M > final_${params.ref_ver}.fa
-    samtools faidx final_${params.ref_ver}.fa
-    gatk CreateSequenceDictionary -R final_${params.ref_ver}.fa
     """
 }
