@@ -1,26 +1,17 @@
 nextflow.enable.dsl = 2
 
-include { validateParameters } from 'plugin/nf-schema'
+include { validateParameters }         from 'plugin/nf-schema'
 
-include {
-    showVersion
-} from "./modules/local/utils"
+include { showVersion}                 from "./modules/local/utils"
+include { VCF_PRE_PROCESS_TRIO }       from "./modules/local/vcf_pre_process_trio";
+include { GENERATE_TRIO_FEATURES }     from "./modules/local/generate_trio_features";
+include { PREDICTION_TRIO }            from "./modules/local/prediction_trio";
+include { PREDICTION }                 from "./modules/local/prediction";
 
-include {
-    VCF_PRE_PROCESS_TRIO; GENERATE_TRIO_FEATURES; PREDICTION_TRIO
-} from "./modules/local/trio"
-
-include {
-    PREPARE_DATA
-} from "./subworkflows/local/prepare_data"
-
-include {
-    HANDLE_INPUT
-} from "./subworkflows/local/handle_input"
-
-include {
-    VCF_PRE_PROCESS; GENERATE_SINGLETON_FEATURES; PREDICTION
-} from "./subworkflows/local/singleton"
+include { PREPARE_DATA}                from "./subworkflows/local/prepare_data"
+include { HANDLE_INPUT}                from "./subworkflows/local/handle_input"
+include { VCF_PRE_PROCESS}             from "./subworkflows/local/vcf_pre_process"
+include { GENERATE_SINGLETON_FEATURES} from "./subworkflows/local/generate_singleton_feature"
 
 showVersion()
 validateParameters()
