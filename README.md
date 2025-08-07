@@ -7,7 +7,7 @@
 
 <p align="center">
   <a style="text-decoration:none">
-    <img src="https://img.shields.io/badge/AI_MARRVEL-v1.1.0-blue.svg"/>
+    <img src="https://img.shields.io/badge/AI_MARRVEL-v1.1.2-blue.svg"/>
   </a>
   <a href='https://ai-marrvel.readthedocs.io/en/latest/?badge=latest'>
     <img src='https://readthedocs.org/projects/ai-marrvel/badge/?version=latest' alt='Documentation Status' />
