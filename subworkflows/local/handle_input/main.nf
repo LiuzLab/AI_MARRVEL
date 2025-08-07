@@ -1,8 +1,6 @@
-
-
-include {
-    PHENOPACKET_TO_VARIANTS_AND_HPOS; GENERATE_INPUT_VCF; GENERATE_INPUT_VARIANTS
-} from "../../../modules/local/singleton"
+include { PHENOPACKET_TO_VARIANTS_AND_HPOS } from "../../../modules/local/phenopacket_to_variants_and_hpo";
+include { GENERATE_INPUT_VCF }               from "../../../modules/local/generate_input_vcf";
+include { GENERATE_INPUT_VARIANTS }          from "../../../modules/local/generate_input_variants";
 
 workflow HANDLE_INPUT {
     if (params.input_phenopacket) {

@@ -1,15 +1,10 @@
-include {
-    RESTRUCTURE_LOCAL_DATA_EXCEPT_VEP;
-    RESTRUCTURE_LOCAL_DATA_ONLY_VEP;
-    STORE_S3_BUCKET_DATA_EXCEPT_VEP;
-    STORE_S3_BUCKET_DATA_ONLY_VEP;
-    SPLIT_DATA;
-    BUILD_REFERENCE_INDEX;
-} from "../../../modules/local/prepare_data"
-
-include {
-    GENERATE_MANIFEST_JSON
-} from "../../../modules/local/singleton"
+include { RESTRUCTURE_LOCAL_DATA_EXCEPT_VEP }  from "../../../modules/local/restructure_local_data_except_vep"
+include { RESTRUCTURE_LOCAL_DATA_ONLY_VEP   }  from "../../../modules/local/restructure_local_data_only_vep"
+include { STORE_S3_BUCKET_DATA_EXCEPT_VEP   }  from "../../../modules/local/store_s3_bucket_data_except_vep"
+include { STORE_S3_BUCKET_DATA_ONLY_VEP     }  from "../../../modules/local/store_s3_bucket_data_only_vep"
+include { SPLIT_DATA                        }  from "../../../modules/local/split_data"
+include { BUILD_REFERENCE_INDEX             }  from "../../../modules/local/build_reference_index"
+include { GENERATE_MANIFEST_JSON            }  from "../../../modules/local/generate_manifest_json"
 
 workflow PREPARE_DATA {
     if (params.ref_dir) {
