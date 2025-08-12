@@ -35,6 +35,10 @@ workflow {
         )
     }
 
+    if (!params.skip_vcf_validation) {
+        vcf = VALIDATE_VCF(vcf)
+    }
+
     if (!params.input_variant && !params.input_phenopacket) {
         vcf = VCF_PRE_PROCESS(
             vcf,
@@ -43,21 +47,24 @@ workflow {
     }
 
     GENERATE_SINGLETON_FEATURES(vcf, hpo, data)
-    PREDICTION(
-        GENERATE_SINGLETON_FEATURES.out.merged_matrix,
-        GENERATE_SINGLETON_FEATURES.out.merged_compressed_scores,
-        ref_model_inputs_dir,
-    )
 
-    if (params.input_ped) {
-        GENERATE_TRIO_FEATURES(
+    if (!params.skip_prediction) {
+        PREDICTION(
+            GENERATE_SINGLETON_FEATURES.out.merged_matrix,
             GENERATE_SINGLETON_FEATURES.out.merged_compressed_scores,
-            PREDICTION.out.default_predictions,
-            inheritance,
+            ref_model_inputs_dir,
         )
-        PREDICTION_TRIO(
-            GENERATE_SINGLETON_FEATURES.out.merged_compressed_scores,
-            GENERATE_TRIO_FEATURES.out.triomatrix,
-        )
+
+        if (params.input_ped) {
+            GENERATE_TRIO_FEATURES(
+                GENERATE_SINGLETON_FEATURES.out.merged_compressed_scores,
+                PREDICTION.out.default_predictions,
+                inheritance,
+            )
+            PREDICTION_TRIO(
+                GENERATE_SINGLETON_FEATURES.out.merged_compressed_scores,
+                GENERATE_TRIO_FEATURES.out.triomatrix,
+            )
+        }
     }
 }
