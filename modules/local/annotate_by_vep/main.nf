@@ -31,6 +31,8 @@ process ANNOTATE_BY_VEP {
         --fork ${task.cpus} --everything --format vcf \\
         --cache --offline --tab --force_overwrite \\
         --species homo_sapiens --assembly ${ref_assembly} \\
+        --individual all \\
+        --buffer_size 50 \\
         --custom ${vep_custom_gnomad},gnomADg,vcf,exact,0,AF,AF_popmax,controls_nhomalt \\
         --custom ${vep_custom_clinvar},clinvar,vcf,exact,0,CLNREVSTAT,CLNSIG,CLNSIGCONF \\
         --custom ${vep_custom_hgmd},hgmd,vcf,exact,0,CLASS,GENE,PHEN,RANKSCORE \\
@@ -38,7 +40,7 @@ process ANNOTATE_BY_VEP {
         --plugin SpliceAI,snv=${vep_plugin_spliceai_snv},indel=${vep_plugin_spliceai_indel},cutoff=0.5 \\
         --plugin CADD,${vep_plugin_cadd},ALL \\
         --plugin dbNSFP,${vep_plugin_dbnsfp},ALL \\
-        --individual all --output_file ${vcf.baseName}-vep.txt --input_file $vcf \\
-        --buffer_size 50
+        --input_file $vcf \\
+        --output_file ${vcf.baseName}-vep.txt
     """
 }

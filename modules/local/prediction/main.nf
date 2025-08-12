@@ -1,4 +1,5 @@
 process PREDICTION {
+    label "big_mem"
     publishDir "${params.outdir}/${params.run_id}/prediction/", mode: "copy"
 
     input:
