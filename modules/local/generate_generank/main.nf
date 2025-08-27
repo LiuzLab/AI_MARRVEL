@@ -37,10 +37,9 @@ process GENERATE_GENERANK {
         df = df.sort_values(
                 ['varId', 'IMPACT_text', 'phenoCount'],
                 ascending=[True, False, False],
-            )
-            .drop_duplicates('varId', keep='first')
+            ) \
+            .drop_duplicates('varId', keep='first') \
             .sort_values('varId')
-        )
 
         return df
     def get_genedf(df):
