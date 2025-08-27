@@ -1,5 +1,6 @@
 process JOIN_PHRANK {
     tag "${scores.simpleName}"
+    label "big_mem"
 
     input:
     path scores

@@ -1,4 +1,5 @@
 process MERGE_SCORES_BY_CHROMOSOME {
+    label "big_mem"
     publishDir "${params.outdir}/${params.run_id}/merged", mode: "copy"
 
     input:
