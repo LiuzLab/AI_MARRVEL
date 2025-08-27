@@ -34,16 +34,18 @@ process GENERATE_GENERANK {
         df["phenoDict"] = df[["phenoList", "phenoInhList"]].apply(lambda x: {k: v for k, v in zip(x.iloc[0], x.iloc[1])}, axis=1)
         df["phenoCount"] = df.phenoList.apply(len)
 
-        df = df.sort_values(
+        return df
+
+    def get_genedf(df):
+        df = df.copy()
+        vardf = df.sort_values(
                 ['varId', 'IMPACT_text', 'phenoCount'],
                 ascending=[True, False, False],
             ) \
             .drop_duplicates('varId', keep='first') \
             .sort_values('varId')
 
-        return df
-    def get_genedf(df):
-        genedf1 = df.groupby("geneSymbol")[["geneEnsId", "varId", "clinvarSignDesc", "clinvarCondition", "CADD_PHRED", "zyg", "gnomadAF", "predict"]].agg(lambda x: list(set(x) - {'-'}))
+        genedf1 = vardf.groupby("geneSymbol")[["geneEnsId", "varId", "clinvarSignDesc", "clinvarCondition", "CADD_PHRED", "zyg", "gnomadAF", "predict"]].agg(lambda x: list(set(x) - {'-'}))
         genedf1["isTransHeterozygote"] = genedf1.varId.apply(lambda x: "Yes" if len(x) > 1 else "No")
         genedf2 = df.groupby("geneSymbol")[["IMPACT_text"]].max()
         genedf3 = df.groupby("geneSymbol")[["Consequence"]].agg(lambda x: list(set(xxx for xx in x for xxx in xx if xxx is not None)))
