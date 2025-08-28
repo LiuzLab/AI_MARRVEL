@@ -5,7 +5,7 @@ import pandas as pd
 from extraModel.confidence import *
 import joblib
 from time import time
-from extraModel.generate_bivar_data import *
+from extraModel.generate_bivar_data import generate_bivar_data
 from datetime import datetime
 from multiprocessing import Pool
 from tqdm import tqdm
@@ -120,7 +120,7 @@ def AIM(data_folder, sample_id):
         f"{out_folder}/{sample_id}_default_predictions.csv", index_col=0
     )
 
-    process_sample(
+    generate_bivar_data(
         data_folder=out_folder,
         sample_id=sample_id,
         default_pred=default_pred,

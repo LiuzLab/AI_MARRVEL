@@ -8,7 +8,7 @@ import logging
 from os.path import exists
 import shutil
 
-def process_sample(data_folder, sample_id, default_pred, labeling=False):
+def generate_bivar_data(data_folder, sample_id, default_pred, labeling=False):
     if labeling:
         raise NotImplementedError('The below code was not tested with real data with labeling=True')
 
@@ -33,7 +33,7 @@ def process_sample(data_folder, sample_id, default_pred, labeling=False):
     feature_df = feature_df.loc[~feature_df.index.duplicated(keep="first")]
 
     # Group variants by Ens IDs
-    expanded_fn = f"final_matrix_expanded/{sample_id}.expanded.csv.gz"
+    expanded_fn = f"{sample_id}.expanded.csv.gz"
     # for expanded_fn in expanded_fns:
     if "csv" in expanded_fn:
         df = pd.read_csv(expanded_fn, sep=",", index_col=0, compression="infer")
