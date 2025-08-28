@@ -12,6 +12,7 @@ process MERGE_PREDICTION_TO_TRANSCRIPT {
     """
     mkdir final_matrix_expanded
 
+    # NOTE(HJ): want to change the name.
     # Generate final matrix expanded
     merge_rm.py \
         $default_prediction \
