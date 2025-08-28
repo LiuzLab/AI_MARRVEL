@@ -1,7 +1,5 @@
 
 process GENERATE_GENERANK {
-    cpus 1
-
     publishDir "${params.outdir}/${params.run_id}/prediction/generank", mode: "copy"
 
     input:
@@ -14,9 +12,6 @@ process GENERATE_GENERANK {
     #!/usr/bin/env python
 
     import pandas as pd
-    import glob
-    import json
-    from tqdm.auto import tqdm
     import ast
 
     def get_transcriptdf():
