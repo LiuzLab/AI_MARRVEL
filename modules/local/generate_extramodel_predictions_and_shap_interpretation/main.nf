@@ -1,4 +1,6 @@
 process GENERATE_EXTRAMODEL_PREDICTIONS_AND_SHAP_INTERPRETATION {
+    label "big_mem"
+
     publishDir "${params.outdir}/${params.run_id}/prediction/", mode: "copy"
 
     input:
