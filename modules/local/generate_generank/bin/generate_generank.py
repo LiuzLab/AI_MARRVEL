@@ -87,8 +87,6 @@ def get_genedf(transcriptdf):
         genedf.geneEnsId.apply(max)
     genedf["predict"] = \
         genedf.predict.apply(max)
-    genedf["isTransHeterozygote"] = \
-        genedf.varId.apply(lambda x: "Yes" if len(x) > 1 else "No")
 
     genedf = genedf.sort_values(["predict", "IMPACT_text"], ascending=False)
     genedf = genedf.reset_index()
