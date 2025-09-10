@@ -28,5 +28,5 @@ workflow PREDICTION {
     )
 
     emit:
-    GENERATE_DEFAULT_PREDICTION.out.default_prediction
+    default_predictions = GENERATE_DEFAULT_PREDICTION.out.default_prediction
 }
