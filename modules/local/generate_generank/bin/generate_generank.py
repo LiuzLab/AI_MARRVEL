@@ -16,7 +16,10 @@ ZYG_MAP = {
 
 
 def get_transcriptdf(filename):
-    transcriptdf = pd.read_csv(filename, low_memory=False)
+    if filename.endswith(".csv.gz"):
+        transcriptdf = pd.read_csv(filename)
+    else:
+        transcriptdf = pd.read_parquet(filename)
     transcriptdf = transcriptdf.rename(columns={"Unnamed: 0": "varId"})
     transcriptdf = transcriptdf[transcriptdf.geneSymbol != "-"]
 
@@ -55,6 +58,15 @@ def get_genedf(transcriptdf):
         ) \
         .drop_duplicates('varId', keep='first') \
         .sort_values('varId')
+
+    vardf = vardf[
+        (vardf.clinvarSignDesc.str.contains("Pathogenic")
+            | vardf.clinvarSignDesc.str.contains("Likely_pathogenic")
+            | vardf.clinvarSignDesc.str.contains("Uncertain_significance"))
+        | (vardf.zyg == "Homozygous")
+        | (vardf.IMPACT_text == "HIGH")
+        | ((vardf.IMPACT_text == "MODERATE") | (vardf.CADD_PHRED >= 15))
+    ]
 
     genedf_base = vardf.groupby("geneSymbol")[[
         "geneEnsId", "varId", "clinvarSignDesc",
