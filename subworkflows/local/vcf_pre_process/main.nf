@@ -1,4 +1,3 @@
-include { VALIDATE_VCF }               from "../../../modules/local/validate_vcf";
 include { NORMALIZE_VCF }              from "../../../modules/local/normalize_vcf";
 include { CONVERT_GVCF }               from "../../../modules/local/convert_gvcf";
 include { FILTER_UNPASSED }            from "../../../modules/local/filter_unpassed";
@@ -17,8 +16,7 @@ workflow VCF_PRE_PROCESS {
     fasta_tuple = data.map { it.fasta_tuple }
     gnomad_tuple = data.map { it.gnomad_tuple }
 
-    VALIDATE_VCF(input_vcf)
-    NORMALIZE_VCF(VALIDATE_VCF.out.vcf)
+    NORMALIZE_VCF(input_vcf)
 
     CONVERT_GVCF(
         NORMALIZE_VCF.out.vcf,
