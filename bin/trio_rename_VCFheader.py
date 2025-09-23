@@ -14,7 +14,7 @@ header = header.strip('\n').split('\t')[-3:]
 newheader = []
 
 for sample in header:
-	newheader += [i for i in sample_list if i in sample]
+	newheader += [i for i in sample_list if i == sample]
 
 assert len(newheader) == 3
 
