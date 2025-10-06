@@ -56,7 +56,7 @@
         "s3_bucket_data_name": {
           "type": "string",
           "default": "aim-data-dependencies-2.3-public",
-          "description": "[Not Implemented] S3 bucket name to aim pipeline dependencies directory.",
+          "description": "S3 bucket name to aim pipeline dependencies directory.",
           "format": "path",
           "hidden": true
         },
@@ -82,6 +82,10 @@
         "impact_filter": {
           "type": "boolean",
           "description": "Enable low impact. Addition will enable low impact transcripts."
+        },
+        "skip_ref_sync": {
+          "type": "boolean",
+          "description": "Skip syncing the reference data directory. Turn this on when you don't want to sync or you are on a HPC environment."
         },
         "skip_vcf_validation": {
           "type": "boolean",
