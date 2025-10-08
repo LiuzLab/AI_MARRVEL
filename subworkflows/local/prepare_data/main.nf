@@ -1,21 +1,21 @@
-include { RESTRUCTURE_LOCAL_DATA_EXCEPT_VEP }  from "../../../modules/local/restructure_local_data_except_vep"
-include { RESTRUCTURE_LOCAL_DATA_ONLY_VEP   }  from "../../../modules/local/restructure_local_data_only_vep"
-include { STORE_S3_BUCKET_DATA_EXCEPT_VEP   }  from "../../../modules/local/store_s3_bucket_data_except_vep"
-include { STORE_S3_BUCKET_DATA_ONLY_VEP     }  from "../../../modules/local/store_s3_bucket_data_only_vep"
-include { SPLIT_DATA                        }  from "../../../modules/local/split_data"
 include { BUILD_REFERENCE_INDEX             }  from "../../../modules/local/build_reference_index"
 include { GENERATE_MANIFEST_JSON            }  from "../../../modules/local/generate_manifest_json"
+include { RESTRUCTURE_LOCAL_DATA_EXCEPT_VEP }  from "../../../modules/local/restructure_local_data_except_vep"
+include { RESTRUCTURE_LOCAL_DATA_ONLY_VEP   }  from "../../../modules/local/restructure_local_data_only_vep"
+include { SPLIT_DATA                        }  from "../../../modules/local/split_data"
+include { SYNC_DATA_DEPENDENCIES            }  from "../../../modules/local/sync_data_dependencies"
 
 workflow PREPARE_DATA {
-    if (params.ref_dir) {
-        GENERATE_MANIFEST_JSON(file(params.ref_dir))
-        data_except_vep = RESTRUCTURE_LOCAL_DATA_EXCEPT_VEP(file(params.ref_dir))
-        data_only_vep = RESTRUCTURE_LOCAL_DATA_ONLY_VEP(file(params.ref_dir))
+
+    if (!params.skip_ref_sync){
+        ref_dir_ch = SYNC_DATA_DEPENDENCIES(params.s3_bucket_data_name, file(params.ref_dir), params.ref_dir)
     } else {
-        error "Not Implemented"
-        // data_except_vep = STORE_S3_BUCKET_DATA_EXCEPT_VEP()
-        // data_only_vep = STORE_S3_BUCKET_DATA_ONLY_VEP()
+        ref_dir_ch = file(params.ref_dir)
     }
+    
+    GENERATE_MANIFEST_JSON(ref_dir_ch)
+    data_except_vep = RESTRUCTURE_LOCAL_DATA_EXCEPT_VEP(ref_dir_ch)
+    data_only_vep  = RESTRUCTURE_LOCAL_DATA_ONLY_VEP(ref_dir_ch)
 
     (
         chrmap_file,
