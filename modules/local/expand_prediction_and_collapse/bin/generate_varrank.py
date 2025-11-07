@@ -15,7 +15,7 @@ ZYG_MAP = {
 }
 
 
-def get_transcriptdf(filename):
+def get_vardf(filename):
     if filename.endswith(".csv.gz"):
         transcriptdf = pd.read_csv(filename)
     else:
@@ -45,12 +45,6 @@ def get_transcriptdf(filename):
     transcriptdf["phenoCount"] = \
         transcriptdf.phenoList.apply(len)
 
-    return transcriptdf
-
-
-def get_genedf(transcriptdf):
-    transcriptdf = transcriptdf.copy()
-
     # Extract one variant per gene with the highest impact and phenotype count
     vardf = transcriptdf.sort_values(
             ['varId', 'IMPACT_text', 'phenoCount'],
@@ -59,6 +53,10 @@ def get_genedf(transcriptdf):
         .drop_duplicates('varId', keep='first') \
         .sort_values('varId')
 
+    return vardf
+
+
+def get_genedf(vardf):
     vardf = vardf[
         (vardf.clinvarSignDesc.str.contains("Pathogenic")
             | vardf.clinvarSignDesc.str.contains("Likely_pathogenic")
@@ -117,11 +115,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--output",
         required=True,
-        help="Output gene-level CSV file"
+        help="Output variant-level CSV file"
     )
     args = parser.parse_args()
 
-    transcriptdf = get_transcriptdf(args.input)
-    genedf = get_genedf(transcriptdf)
-
-    genedf.to_csv(args.output, index=False)
+    vardf = get_vardf(args.input)
+    vardf.to_csv(args.output, index=False)

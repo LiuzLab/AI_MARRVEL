@@ -5,7 +5,7 @@ process GENERATE_EXTRAMODEL_PREDICTIONS_AND_SHAP_INTERPRETATION {
 
     input:
     path default_prediction
-    path final_matrix_expanded
+    path transcriptdf
     path ref_model_inputs_dir
 
     output:

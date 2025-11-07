@@ -25,9 +25,9 @@ process PREDICTION_TRIO {
 
 
     # Generate ${params.run_id}.trio.prediction.csv
-    trio_merge_rm.py ${params.run_id}
+    trio_merge_rankmatrix.py ${params.run_id}
 
-    merge_rm.py \
+    merge_rankmatrix.py \
         ${params.run_id}.trio.prediction.csv \
         $merged_compressed_scores \
         ${params.run_id}.trio.expanded.csv.gz
