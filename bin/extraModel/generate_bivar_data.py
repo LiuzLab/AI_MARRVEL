@@ -33,12 +33,12 @@ def generate_bivar_data(data_folder, sample_id, default_pred, labeling=False):
     feature_df = feature_df.loc[~feature_df.index.duplicated(keep="first")]
 
     # Group variants by Ens IDs
-    expanded_fn = f"{sample_id}.expanded.csv.gz"
-    # for expanded_fn in expanded_fns:
-    if "csv" in expanded_fn:
-        df = pd.read_csv(expanded_fn, sep=",", index_col=0, compression="infer")
+    transcriptdf_filename = f"{sample_id}.expanded.transcript.csv.gz"
+    # for transcriptdf_filename in expanded_fns:
+    if "csv" in transcriptdf_filename:
+        df = pd.read_csv(transcriptdf_filename, sep=",", index_col=0, compression="infer")
     else:
-        df = pd.read_csv(expanded_fn, sep="\t", index_col=0, compression="infer")
+        df = pd.read_csv(transcriptdf_filename, sep="\t", index_col=0, compression="infer")
 
     if df.shape[0] > 100000:
         df = df.loc[df["IMPACT.from.Tier"] > 1]
