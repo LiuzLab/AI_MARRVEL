@@ -1,6 +1,5 @@
 include { GENERATE_DEFAULT_PREDICTION } from '../../../modules/local/generate_default_prediction'
 include { EXPAND_PREDICTION_AND_COLLAPSE } from '../../../modules/local/expand_prediction_and_collapse'
-include { GENERATE_GENERANK } from '../../../modules/local/generate_generank'
 include { GENERATE_EXTRAMODEL_PREDICTIONS_AND_SHAP_INTERPRETATION } from '../../../modules/local/generate_extramodel_predictions_and_shap_interpretation'
 
 
