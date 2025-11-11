@@ -10,7 +10,6 @@ from datetime import datetime
 from multiprocessing import Pool
 from tqdm import tqdm
 from scipy.stats import rankdata
-from extraModel.integrate_output import *
 from model_interpreter.variant_model_interpreter import ModelInterpreter
 
 parser = argparse.ArgumentParser()
