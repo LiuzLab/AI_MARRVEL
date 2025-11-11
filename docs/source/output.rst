@@ -4,6 +4,10 @@
 AIM Output Details
 *********************
 
+.. warning::
+
+   This page describes an older version of AIM's outputs and is pending a refresh. Expect discrepancies until the documentation is updated.
+
 
 Output Files
 ========================
@@ -328,4 +332,3 @@ In making the decision, AIM takes various types of information into consideratio
 
 ``spliceAImax``
    Maximum of SpliceAI score among DS_AG, DS_AL, DS_DG, and DS_DL.
-
