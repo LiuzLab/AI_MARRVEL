@@ -44,24 +44,33 @@ Use following command-line to run AIM.
 
 Install Required Data Dependencies
 =================================== 
-AIM utilizes various databases for variant annotation, all of which have been compiled and are available for download. We use AWS S3 for data access, and the data can be downloaded by following these steps:
+AIM utilizes various databases for variant annotation, all of which have been compiled and are available for download.
+
+Automatic sync (default)
+-------------------------
+
+Starting with v1.2.0, AIM automatically launches the ``SYNC_DATA_DEPENDENCIES`` process before other pipeline stages. It downloads or refreshes the latest public bundle inside ``--ref_dir``. If the files are already current, this step completes quickly and the rest of the workflow proceeds normally.
+
+Skip or customize the sync
+---------------------------
+
+Set ``--skip_ref_sync`` flag when you need to manage the dependency folder yourself (for example, to pull from a private bucket or to reuse a pre-seeded directory). When this flag is enabled the pipeline will not modify ``--ref_dir``, so ensure you have already mirrored the expected layout. The manual procedure is:
 
 1. **Install the AWS CLI**:
    Follow the instructions provided in the `AWS CLI Installation Guide <https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html>`_
 
-
 2. **Navigate to Your Desired Directory**:
    Change to the directory where you want your data dependencies downloaded. For example, in Ubuntu, use:
 
-.. code-block:: bash
+   .. code-block:: bash
 
-      cd <desired/folder/path>
+         cd <desired/folder/path>
 
 3. **Use the following command to sync the S3 bucket to your local directory**:
 
-.. code-block:: bash
+   .. code-block:: bash
 
-      aws s3 sync s3://aim-data-dependencies-2.3-public . --no-sign-request
+         aws s3 sync s3://aim-data-dependencies-2.3-public . --no-sign-request
 
 
 .. warning::

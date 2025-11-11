@@ -19,9 +19,9 @@ copyright = "2025, Zhandong Liu's Lab at Baylor College of Medicine"
 author = 'Chaozhong Liu, Dongxue Mao'
 
 # The short X.Y version
-version = 'v1.1'
+version = 'v1.2'
 # The full version, including alpha/beta/rc tags
-release = '1.1.2'
+release = '1.2.0'
 
 
 # -- General configuration ---------------------------------------------------

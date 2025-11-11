@@ -7,7 +7,7 @@
 
 <p align="center">
   <a style="text-decoration:none">
-    <img src="https://img.shields.io/badge/AI_MARRVEL-v1.1.2-blue.svg"/>
+    <img src="https://img.shields.io/badge/AI_MARRVEL-v1.2.0-blue.svg"/>
   </a>
   <a href='https://ai-marrvel.readthedocs.io/en/latest/?badge=latest'>
     <img src='https://readthedocs.org/projects/ai-marrvel/badge/?version=latest' alt='Documentation Status' />
@@ -28,7 +28,12 @@ You can use AI-MARRVEL from our [website](https://ai.marrvel.org/) or follow the
 
 ### Install Required Data Dependencies
 
-AIM utilizes various databases for variant annotation, all of which have been compiled and are available for download. We use AWS S3 for data access, and the data can be downloaded by following these steps:
+AIM utilizes various databases for variant annotation, all of which have been compiled and are available for download.
+
+- **Automatic sync (default):** Starting with v1.2.0, AIM automatically downloads or updates the public data bundle into `--ref_dir` before the pipeline runs. This happens through the new `SYNC_DATA_DEPENDENCIES` process. If the directory already contains the latest files, the step finishes quickly.
+- **Skip or customize the sync:** Pass `--skip_ref_sync` flag when you want to populate `--ref_dir` yourself (for example, to point to a private bucket or internal mirror). When this flag is set, AIM will not touch the contents of `--ref_dir`, so make sure the folder already contains the expected database layout.
+
+When handling the sync manually, follow the steps below to mirror the public bucket locally:
 
 1. **Install the AWS CLI**: Follow the instructions provided in the [AWS CLI Installation Guide](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html).
 2. **Navigate to Your Desired Directory**: Change to the directory where you want your data dependencies downloaded. For example, in Ubuntu, use:
