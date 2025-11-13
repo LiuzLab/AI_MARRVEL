@@ -1,6 +1,4 @@
 process PREPARE_TRIO_VCF {
-    container "broadinstitute/gatk"
-
     input:
     path vcf
     path chrmap_file
@@ -12,8 +10,6 @@ process PREPARE_TRIO_VCF {
 
     script:
     """
-    set -euo pipefail
-
     source "${sample_ids}"
 
     echo "Normalize joint VCF file, split multiallelic rows..."

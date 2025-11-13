@@ -1,6 +1,4 @@
 process EXTRACT_PROBAND_VCF {
-    container "broadinstitute/gatk"
-
     input:
     path joint_vcf
     path sample_ids
@@ -10,8 +8,6 @@ process EXTRACT_PROBAND_VCF {
 
     script:
     """
-    set -euo pipefail
-
     source "${sample_ids}"
 
     echo "Extract proband VCF..."

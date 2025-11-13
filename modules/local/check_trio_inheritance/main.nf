@@ -1,6 +1,4 @@
 process CHECK_TRIO_INHERITANCE {
-    container "broadinstitute/gatk"
-
     input:
     path denovo_vcf
     path sample_ids

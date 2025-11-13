@@ -1,6 +1,4 @@
 process PARSE_TRIO_PED {
-    container "broadinstitute/gatk"
-
     input:
     path ped
 
@@ -9,8 +7,6 @@ process PARSE_TRIO_PED {
 
     script:
     """
-    set -euo pipefail
-
     if [ ! -s "$ped" ]; then
         echo "ERROR: PED file '$ped' is empty or missing." >&2
         exit 1

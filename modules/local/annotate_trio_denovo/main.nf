@@ -14,8 +14,6 @@ process ANNOTATE_TRIO_DENOVO {
 
     script:
     """
-    set -euo pipefail
-
     gatk VariantAnnotator \
         -A PossibleDeNovo \
         -R "${fasta}" \
