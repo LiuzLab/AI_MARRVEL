@@ -280,18 +280,15 @@ def main():
         inputReadTime = t2 - t1
         inputNumRows = len(transcriptDf.index)
 
-        # TODO: change with `.rename`
-        if "GERP++_RS" in transcriptDf.columns:
-            print("found GERP++RS")
-            transcriptDf["GERPpp_RS"] = transcriptDf["GERP++_RS"]
-        if "GERP++_NR" in transcriptDf.columns:
-            print("found GERP++NR")
-            transcriptDf["GERPpp_NR"] = transcriptDf["GERP++_NR"]
-        # update column names which have - in it
-        if "fathmm-MKL_coding_score" in transcriptDf.columns:
-            transcriptDf["fathmm_MKL_coding_score"] = transcriptDf["fathmm-MKL_coding_score"]
-        if "M-CAP_score" in transcriptDf.columns:
-            transcriptDf["M_CAP_score"] = transcriptDf["M-CAP_score"]
+        rename_map = {
+            "GERP++_RS": "GERPpp_RS",
+            "GERP++_NR": "GERPpp_NR",
+            "fathmm-MKL_coding_score": "fathmm_MKL_coding_score",
+            "M-CAP_score": "M_CAP_score",
+        }
+        rename_map = {src: rename_map[src] for src in rename_map if src in transcriptDf.columns}
+        if rename_map:
+            transcriptDf.rename(columns=rename_map, inplace=True)
 
         if "conserve" in moduleList:
             decipherSortedDf = decipherDf.set_index(['Chr', 'Start', 'Stop']).sort_index()
