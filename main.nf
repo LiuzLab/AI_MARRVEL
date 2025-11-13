@@ -4,7 +4,7 @@ include { validateParameters }          from 'plugin/nf-schema'
 
 include { showVersion }                 from "./modules/local/utils"
 include { VALIDATE_VCF }                from "./modules/local/validate_vcf";
-include { VCF_PRE_PROCESS_TRIO }        from "./modules/local/vcf_pre_process_trio";
+include { VCF_PRE_PROCESS_TRIO }        from "./subworkflows/local/vcf_pre_process_trio";
 include { GENERATE_TRIO_FEATURES }      from "./modules/local/generate_trio_features";
 include { PREDICTION_TRIO }             from "./modules/local/prediction_trio";
 
