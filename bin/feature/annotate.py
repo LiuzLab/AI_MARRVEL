@@ -7,6 +7,8 @@ from annotation.utils_for_marrvel_flatfile_module_3 import getAnnotateInfoRows_3
 
 
 def _add_dgv_annotations(annotate_info_df: pd.DataFrame, dgv_df: pd.DataFrame) -> pd.DataFrame:
+    if dgv_df.empty:
+        return annotate_info_df
     dgv_coords = dgv_df[["Chr", "Start", "Stop"]].values.astype("int32")
 
     def _annotate_row(var_obj: pd.Series):
@@ -42,7 +44,6 @@ def _add_dgv_annotations(annotate_info_df: pd.DataFrame, dgv_df: pd.DataFrame) -
 def annotate_variants(
     transcript_df: pd.DataFrame,
     genome_ref: str,
-    module_list: list,
     clinvar_gene_df: pd.DataFrame,
     clinvar_allele_df,
     omim_gene_sorted_df: pd.DataFrame,
@@ -50,7 +51,7 @@ def annotate_variants(
     hgmd_hpo_gene_sorted_df: pd.DataFrame,
     decipher_sorted_df: pd.DataFrame,
     gnomad_metrics_sorted_df: pd.DataFrame,
-    dgv_df: Optional[pd.DataFrame] = None,
+    dgv_df: pd.DataFrame,
 ) -> pd.DataFrame:
     annotate_info_df = getAnnotateInfoRows_3(
         transcript_df,
@@ -60,13 +61,10 @@ def annotate_variants(
         omim_gene_sorted_df,
         omim_allele_list,
         hgmd_hpo_gene_sorted_df,
-        module_list,
         decipher_sorted_df,
         gnomad_metrics_sorted_df,
     )
 
-    if "conserve" in module_list and dgv_df is not None:
-        annotate_info_df = _add_dgv_annotations(annotate_info_df, dgv_df)
+    annotate_info_df = _add_dgv_annotations(annotate_info_df, dgv_df)
 
     return annotate_info_df
-

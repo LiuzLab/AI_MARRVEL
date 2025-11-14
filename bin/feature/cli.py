@@ -32,11 +32,6 @@ def build_parser() -> argparse.ArgumentParser:
         "-diseaseInh", "--diseaseInh", help="Provide disease Inheritance: AD, AR, XD, XR"
     )
     parser.add_argument(
-        "-modules",
-        "--modules",
-        help="Select modules to run: all,curate,conserve,effectOnGene",
-    )
-    parser.add_argument(
         "-genomeRef", "--genomeRef", help="Provide genome ref: hg19, hg38"
     )
     parser.add_argument(
@@ -59,4 +54,3 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     args = parser.parse_args(argv)
     check_user_args(args)
     return args
-
