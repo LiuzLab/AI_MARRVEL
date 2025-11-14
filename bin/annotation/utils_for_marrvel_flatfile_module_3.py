@@ -415,7 +415,6 @@ def getAnnotateInfoRows_3(
         omimGeneSortedDf,
         omimAlleleList,
         hgmdHPOScoreGeneSortedDf,
-        moduleList,
         decipherSortedDf,
         gnomadMetricsGeneSortedDf,
 ):
@@ -423,28 +422,18 @@ def getAnnotateInfoRows_3(
         return getAnnotateInfoRow_3_1(row, genomeRef)
 
     def f2(row):
-        if "curate" not in moduleList:
-            return row
         return getAnnotateInfoRow_3_2(row, decipherSortedDf)
 
     def f3(row):
-        if "conserve" not in moduleList:
-            return row
         return getAnnotateInfoRow_3_3(row, gnomadMetricsGeneSortedDf)
 
     def f4(row):
-        if "curate" not in moduleList:
-            return row
         return getAnnotateInfoRow_3_4(row, omimGeneSortedDf)
 
     def f5(row):
-        if "curate" not in moduleList:
-            return row
         return getAnnotateInfoRow_3_5(row, clinvarGeneDf, clinvarAlleleDf)
 
     def f6(row):
-        if "curate" not in moduleList:
-            return row
         return getAnnotateInfoRow_3_6(
             row, hgmdHPOScoreGeneSortedDf
         )

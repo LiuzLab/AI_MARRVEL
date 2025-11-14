@@ -12,10 +12,9 @@ process ANNOTATE_BY_MODULES {
 
     script:
     """
-    feature.py \\
+    feature_main.py \\
         ${params.impact_filter ? "-enableLIT" : ""} \\
         -diseaseInh AD \\
-        -modules curate,conserve \\
         -inFileType vepAnnotTab \\
         -patientFileType one \\
         -patientHPOsimiOMIM ${omim_sim} \\
