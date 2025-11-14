@@ -1,4 +1,4 @@
-include { NORMALIZE_VCF }              from "../../../modules/local/normalize_vcf";
+include { ENSURE_BGZIP_VCF }           from "../../../modules/local/normalize_vcf";
 include { CONVERT_GVCF }               from "../../../modules/local/convert_gvcf";
 include { FILTER_UNPASSED }            from "../../../modules/local/filter_unpassed";
 include { FILTER_MITO_AND_UNKOWN_CHR } from "../../../modules/local/filter_mito_and_unkown_chr";
@@ -16,11 +16,11 @@ workflow VCF_PRE_PROCESS {
     fasta_tuple = data.map { it.fasta_tuple }
     gnomad_tuple = data.map { it.gnomad_tuple }
 
-    NORMALIZE_VCF(input_vcf)
+    ENSURE_BGZIP_VCF(input_vcf)
 
     CONVERT_GVCF(
-        NORMALIZE_VCF.out.vcf,
-        NORMALIZE_VCF.out.tbi,
+        ENSURE_BGZIP_VCF.out.vcf,
+        ENSURE_BGZIP_VCF.out.tbi,
         fasta_tuple,
         chrmap_file
     )
