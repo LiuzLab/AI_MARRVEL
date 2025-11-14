@@ -1,4 +1,4 @@
-process NORMALIZE_VCF {
+process ENSURE_BGZIP_VCF {
     input:
     path vcf
 
@@ -9,12 +9,7 @@ process NORMALIZE_VCF {
     script:
     """
     # Determine the file type
-    INPUT_VCF_TYPE="\$(file -b $vcf)"
-
-    if echo "\${INPUT_VCF_TYPE}" | grep -q 'symbolic link to'; then
-        SYM_LINK="\$(readlink -f $vcf)"
-        INPUT_VCF_TYPE="\$(file -b \${SYM_LINK})"
-    fi
+    INPUT_VCF_TYPE="\$(file -bL $vcf)"
 
     if echo "\${INPUT_VCF_TYPE}" | grep -q 'BGZF'; then
         echo "The file is in BGZF format, ready for tabix."
