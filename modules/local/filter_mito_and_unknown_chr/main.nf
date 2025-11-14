@@ -1,4 +1,4 @@
-process FILTER_MITO_AND_UNKOWN_CHR {
+process FILTER_MITO_AND_UNKNOWN_CHR {
     publishDir "${params.outdir}/${params.run_id}/vcf/", mode: 'copy'
     input:
     path vcf

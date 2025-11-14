@@ -1,7 +1,7 @@
 include { NORMALIZE_VCF }              from "../../../modules/local/normalize_vcf";
 include { CONVERT_GVCF }               from "../../../modules/local/convert_gvcf";
 include { FILTER_UNPASSED }            from "../../../modules/local/filter_unpassed";
-include { FILTER_MITO_AND_UNKOWN_CHR } from "../../../modules/local/filter_mito_and_unkown_chr";
+include { FILTER_MITO_AND_UNKNOWN_CHR } from "../../../modules/local/filter_mito_and_unknown_chr";
 include { FILTER_BED }                 from "../../../modules/local/filter_bed";
 include { FILTER_PROBAND }             from "../../../modules/local/filter_proband";
 
@@ -29,13 +29,13 @@ workflow VCF_PRE_PROCESS {
         CONVERT_GVCF.out.tbi,
         chrmap_file
     )
-    FILTER_MITO_AND_UNKOWN_CHR(
+    FILTER_MITO_AND_UNKNOWN_CHR(
         FILTER_UNPASSED.out.vcf,
         FILTER_UNPASSED.out.tbi,
     )
     FILTER_BED(
-        FILTER_MITO_AND_UNKOWN_CHR.out.vcf,
-        FILTER_MITO_AND_UNKOWN_CHR.out.tbi,
+        FILTER_MITO_AND_UNKNOWN_CHR.out.vcf,
+        FILTER_MITO_AND_UNKNOWN_CHR.out.tbi,
         ref_filter_bed_file,
     )
     FILTER_PROBAND(
