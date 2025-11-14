@@ -1,9 +1,12 @@
 include { ENSURE_BGZIP_VCF }           from "../../../modules/local/normalize_vcf";
 include { CONVERT_GVCF }               from "../../../modules/local/convert_gvcf";
+include { NORMALIZE_CHR_AND_ID }       from "../../../modules/local/normalize_chr_and_id";
 include { FILTER_UNPASSED }            from "../../../modules/local/filter_unpassed";
+include { FILTER_NONREF_VARIANTS }     from "../../../modules/local/filter_nonref";
 include { FILTER_MITO_AND_UNKNOWN_CHR } from "../../../modules/local/filter_mito_and_unknown_chr";
 include { FILTER_BED }                 from "../../../modules/local/filter_bed";
-include { FILTER_BLACKLIST_VARIANTS }  from "../../../modules/local/filter_proband";
+include { FILTER_BLACKLIST_VARIANTS }  from "../../../modules/local/filter_blacklist_variants";
+include { ENSURE_VCF_NON_EMPTY }       from "../../../modules/local/ensure_vcf_non_empty";
 
 workflow VCF_PRE_PROCESS {
     take:
@@ -24,14 +27,22 @@ workflow VCF_PRE_PROCESS {
         fasta_tuple,
         chrmap_file
     )
-    FILTER_UNPASSED(
+    NORMALIZE_CHR_AND_ID(
         CONVERT_GVCF.out.vcf,
         CONVERT_GVCF.out.tbi,
         chrmap_file
     )
-    FILTER_MITO_AND_UNKNOWN_CHR(
+    FILTER_UNPASSED(
+        NORMALIZE_CHR_AND_ID.out.vcf,
+        NORMALIZE_CHR_AND_ID.out.tbi,
+    )
+    FILTER_NONREF_VARIANTS(
         FILTER_UNPASSED.out.vcf,
         FILTER_UNPASSED.out.tbi,
+    )
+    FILTER_MITO_AND_UNKNOWN_CHR(
+        FILTER_NONREF_VARIANTS.out.vcf,
+        FILTER_NONREF_VARIANTS.out.tbi,
     )
     FILTER_BED(
         FILTER_MITO_AND_UNKNOWN_CHR.out.vcf,
@@ -43,7 +54,11 @@ workflow VCF_PRE_PROCESS {
         FILTER_BED.out.tbi,
         gnomad_tuple,
     )
+    ENSURE_VCF_NON_EMPTY(
+        FILTER_BLACKLIST_VARIANTS.out.vcf,
+        FILTER_BLACKLIST_VARIANTS.out.tbi,
+    )
 
     emit:
-    vcf = FILTER_BLACKLIST_VARIANTS.out.vcf
+    vcf = ENSURE_VCF_NON_EMPTY.out.vcf
 }
