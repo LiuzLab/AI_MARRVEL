@@ -13,6 +13,7 @@ process FILTER_BLACKLIST_VARIANTS {
 
     output:
     path "${params.run_id}.filt.rmBL.vcf.gz", emit: vcf
+    path "${params.run_id}.filt.rmBL.vcf.gz.tbi", emit: tbi
 
     script:
     """
@@ -32,6 +33,7 @@ process FILTER_BLACKLIST_VARIANTS {
 
     mv isec_tmp3/0002.vcf ${params.run_id}.filt.rmBL.vcf
     bgzip ${params.run_id}.filt.rmBL.vcf
+    tabix ${params.run_id}.filt.rmBL.vcf.gz
     """
 
 }

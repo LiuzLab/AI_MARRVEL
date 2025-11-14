@@ -11,7 +11,7 @@ include { PREDICTION_TRIO }             from "./modules/local/prediction_trio";
 include { PREPARE_DATA }                from "./subworkflows/local/prepare_data"
 include { HANDLE_INPUT }                from "./subworkflows/local/handle_input"
 include { VCF_PRE_PROCESS }             from "./subworkflows/local/vcf_pre_process"
-include { GENERATE_SINGLETON_FEATURES } from "./subworkflows/local/generate_singleton_feature"
+include { GENERATE_SINGLETON_FEATURES } from "./subworkflows/local/generate_singleton_features"
 include { PREDICTION }                  from "./subworkflows/local/prediction";
 
 showVersion()
