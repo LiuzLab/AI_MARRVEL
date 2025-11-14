@@ -23,6 +23,14 @@ def get_vardf(filename):
     transcriptdf = transcriptdf.rename(columns={"Unnamed: 0": "varId"})
     transcriptdf = transcriptdf[transcriptdf.geneSymbol != "-"]
 
+    if transcriptdf.empty:
+        return pd.DataFrame(columns=[
+            "varId", "geneSymbol", "geneEnsId", "clinvarCondition",
+            "Consequence", "IMPACT_text", "zyg",
+            "phenoDict",
+            "clinvarSignDesc", "CADD_PHRED", "gnomadAF", "predict",
+        ])
+
     transcriptdf["clinvarCondition"] = \
         transcriptdf["clinvarCondition"].fillna("-")
     transcriptdf["Consequence"] = \
@@ -51,6 +59,7 @@ def get_vardf(filename):
             ascending=[True, False, False],
         ) \
         .drop_duplicates('varId', keep='first') \
+        .drop(columns=["phenoList", "phenoInhList", "phenoCount"]) \
         .sort_values('varId')
 
     return vardf
@@ -65,6 +74,14 @@ def get_genedf(vardf):
         | (vardf.IMPACT_text == "HIGH")
         | ((vardf.IMPACT_text == "MODERATE") | (vardf.CADD_PHRED >= 15))
     ]
+
+    if vardf.empty:
+        return pd.DataFrame(columns=[
+            "geneSymbol", "geneEnsId", "varId", "clinvarSignDesc",
+            "clinvarCondition", "CADD_PHRED", "zyg", "gnomadAF",
+            "predict", "IMPACT_text", "Consequence", "phenoDict"
+        ])
+
 
     genedf_base = vardf.groupby("geneSymbol")[[
         "geneEnsId", "varId", "clinvarSignDesc",
