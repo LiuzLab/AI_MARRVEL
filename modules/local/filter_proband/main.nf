@@ -1,4 +1,4 @@
-process FILTER_PROBAND {
+process FILTER_BLACKLIST_VARIANTS {
     publishDir "${params.outdir}/${params.run_id}/vcf/", mode: 'copy'
 
     input:

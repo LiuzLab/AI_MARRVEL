@@ -3,7 +3,7 @@ include { CONVERT_GVCF }               from "../../../modules/local/convert_gvcf
 include { FILTER_UNPASSED }            from "../../../modules/local/filter_unpassed";
 include { FILTER_MITO_AND_UNKOWN_CHR } from "../../../modules/local/filter_mito_and_unkown_chr";
 include { FILTER_BED }                 from "../../../modules/local/filter_bed";
-include { FILTER_PROBAND }             from "../../../modules/local/filter_proband";
+include { FILTER_BLACKLIST_VARIANTS }  from "../../../modules/local/filter_proband";
 
 workflow VCF_PRE_PROCESS {
     take:
@@ -38,12 +38,12 @@ workflow VCF_PRE_PROCESS {
         FILTER_MITO_AND_UNKOWN_CHR.out.tbi,
         ref_filter_bed_file,
     )
-    FILTER_PROBAND(
+    FILTER_BLACKLIST_VARIANTS(
         FILTER_BED.out.vcf,
         FILTER_BED.out.tbi,
         gnomad_tuple,
     )
 
     emit:
-    vcf = FILTER_PROBAND.out.vcf
+    vcf = FILTER_BLACKLIST_VARIANTS.out.vcf
 }
