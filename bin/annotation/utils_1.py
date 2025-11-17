@@ -168,143 +168,11 @@ class Variant:
 
 
 # function to get var objects from dataframe read from a VEP annoataed file
-def getVarObjFromVEPAnnotDf(df, genomeRef):
-    # create the objects
-    varObjList = [Variant() for i in range(len(df.index))]
-    # create a list of var objects
-    i = 0
-    for index, rows in df.iterrows():
-        print(
-            "rows:",
-            rows.Uploaded_variation,
-            rows.Location,
-            rows.Gene,
-            rows.Feature_type,
-        )
-        s = rows.Uploaded_variation.split("_")
-        transcriptId = rows.Feature
-        chrom = s[0]
-        pos = s[1]
-        # if it is hg38 get its hg19 coordinates
-        if genomeRef == "hg38":
-            pass
-            varObjList[i].hg38Chrom = chrom
-            varObjList[i].hg38pos = pos
-            retList = gethg19LocFromHg38(chr, pos)
-            retList = [newChrom, newPos]
-            varObjList[i].hg19Chrom = retList[0]
-            varObjList[i].hg19pos = retList[1]
-            chrom = retList[0]
-            pos = retList[1]
-        else:
-            varObjList[i].hg19Chrom = chrom
-            varObjList[i].hg19pos = pos
-
-        tmp = s[2]
-        s = tmp.split("/")
-        refAllele = s[0]
-        altAllele = s[1]
-        print(chr, pos, tmp, refAllele, altAllele)
-
-        varObjList[i].chrom = chrom
-        varObjList[i].pos = pos
-        varObjList[i].ref = refAllele
-        varObjList[i].alt = altAllele
-        # cerate a unique ID since we have transcripts
-        varId = "_".join([chrom, pos, refAllele, altAllele, transcriptId])
-        varObjList[i].varId = varId
-        varObjList[i].varId_dash = "-".join([chrom, pos, refAllele, altAllele])
-        varObjList[i].zyg = rows.ZYG
-        varObjList[i].geneSymbol = rows.SYMBOL
-        varObjList[i].geneEnsId = rows.Gene
-        varObjList[i].rsId = rows.Existing_variation
-        varObjList[i].GERPpp_RS = rows.GERPpp_RS
-        varObjList[i].featureType = rows.Feature_type
-        varObjList[i].gnomadAF = rows.gnomAD_AF
-        varObjList[i].CLIN_SIG = rows.CLIN_SIG
-        varObjList[i].HGVSc = rows.HGVSc
-        varObjList[i].HGVSp = rows.HGVSp
-
-        # increment
-        i = i + 1
-
-    # print('in def len of objects:', len(varObjList))
-    return varObjList
 
 
 # function to get OMIM info using MArrvel API
-def getOMIMUsingMarrvelAPI(varObj):
-    print("getOMIM:", varObj.varId_dash, varObj.geneSymbol, varObj.rsId)
-    url = "http://marrvel.org/data/omim/gene/symbol/{}/variant/{}".format(
-        varObj.geneSymbol, varObj.varId_dash
-    )
-    # Example: 6:99365567 T>C / FBXL4
-    # url='http://marrvel.org/data/omim/gene/symbol/{}/variant/{}'.format('FBXL4','6-99365567-T-C')
-    # print('url:', url)
-
-    req = requests.get(url)
-    # print('reqText:', req)
-    # print('resqStatusCode:', req.status_code)
-    varFound = 0
-    geneFound = 0
-    omimDict = {}
-    if req.status_code != 200:
-        # print('OMIM query not found')
-        pass
-    else:
-        # the entry for the gene exists but need to check if the variants exists also using the rs ID
-        geneFound = 1
-        # print('reqText:', req.text)
-        dat = json.loads(req.text)
-        # search var in the list of dict
-        retVal = next(
-            (item for item in dat["allelicVariants"] if item["dbSnps"] == varObj.rsId),
-            None,
-        )
-        if retVal is not None:
-            varFound = 1
-        omimDict = data
-        # print('varFoundFlag:',varFoundFlag)
-
-    retList = [varFound, geneFound, omimDict]
-    return retList
 
 
-def getClinVarUsingMarrvelAPI(varObj):
-    print("getClinvar:", varObj.varId_dash, varObj.geneSymbol, varObj.rsId)
-    # the APIs
-    # /clinvar/gene/symbol/:geneSymbol
-    # /clinvar/gene/variant/:variant
-
-    # check if varaint annotated
-    url = "http://marrvel.org/data/clinvar/variant/{}".format(varObj.varId_dash)
-    req = requests.get(url)
-    # print('reqText:', req)
-    # print('reqText:', req.text)
-    varFound = 0
-    varDict = {}
-    if req.text:
-        varFound = 1
-        varDict = json.loads(req.text)
-    else:
-        varFound = 0
-
-    # check if gene annotated
-    url = "http://marrvel.org/data/clinvar/symbol/{}".format(varObj.geneSymbol)
-    req = requests.get(url)
-    # print('reqText:', req)
-    # print('reqText:', req.text)
-    geneFound = 0
-    geneDict = {}
-    if req.text:
-        geneFound = 1
-        geneDict = json.loads(req.text)
-    else:
-        geneFound = 0
-
-    # return
-    retList = [varFound, varDict, geneFound, geneDict]
-    return retList
 
 
 def getCurationScore(varObj):
@@ -471,117 +339,19 @@ def getCurationScore(varObj):
     return retList
 
 
-def gethg19LocFromHg38(chrom, pos):
-    converter = get_lifter("hg38", "hg19")
-    pos = int(pos)
-    converter[chrom][pos]
-
-    retVal = converter.query(chrom, pos)
-    # print('retVal:', retVal)
-    newChrom = retVal[0][0]
-    newChrom = newChrom.replace("chr", "")
-    newPos = retVal[0][1]
-    # print('newChr:',newChrom,'newPos:', newPos)
-    retList = [newChrom, newPos]
-    return retList
 
 
-def getDGVUsingMarrvelAPI(varObj):
-    # varObj=varObjList[0]
-    print("v:", varObj.geneSymbol)
-    # DGV returns a list not a dict
-    url = "http://marrvel.org/data/dgv/variant/{}".format(varObj.varId_dash)
-    req = requests.get(url)
-    # print('req:', req.text)
-    dgvDictList = []
-    # geneList=[]
-    typeList = []
-    subtypeList = []
-    if req.status_code != 200:
-        # print('OMIM query not found')
-        pass
-    else:
-        dat = json.loads(req.text)
-        dgvDictList = dat
-        for row in dat:
-            dgvType = row["type"]
-            typeList.append(dgvType)
-            dgvSubtype = row["subType"]
-            subtypeList.append(dgvSubtype)
-            # dgvGeneList=[d['symbol'] for d in row['genes']]
-            # geneList.append(dgvGeneList)
-
-    retList = [dgvDictList, typeList, subtypeList]
-    return retList
 
 
-def getDecipherUsingMarrvelAPI(varObj):
-    print("v:", varObj.geneSymbol)
-    url = "http://marrvel.org/data/decipher/variant/{}".format(
-        varObj.varId_dash
-    )  # varId_dash
-    # decipher/variant/:variant
-    # decipher/genomloc/:hg19Chr/:hg19Start/:hg19Stop
-    req = requests.get(url)
-    # print('req:', req.text)
-    decipherDictList = []
-    decipherDeletionObsList = []
-    decipherStudyList = []
-    if req.status_code != 200:
-        # print('Decipher query not found')
-        pass
-    else:
-        dat = json.loads(req.text)
-        decipherDictList = dat
-        for row in dat:
-            # print('\n row:', row)
-            deleteObs = row["deletion"]["obs"]
-            decipherDeletionObsList.append(deleteObs)
-            deleteStudy = row["study"]
-            decipherStudyList.append(deleteObs)
-            # print('deleteObs:', deleteObs, 'study:',deleteStudy)
-
-    retList = [decipherDictList, decipherDeletionObsList, decipherStudyList]
-    return retList
 
 
-def checkVarGeneFile(inFile, fileType):
-    # check if input files are in right format
-    pass
 
 
-def checkPatientFile(inFile, fileType):
-    # check if input files are in right format
-    pass
 
 
-def changeVariantFormat(inVar):
-    # change the varaint format from 6:99365567 T>C to 6-99365567-T-C
-    # replace : > and space with -
-    inVar = inVar.replace(" ", "-")
-    inVar = inVar.replace(":", "-")
-    inVar = inVar.replace(">", "-")
-    return inVar
 
 
-def readVarGeneFile(inFile, fileType):
-    # read the var/gene file and return a data frame; if it is varList only then need to call
-    if fileType == "varList":
-        df = pd.read_csv(inFile, sep="\t")
-        print("df head:", df.head(), "\n")
-        # change variant format
-        df = df.apply(np.vectorize(changeVariantFormat))
-        print("df head:", df.head(), "\n")
-        return df
 
 
-def checkVarGnomad(varId):
-    url = "http://marrvel.org/data/gnomad/variant/{}".format(varId)
-    req = requests.get(url)
-    pass
 
 
-def getVarGroups(varList, groupSize):
-    # get a list of variant groups for parallel processing
-    for i in range(0, len(varList), groupSize):
-        yield varList[i : i + groupSize]

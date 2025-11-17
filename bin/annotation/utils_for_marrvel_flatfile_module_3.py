@@ -4,39 +4,7 @@ from .utils_1 import Variant
 from .utils_for_marrvel_flatfile import (
     getClinVarUsingMarrvelFlatFile,
     getHGMDUsingFlatFile,
-    getAnnotateInfoRow_2,
 )
-
-
-def getAnnotateInfoRows_2(
-        varDf,
-        genomeRef,
-        clinvarGeneDf,
-        clinvarAlleleDf,
-        omimGeneSortedDf,
-        omimAlleleList,
-        hgmdHPOScoreDf,
-        moduleList,
-        decipherSortedDf,
-        gnomadMetricsGeneSortedDf,
-):
-    # NOTE(JL): It is old implementation and not used.
-    # But left to for tracing purpose. Feel free to remove
-    def f(row):
-        return getAnnotateInfoRow_2(
-            row,
-            genomeRef,
-            clinvarGeneDf,
-            clinvarAlleleDf,
-            omimGeneSortedDf,
-            omimAlleleList,
-            hgmdHPOScoreDf,
-            moduleList,
-            decipherSortedDf,
-            gnomadMetricsGeneSortedDf,
-        )
-    annotateInfoDf = varDf.apply(f, axis=1, result_type='expand')
-    return annotateInfoDf
 
 
 def getAnnotateInfoRow_3_1(row, genomeRef):
