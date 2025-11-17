@@ -9,7 +9,7 @@ __email__ = "chaozhol@bcm.edu"
 ###fills NA w/ 0
 
 
-def getValFromStr(valStr: str, select: str = "min"):
+def _parse_numeric(valStr: str, select: str = "min"):
     select_method = {"min": min, "max": max}
     vals = valStr.split(",")
     if "-" in vals or "." in vals:
@@ -216,12 +216,12 @@ def feature_engineering(score_file, tier_file):
         ].describe()["min"]
 
     gnomadAFVal = patient["gnomadAF"].copy()
-    gnomadAFVal = np.array([getValFromStr(str(i), "min") for i in gnomadAFVal])
+    gnomadAFVal = np.array([_parse_numeric(str(i), "min") for i in gnomadAFVal])
     gnomadAFVal = gnomadAFVal.astype(float)
     patient["gnomadAF"] = gnomadAFVal
 
     gnomadAFgVal = patient["gnomadAFg"].copy()
-    gnomadAFgVal = np.array([getValFromStr(str(i), "min") for i in gnomadAFgVal])
+    gnomadAFgVal = np.array([_parse_numeric(str(i), "min") for i in gnomadAFgVal])
     gnomadAFgVal = gnomadAFgVal.astype(float)
     patient["gnomadAFg"] = gnomadAFgVal
     patient.loc[patient["gnomadAFg"].isna(), "gnomadAFg"] = patient.loc[

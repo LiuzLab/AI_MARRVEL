@@ -1,7 +1,7 @@
 import re
 
-from .utils_1 import Variant
-from .utils_for_marrvel_flatfile import (
+from .variant_models import Variant
+from .clinical_flatfile_sources import (
     getClinVarUsingMarrvelFlatFile,
     getHGMDUsingFlatFile,
 )

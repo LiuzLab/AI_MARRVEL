@@ -1,7 +1,7 @@
 ## UPDATE
 #     Changes made by Chaozhong noted as #CL
 
-from annotation.utils_1 import *
+from annotation.variant_models import *
 import numpy as np
 import time
 import re
@@ -28,8 +28,8 @@ def getConservationScore(varObj, diseaseInh):
 
     # gnomad
     conservationScoreGnomad = "-"
-    gnomadAFVal = getValFromStr(str(varObj.gnomadAF), "min")
-    gnomadAFgVal = getValFromStr(str(varObj.gnomadAFg), "min")
+    gnomadAFVal = _parse_numeric(str(varObj.gnomadAF), "min")
+    gnomadAFgVal = _parse_numeric(str(varObj.gnomadAFg), "min")
     if gnomadAFVal != "-" and gnomadAFgVal != "-":
         # gnomadAFVal=float(varObj.gnomadAF)
         # gnomadAFgVal=float(varObj.gnomadAFg)
@@ -61,7 +61,7 @@ def getConservationScore(varObj, diseaseInh):
     return retList
 
 
-def getValFromStr(valStr: str, select: str = "min"):
+def _parse_numeric(valStr: str, select: str = "min"):
     """
     Function to convert string to float,
     and takes care of situation when multiple values exist

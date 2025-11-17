@@ -3,7 +3,7 @@ from typing import Optional
 import numpy as np
 import pandas as pd
 
-from annotation.utils_for_marrvel_flatfile_module_3 import getAnnotateInfoRows_3
+from annotation.annotation_pipeline import getAnnotateInfoRows_3
 
 
 def _add_dgv_annotations(annotate_info_df: pd.DataFrame, dgv_df: pd.DataFrame) -> pd.DataFrame:
