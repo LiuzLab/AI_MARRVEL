@@ -2,9 +2,9 @@ from typing import List
 
 import pandas as pd
 
-from annotation.utils_for_symMatch import clinVarSymMatch, hgmdSymMatch, omimSymMatch
-from annotation.utils_1 import getCurationScore
-from annotation.utils_for_marrvel_flatfile_module_2 import getConservationScore
+from annotation.symptom_matching import clinVarSymMatch, hgmdSymMatch, omimSymMatch
+from annotation.curation_scoring import getCurationScore
+from annotation.conservation_scoring import getConservationScore
 from annotation.marrvel_score_recalc import (
     load_raw_matrix,
     omimCurate,
