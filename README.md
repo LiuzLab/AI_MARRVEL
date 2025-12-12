@@ -42,7 +42,7 @@ When handling the sync manually, follow the steps below to mirror the public buc
    ```
 3. Use the following command to sync the S3 bucket to your local directory:
    ```bash
-   $ aws s3 sync s3://aim-data-dependencies-2.3-public . --no-sign-request
+   $ aws s3 sync s3://aim-data-dependencies-2.4-public . --no-sign-request
    ```
 
 ### Get the software
