@@ -55,7 +55,7 @@
         },
         "s3_bucket_data_name": {
           "type": "string",
-          "default": "aim-data-dependencies-2.3-public",
+          "default": "aim-data-dependencies-2.4-public",
           "description": "[Not Implemented] S3 bucket name to aim pipeline dependencies directory.",
           "format": "path",
           "hidden": true

@@ -37,7 +37,7 @@ AIM utilizes various databases for variant annotation, all of which have been co
    ```
 3. Use the following command to sync the S3 bucket to your local directory:
    ```bash
-   $ aws s3 sync s3://aim-data-dependencies-2.3-public . --no-sign-request
+   $ aws s3 sync s3://aim-data-dependencies-2.4-public . --no-sign-request
    ```
 
 ### Get the software
