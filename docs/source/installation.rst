@@ -70,7 +70,7 @@ Set ``--skip_ref_sync`` flag when you need to manage the dependency folder yours
 
    .. code-block:: bash
 
-         aws s3 sync s3://aim-data-dependencies-2.3-public . --no-sign-request
+      aws s3 sync s3://aim-data-dependencies-2.4-public . --no-sign-request
 
 
 .. warning::
