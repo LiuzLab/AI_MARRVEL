@@ -104,15 +104,12 @@ def matrix_inh(inh_df, rank_file):
         gene_vars_df.loc[g, 'Gene_vars_Unknown'] = gene_df['Unknown'].sum()
 
     rank_df['varId'] = rank_df.index
-    rank_df_new = pd.DataFrame(np.ones((0,2)), columns=['varId','geneEnsId'])
-
-    for i in range(rank_df.shape[0]):
-            n_lines = len(rank_df.loc[rank_df.index[i],'geneEnsId'].split(','))
-            rank_df_new_tmp = rank_df.loc[np.repeat(rank_df.index[i],n_lines),['varId','geneEnsId']]
-            rank_df_new_tmp['geneEnsId'] = rank_df.loc[rank_df.index[i],'geneEnsId'].split(',')
-
-            rank_df_new = pd.concat([rank_df_new, rank_df_new_tmp], axis=0)
-            rank_df_new.index = np.arange(rank_df_new.shape[0])
+    rank_df_new = (
+        rank_df[['varId', 'geneEnsId']]
+        .assign(geneEnsId=rank_df['geneEnsId'].str.split(','))
+        .explode('geneEnsId')
+        .reset_index(drop=True)
+    )
             
     rank_df_new['Gene_vars_Father'] = 0
     rank_df_new['Gene_vars_Mother'] = 0
@@ -171,8 +168,6 @@ def matrix_inh(inh_df, rank_file):
 
     return rank_df #.to_csv('matrix_inh/%s.txt'%ID)
     
-
-
 
 
 
