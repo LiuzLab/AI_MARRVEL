@@ -7,7 +7,7 @@
 
 <p align="center">
   <a style="text-decoration:none">
-    <img src="https://img.shields.io/badge/AI_MARRVEL-v1.1.2-blue.svg"/>
+    <img src="https://img.shields.io/badge/AI_MARRVEL-v1.1.3-blue.svg"/>
   </a>
   <a href='https://ai-marrvel.readthedocs.io/en/latest/?badge=latest'>
     <img src='https://readthedocs.org/projects/ai-marrvel/badge/?version=latest' alt='Documentation Status' />
@@ -37,7 +37,7 @@ AIM utilizes various databases for variant annotation, all of which have been co
    ```
 3. Use the following command to sync the S3 bucket to your local directory:
    ```bash
-   $ aws s3 sync s3://aim-data-dependencies-2.3-public . --no-sign-request
+   $ aws s3 sync s3://aim-data-dependencies-2.4-public . --no-sign-request
    ```
 
 ### Get the software
