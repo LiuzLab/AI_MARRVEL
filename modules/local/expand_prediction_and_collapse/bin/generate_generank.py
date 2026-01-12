@@ -21,6 +21,9 @@ def get_vardf(filename):
     else:
         vardf = pd.read_parquet(filename)
 
+    vardf["IMPACT_text"] = \
+        vardf["IMPACT_text"].astype(IMPACT_DTYPE)
+
     vardf["Consequence"] = \
         vardf.Consequence.map(ast.literal_eval)
 
