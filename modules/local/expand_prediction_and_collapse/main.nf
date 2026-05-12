@@ -14,7 +14,7 @@ process EXPAND_PREDICTION_AND_COLLAPSE {
     """
     mkdir final_matrix_expanded
 
-    merge_rankmatrix.py \
+    $moduleDir/bin/merge_rankmatrix.py \
         $default_prediction \
         $merged_compressed_scores \
         final_matrix_expanded/${params.run_id}.expanded.transcript.csv.gz
